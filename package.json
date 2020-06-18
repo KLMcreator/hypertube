@@ -1,0 +1,33 @@
+{
+  "name": "hypertube",
+  "version": "1.0.0",
+  "description": "find torrents and watch them!",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "node setup.js",
+    "start": "node server.js"
+  },
+  "author": "eozimek-cvannica",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "bcrypt": "^4.0.1",
+    "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.3",
+    "cookie-parser": "^1.4.5",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "faker": "^4.1.0",
+    "jsonwebtoken": "^8.5.1",
+    "mime": "^2.4.4",
+    "moment": "^2.24.0",
+    "moment-range": "^4.0.2",
+    "multer": "^1.4.2",
+    "node-fetch": "^2.6.0",
+    "nodemailer": "^6.4.6",
+    "pg": "^8.0.2",
+    "react-window": "^1.8.5",
+    "request": "^2.88.2"
+  }
+}

@@ -1,0 +1,26 @@
+html,
+body,
+#root,
+#root > div {
+  height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+  background-color: #1a1a1a;
+  font-family: "Roboto";
+  color: #eff1f3;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+#unloggedRoot {
+  background-image: url("./../img/coupleDraw.jpg");
+  background-position: 50% 50%;
+  background-size: cover;
+  position: relative;
+}
