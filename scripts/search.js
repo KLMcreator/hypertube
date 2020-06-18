@@ -7,8 +7,8 @@ const getYts = require("./getYTS");
 
 const initScraping = async () => {
   console.time("initScraping");
-  //   await getYts.fetchAllTorrents();
-  await getYts.fetchQueryTorrents("star wars");
+  await getYts.fetchAllTorrents();
+  //   await getYts.fetchQueryTorrents("star wars");
   console.timeEnd("initScraping");
 };
 
