@@ -4,11 +4,12 @@
 // get 1337x main page
 
 const getYts = require("./getYTS");
+const getTorrent9 = require("./getTorrent9");
 
 const initScraping = async () => {
   console.time("initScraping");
   await getYts.fetchAllTorrents();
-  //   await getYts.fetchQueryTorrents("star wars");
+  await getTorrent9.fetchAllTorrents();
   console.timeEnd("initScraping");
 };
 

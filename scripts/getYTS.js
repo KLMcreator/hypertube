@@ -96,14 +96,11 @@ const fetchAllTorrents = async () => {
   ytsInfos.number_of_pages = await getTotalPages(url);
   console.log(ytsInfos.number_of_pages, "pages found, starting scrapping...");
   // change ternary for `ytsInfos.number_of_pages` for production
-  for (
-    let i = 1;
-    i <= ytsInfos.number_of_pages > 5 ? 5 : ytsInfos.number_of_pages;
-    i++
-  ) {
+  const limit = ytsInfos.number_of_pages > 5 ? 1 : ytsInfos.number_of_pages;
+  for (let i = 0; i < limit; i++) {
     await getMovieList(i, url);
   }
-  console.log(ytsInfos);
+  console.log(ytsInfos.movies.length, "movies scrapped!");
   console.timeEnd("ytsScraping");
 };
 
