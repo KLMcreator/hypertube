@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const e = require("express");
 
 let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
@@ -19,6 +20,16 @@ const getTotalPages = async (url) => {
       }
     })
     .catch((err) => console.log("Error while getting pages:", err));
+};
+
+const getFormat = (title) => {
+  if (title.toLowerCase().indexOf("bluray") > -1) {
+    return "Bluray";
+  } else if (title.toLowerCase().indexOf("web") > -1) {
+    return "Webrip";
+  } else {
+    return "Undefined";
+  }
 };
 
 const getMovieList = async (page, url) => {
@@ -51,6 +62,7 @@ const getMovieList = async (page, url) => {
                   peers: ele.peers,
                   url: ele.url,
                   size: ele.size,
+                  format: getFormat(ele.type),
                 });
               });
             }

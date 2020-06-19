@@ -1,27 +1,18 @@
-// init search get torrents from every websites
-// get yts main page
-// get torrent9 main page
-// get 1337x main page
-
 const getYts = require("./getYTS");
 const getTorrent9 = require("./getTorrent9");
 
 const initScraping = async () => {
   console.time("initScraping");
-  const ytsInfos = await getYts.fetchAllTorrents();
+  //   const ytsInfos = await getYts.fetchAllTorrents();
+  //   console.log(
+  //     ytsInfos.fetched_at,
+  //     ytsInfos.number_of_pages,
+  //     ytsInfos.movies.length
+  //   );
+  //   console.log(ytsInfos.movies[0]);
   const torrent9Infos = await getTorrent9.fetchAllTorrents();
-  console.log(
-    ytsInfos.fetched_at,
-    ytsInfos.number_of_pages,
-    ytsInfos.movies.length
-  );
-  ytsInfos.movies.map((el) => console.log(el.title));
-  console.log(
-    torrent9Infos.fetched_at,
-    torrent9Infos.number_of_pages,
-    torrent9Infos.movies.length
-  );
-  torrent9Infos.movies.map((el) => console.log(el.title));
+  console.log(torrent9Infos.movies[0]);
+  console.log(torrent9Infos.movies[1]);
   console.timeEnd("initScraping");
 };
 

@@ -1,6 +1,9 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 
+// const fs = require("fs");
+// let movies = JSON.parse(fs.readFileSync("t9movies.json"));
+
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
 const getTitle = (title) => {
@@ -76,6 +79,30 @@ const getLanguage = (title) => {
   return type;
 };
 
+const purifyAllTorrents = async () => {
+  let i = 0;
+  while (i < torrent9Infos.movies.length) {
+    let j = i + 1;
+    while (j < torrent9Infos.movies.length) {
+      let k = 0;
+      if (torrent9Infos.movies[i].title === torrent9Infos.movies[j].title) {
+        while (k < torrent9Infos.movies[j].torrents.length) {
+          torrent9Infos.movies[i].torrents.push(
+            torrent9Infos.movies[j].torrents[k]
+          );
+          k++;
+        }
+        torrent9Infos.movies.splice(j, 1);
+        i = 0;
+        break;
+      } else {
+        j++;
+      }
+    }
+    i++;
+  }
+};
+
 const getMovieList = async (url) => {
   return axios
     .get(url)
@@ -84,8 +111,10 @@ const getMovieList = async (url) => {
       let movies = $("tbody > tr");
       movies.map((el) => {
         if (movies[el].children[0].next.children[1].next.attribs.href) {
-          let infos = {
-            id: movies[el].children[0].next.children[1].next.children[0].data,
+          torrent9Infos.movies.push({
+            id: getTitle(
+              movies[el].children[0].next.children[1].next.children[0].data
+            ),
             title: getTitle(
               movies[el].children[0].next.children[1].next.children[0].data
             ),
@@ -101,9 +130,6 @@ const getMovieList = async (url) => {
             ),
             cover_url: null,
             available: null,
-            format: getFormat(
-              movies[el].children[0].next.children[1].next.children[0].data
-            ),
             torrents: [
               {
                 source: "torrent9",
@@ -122,10 +148,12 @@ const getMovieList = async (url) => {
                   "https://www.torrent9.ac" +
                   movies[el].children[0].next.children[1].next.attribs.href,
                 size: movies[el].children[3].children[0].data.toUpperCase(),
+                format: getFormat(
+                  movies[el].children[0].next.children[1].next.children[0].data
+                ),
               },
             ],
-          };
-          torrent9Infos.movies.push(infos);
+          });
         }
       });
     })
@@ -172,6 +200,8 @@ const fetchAllTorrents = async () => {
     );
   }
   console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
+  console.log("Starting purify list to avoid duplicates");
+  await purifyAllTorrents();
   console.timeEnd("torrent9Scraping");
   return torrent9Infos;
 };
