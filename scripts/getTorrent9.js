@@ -1,7 +1,5 @@
 const cheerio = require("cheerio");
-const fetch = require("node-fetch");
 const axios = require("axios");
-const request = require("request");
 
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
@@ -173,8 +171,9 @@ const fetchAllTorrents = async () => {
       i
     );
   }
-  console.log(torrent9Infos.movies.length, "movies scrapped!");
+  console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
   console.timeEnd("torrent9Scraping");
+  return torrent9Infos;
 };
 
 module.exports = { fetchAllTorrents };

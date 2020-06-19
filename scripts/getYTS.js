@@ -66,27 +66,6 @@ const getMovieList = async (page, url) => {
     .catch((err) => console.log("Error while getting pages:", err));
 };
 
-const fetchQueryTorrents = async (query) => {
-  console.time("ytsScraping");
-  const url =
-    "https://yts.mx/api/v2/list_movies.json?query_term=" + query + "&limit=50";
-  const fetchedAt = Date.now();
-  console.log("Initializing YTS scrapping at:", fetchedAt);
-  ytsInfos.fetched_at = fetchedAt;
-  ytsInfos.number_of_pages = await getTotalPages(url);
-  console.log(ytsInfos.number_of_pages, "pages found, starting scrapping...");
-  // change ternary for `ytsInfos.number_of_pages` for production
-  for (
-    let i = 1;
-    i <= ytsInfos.number_of_pages > 5 ? 5 : ytsInfos.number_of_pages;
-    i++
-  ) {
-    await getMovieList(i, url);
-  }
-  console.log(ytsInfos);
-  console.timeEnd("ytsScraping");
-};
-
 const fetchAllTorrents = async () => {
   console.time("ytsScraping");
   const url = "https://yts.mx/api/v2/list_movies.json?limit=50";
@@ -100,8 +79,9 @@ const fetchAllTorrents = async () => {
   for (let i = 0; i < limit; i++) {
     await getMovieList(i, url);
   }
-  console.log(ytsInfos.movies.length, "movies scrapped!");
+  console.log(ytsInfos.movies.length, "movies scrapped on YTS!");
   console.timeEnd("ytsScraping");
+  return ytsInfos;
 };
 
-module.exports = { fetchAllTorrents, fetchQueryTorrents };
+module.exports = { fetchAllTorrents };

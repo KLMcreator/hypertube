@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import TextField from "@material-ui/core/TextField";
 import { withStyles } from "@material-ui/core/styles";
 // files
-import { getTorrents } from "../../../scripts/search";
 
 let searchWaiting = 0;
 
@@ -28,7 +27,7 @@ const Home = (props) => {
     }
     searchWaiting = setTimeout(async () => {
       searchWaiting = null;
-      await getTorrents(search);
+      //   await getTorrents(search);
     }, 500);
   };
 
