@@ -1,8 +1,3 @@
-// init search get torrents from every websites
-// get yts main page
-// get torrent9 main page
-// get 1337x main page
-
 const getYts = require("./getYTS");
 const getTorrent9 = require("./getTorrent9");
 
