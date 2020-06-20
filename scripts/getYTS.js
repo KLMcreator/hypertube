@@ -43,6 +43,7 @@ const getMovieList = async (page, url) => {
         if (res.data.movies) {
           res.data.movies.map((el) => {
             let infos = {
+              source: "yts",
               id: el.id,
               title: el.title,
               production_year: el.year,
@@ -87,9 +88,13 @@ const fetchAllTorrents = async () => {
   ytsInfos.number_of_pages = await getTotalPages(url);
   console.log(ytsInfos.number_of_pages, "pages found, starting scrapping...");
   // change ternary for `ytsInfos.number_of_pages` for production
-  const limit = ytsInfos.number_of_pages > 5 ? 1 : ytsInfos.number_of_pages;
-  for (let i = 0; i < limit; i++) {
+  //   const limit = ytsInfos.number_of_pages > 5 ? 1 : ytsInfos.number_of_pages;
+  for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
+    if (i && i % 15 === 0) {
+      console.log(i, "pages done, waiting for 1.5s to avoid being blacklisted");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
   }
   console.log(ytsInfos.movies.length, "movies scrapped on YTS!");
   console.timeEnd("ytsScraping");

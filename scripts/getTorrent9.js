@@ -1,9 +1,6 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 
-// const fs = require("fs");
-// let movies = JSON.parse(fs.readFileSync("t9movies.json"));
-
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
 const getTitle = (title) => {
@@ -93,7 +90,7 @@ const purifyAllTorrents = async () => {
           k++;
         }
         torrent9Infos.movies.splice(j, 1);
-        i = 0;
+        i = -1;
         break;
       } else {
         j++;
@@ -112,6 +109,7 @@ const getMovieList = async (url) => {
       movies.map((el) => {
         if (movies[el].children[0].next.children[1].next.attribs.href) {
           torrent9Infos.movies.push({
+            source: "torrent9",
             id: getTitle(
               movies[el].children[0].next.children[1].next.children[0].data
             ),
@@ -191,13 +189,17 @@ const fetchAllTorrents = async () => {
     "pages found, starting scrapping..."
   );
   // change ternary for `torrent9Infos.number_of_pages` for production
-  const limit =
-    torrent9Infos.number_of_pages > 5 ? 1 : torrent9Infos.number_of_pages;
-  for (let i = 0; i < limit; i++) {
+  //   const limit =
+  //     torrent9Infos.number_of_pages > 5 ? 1 : torrent9Infos.number_of_pages;
+  for (let i = 0; i < torrent9Infos.number_of_pages; i++) {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + 50 * i + 1,
       i
     );
+    if (i && i % 15 === 0) {
+      console.log(i, "pages done, waiting for 1.5s to avoid being blacklisted");
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
   }
   console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
   console.log("Starting purify list to avoid duplicates");
