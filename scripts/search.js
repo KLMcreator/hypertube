@@ -4,6 +4,7 @@ const getTorrent9 = require("./getTorrent9");
 const fs = require("fs");
 // let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
 // let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
+let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 
 const checkDuplicates = async (arr) => {
@@ -62,6 +63,7 @@ const purifyAllTorrents = async (t9, yts) => {
           if (finalTorrents.movies[j].torrents) {
             finalTorrents.movies[j].torrents.map((ele) => {
               infos.torrents.push({
+                language: finalTorrents.movies[j].language,
                 source: ele.source,
                 quality: ele.quality,
                 seeds: ele.seeds,
@@ -75,6 +77,7 @@ const purifyAllTorrents = async (t9, yts) => {
           if (finalTorrents.movies[i].torrents) {
             finalTorrents.movies[i].torrents.map((ele) => {
               infos.torrents.push({
+                language: finalTorrents.movies[i].language,
                 source: ele.source,
                 quality: ele.quality,
                 seeds: ele.seeds,
@@ -100,6 +103,7 @@ const purifyAllTorrents = async (t9, yts) => {
           if (finalTorrents.movies[i].torrents) {
             finalTorrents.movies[i].torrents.map((ele) => {
               infos.torrents.push({
+                language: finalTorrents.movies[i].language,
                 source: ele.source,
                 quality: ele.quality,
                 seeds: ele.seeds,
@@ -113,6 +117,7 @@ const purifyAllTorrents = async (t9, yts) => {
           if (finalTorrents.movies[j].torrents) {
             finalTorrents.movies[j].torrents.map((ele) => {
               infos.torrents.push({
+                language: finalTorrents.movies[j].language,
                 source: ele.source,
                 quality: ele.quality,
                 seeds: ele.seeds,
@@ -139,8 +144,8 @@ const purifyAllTorrents = async (t9, yts) => {
 };
 
 const searchInTorrent = async (q) => {
-  finalTorrents.movies.map((el) => {
-    if (el.title === q) {
+  torrents.movies.map((el) => {
+    if (el.title.toLowerCase().includes(q.toLowerCase())) {
       console.log(el);
     }
   });
@@ -148,8 +153,8 @@ const searchInTorrent = async (q) => {
 
 const initScraping = async () => {
   console.time("initScraping");
-  let ytsInfos = await getYts.fetchAllTorrents();
   let torrent9Infos = await getTorrent9.fetchAllTorrents();
+  let ytsInfos = await getYts.fetchAllTorrents();
   console.log(ytsInfos.movies.length, "movies found on YTS");
   console.log(torrent9Infos.movies.length, "movies found on Torrent9");
   console.log("Re-purifying just to be sure there's no duplicates");
@@ -184,8 +189,7 @@ const initScraping = async () => {
     finalTorrents.number_of_movies,
     "movies in total after last purify"
   );
-  //   await searchInTorrent("Da 5 Bloods");
   console.timeEnd("initScraping");
 };
 
-initScraping();
+searchInTorrent("sex");

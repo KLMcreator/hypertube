@@ -107,52 +107,50 @@ const getMovieList = async (url) => {
       let $ = cheerio.load(res.data);
       let movies = $("tbody > tr");
       movies.map((el) => {
-        if (movies[el].children[0].next.children[1].next.attribs.href) {
-          torrent9Infos.movies.push({
-            source: "torrent9",
-            id: getTitle(
-              movies[el].children[0].next.children[1].next.children[0].data
-            ),
-            title: getTitle(
-              movies[el].children[0].next.children[1].next.children[0].data
-            ),
-            production_year: getProductionYear(
-              movies[el].children[0].next.children[1].next.children[0].data
-            ),
-            rating: null,
-            url:
-              "https://www.torrent9.ac" +
-              movies[el].children[0].next.children[1].next.attribs.href,
-            language: getLanguage(
-              movies[el].children[0].next.children[1].next.children[0].data
-            ),
-            cover_url: null,
-            available: null,
-            torrents: [
-              {
-                source: "torrent9",
-                quality: getQuality(
-                  movies[el].children[0].next.children[1].next.children[0].data
-                ),
-                seeds: parseInt(
-                  movies[el].children[5].children[0].children[0].data.trim(),
-                  10
-                ),
-                peers: parseInt(
-                  movies[el].children[7].children[0].data.trim(),
-                  10
-                ),
-                url:
-                  "https://www.torrent9.ac" +
-                  movies[el].children[0].next.children[1].next.attribs.href,
-                size: movies[el].children[3].children[0].data.toUpperCase(),
-                format: getFormat(
-                  movies[el].children[0].next.children[1].next.children[0].data
-                ),
-              },
-            ],
-          });
-        }
+        torrent9Infos.movies.push({
+          source: "torrent9",
+          id: getTitle(
+            movies[el].children[0].next.children[1].next.children[0].data
+          ),
+          title: getTitle(
+            movies[el].children[0].next.children[1].next.children[0].data
+          ),
+          production_year: getProductionYear(
+            movies[el].children[0].next.children[1].next.children[0].data
+          ),
+          rating: null,
+          url:
+            "https://www.torrent9.ac" +
+            movies[el].children[0].next.children[1].next.attribs.href,
+          language: getLanguage(
+            movies[el].children[0].next.children[1].next.children[0].data
+          ),
+          cover_url: null,
+          available: null,
+          torrents: [
+            {
+              source: "torrent9",
+              quality: getQuality(
+                movies[el].children[0].next.children[1].next.children[0].data
+              ),
+              seeds: parseInt(
+                movies[el].children[5].children[0].children[0].data.trim(),
+                10
+              ),
+              peers: parseInt(
+                movies[el].children[7].children[0].data.trim(),
+                10
+              ),
+              url:
+                "https://www.torrent9.ac" +
+                movies[el].children[0].next.children[1].next.attribs.href,
+              size: movies[el].children[3].children[0].data.toUpperCase(),
+              format: getFormat(
+                movies[el].children[0].next.children[1].next.children[0].data
+              ),
+            },
+          ],
+        });
       });
     })
     .catch((err) => console.log("Error while getting pages:", err));
@@ -182,23 +180,19 @@ const fetchAllTorrents = async () => {
   console.log("Initializing Torrent9 scrapping at:", fetchedAt);
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4425"
+    "https://www.torrent9.ac/torrents/films/4400"
   );
   console.log(
     torrent9Infos.number_of_pages,
     "pages found, starting scrapping..."
   );
-  // change ternary for `torrent9Infos.number_of_pages` for production
-  //   const limit =
-  //     torrent9Infos.number_of_pages > 5 ? 1 : torrent9Infos.number_of_pages;
   for (let i = 0; i < torrent9Infos.number_of_pages; i++) {
     await getMovieList(
-      "https://www.torrent9.ac/torrents/films/" + 50 * i + 1,
-      i
+      "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
     if (i && i % 15 === 0) {
-      console.log(i, "pages done, waiting for 1.5s to avoid being blacklisted");
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      console.log(i, "pages done, waiting for 2s to avoid being blacklisted");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
   console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
