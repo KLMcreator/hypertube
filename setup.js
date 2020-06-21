@@ -32,7 +32,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(255) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT NULL, yts_url VARCHAR(255) DEFAULT NULL, torrent9_url VARCHAR(255) DEFAULT NULL, cover_url VARCHAR(255) DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -154,7 +154,7 @@ const insertIntoUsers = (user) => {
 const insertIntoTorrents = (torrent) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO torrents (yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, torrents, downloaded_at, lastviewed_at, delete_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+      "INSERT INTO torrents (yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
       [
         torrent.yts_id ? torrent.yts_id : null,
         torrent.torrent9_id ? torrent.torrent9_id : null,
@@ -164,7 +164,9 @@ const insertIntoTorrents = (torrent) => {
         torrent.yts_url ? torrent.yts_url : null,
         torrent.torrent9_url ? torrent.torrent9_url : null,
         torrent.cover_url ? torrent.cover_url : null,
-        torrent.torrents ? torrent.torrents : null,
+        torrent.categories ? JSON.stringify(torrent.categories) : null,
+        torrent.languages ? JSON.stringify(torrent.languages) : null,
+        torrent.torrents ? JSON.stringify(torrent.torrents) : null,
         null,
         null,
         null,

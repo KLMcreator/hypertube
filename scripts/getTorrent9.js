@@ -1,5 +1,7 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
+const moment = require("moment");
+const chalk = require("chalk");
 
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
@@ -85,7 +87,9 @@ const getCoverUrl = (url) => {
         let cover = $("div.movie-detail > div > div > div > img");
         resolve(cover[0].attribs.src);
       })
-      .catch((err) => console.log("Error while getting cover url:", err));
+      .catch((err) =>
+        console.log(chalk.red("Error while getting cover url:", err))
+      );
   });
 };
 
@@ -119,11 +123,21 @@ const getMoreInfos = async (url, i, j) => {
     .then((res) => {
       let $ = cheerio.load(res.data);
       let cover = $("div.movie-detail > div > div > div > img");
+      let buttons = $("div.download-btn > div");
+      let categories = $("ul > li:contains('Sous-Catégories')");
+      torrent9Infos.movies[
+        i
+      ].categories = categories[0].parent.children[5].children[0].attribs.href
+        .replace("/torrents/", "")
+        .split("-");
       torrent9Infos.movies[i].cover_url =
         "https://www.torrent9.ac" + cover[0].attribs.src;
-      orrent9Infos.movies[i].torrents[j].magnet = "";
+      torrent9Infos.movies[i].torrents[j].magnet =
+        buttons[1].children[0].attribs.href;
+      torrent9Infos.movies[i].torrents[j].torrent =
+        "https://www.torrent9.ac" + buttons[0].children[0].attribs.href;
     })
-    .catch((err) => console.log("Error while getting pages:", err));
+    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
 };
 
 const getMovieList = async (url) => {
@@ -188,7 +202,7 @@ const getMovieList = async (url) => {
         });
       });
     })
-    .catch((err) => console.log("Error while getting pages:", err));
+    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
 };
 
 const getTotalPages = async (url) => {
@@ -202,47 +216,87 @@ const getTotalPages = async (url) => {
         10
       );
       if ($(".pagination li").eq(-1).text() === "Suivant ►")
-        console.log("There's more than", total, "movies now");
-      else console.log(total, "movies found");
+        console.log(
+          "There's more than",
+          total,
+          "movies now on",
+          chalk.green("Torrent9")
+        );
+      else
+        console.log(
+          chalk.yellow(total),
+          "movies found on",
+          chalk.green("Torrent9")
+        );
       return Math.ceil(total / 50);
     })
-    .catch((err) => console.log("Error while getting pages:", err));
+    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
 };
 
 const fetchAllTorrents = async () => {
   console.time("torrent9Scraping");
   const fetchedAt = Date.now();
-  console.log("Initializing Torrent9 scrapping at:", fetchedAt);
+  console.log(
+    "Initializing ",
+    chalk.green("Torrent9"),
+    "scrapping at:",
+    chalk.yellow(moment(fetchedAt).format())
+  );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
     "https://www.torrent9.ac/torrents/films/4400"
   );
   console.log(
     torrent9Infos.number_of_pages,
-    "pages found, starting scrapping..."
+    "pages found on",
+    chalk.green("Torrent9,"),
+    "starting the scrape machine..."
   );
   for (let i = 0; i < torrent9Infos.number_of_pages; i++) {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
     if (i && i % 15 === 0) {
-      console.log(i, "pages done, waiting for 2s to avoid being blacklisted");
+      console.log(
+        i,
+        "pages done on",
+        chalk.green("Torrent9,"),
+        " waiting for 2s to avoid being blacklisted"
+      );
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
-  console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
-  console.log("Starting purify list to avoid duplicates");
+  console.log(
+    torrent9Infos.movies.length,
+    "movies scrapped on",
+    chalk.green("Torrent9")
+  );
+  console.log(
+    "Starting purify list to avoid duplicates on",
+    chalk.green("Torrent9")
+  );
   await purifyAllTorrents();
-  console.log(torrent9Infos.movies.length, "movies after purify");
-  console.log("Getting more infos for", torrent9Infos.movies.length, "movies");
+  console.log(
+    torrent9Infos.movies.length,
+    "movies after purify on",
+    chalk.green("Torrent9")
+  );
+  console.log(
+    "Getting more infos for",
+    torrent9Infos.movies.length,
+    "movies on",
+    chalk.green("Torrent9")
+  );
   for (let i = 0; i < torrent9Infos.movies.length; i++) {
-    for (let j = 0; j < torrent9Infos.movies.length; j++) {
+    for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
     if (i && i % 10 === 0) {
       console.log(
         i,
-        "movies done, waiting for 1.5s to avoid being blacklisted"
+        "movies done on",
+        chalk.green("Torrent9,"),
+        "waiting for 2s to avoid being blacklisted"
       );
       await new Promise((resolve) => setTimeout(resolve, 1500));
     }
