@@ -1,10 +1,11 @@
 const getYts = require("./getYTS");
 const getTorrent9 = require("./getTorrent9");
+const moment = require("moment");
 
 const fs = require("fs");
 // let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
 // let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
-let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 
 const checkDuplicates = async (arr) => {
@@ -34,6 +35,32 @@ const purifyAllTorrents = async (t9, yts) => {
   finalTorrents.fetched_at = Date.now();
   let i = 0;
   while (i < t9.movies.length) {
+    finalTorrents.movies.push(t9.movies[i]);
+    infos = {
+      yts_id: finalTorrents.movies[i].id,
+      torrent9_id: finalTorrents.movies[j].id,
+      title: finalTorrents.movies[i].title,
+      production_year: finalTorrents.movies[i].production_year,
+      rating: finalTorrents.movies[i].rating,
+      yts_url: finalTorrents.movies[i].url,
+      torrent9_url: finalTorrents.movies[j].url,
+      cover_url: finalTorrents.movies[i].cover_url,
+      torrents: [],
+    };
+    if (finalTorrents.movies[i].torrents) {
+      finalTorrents.movies[i].torrents.map((ele) => {
+        infos.torrents.push({
+          language: finalTorrents.movies[i].language,
+          source: ele.source,
+          quality: ele.quality,
+          seeds: ele.seeds,
+          peers: ele.peers,
+          url: ele.url,
+          size: ele.size,
+          format: ele.format,
+        });
+      });
+    }
     finalTorrents.movies.push(t9.movies[i]);
     i++;
   }
@@ -154,42 +181,42 @@ const searchInTorrent = async (q) => {
 const initScraping = async () => {
   console.time("initScraping");
   let torrent9Infos = await getTorrent9.fetchAllTorrents();
-  let ytsInfos = await getYts.fetchAllTorrents();
-  console.log(ytsInfos.movies.length, "movies found on YTS");
-  console.log(torrent9Infos.movies.length, "movies found on Torrent9");
-  console.log("Re-purifying just to be sure there's no duplicates");
-  ytsInfos = await checkDuplicates(ytsInfos);
-  torrent9Infos = await checkDuplicates(torrent9Infos);
-  console.log(ytsInfos.movies.length, "movies found on YTS after purify");
-  console.log(
-    torrent9Infos.movies.length,
-    "movies found on Torrent9 after purify"
-  );
-  console.log(
-    "Creating one big final list before storing it into the database"
-  );
-  fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
-    if (err) throw err;
-    console.log("ytsInfos saved!");
-  });
-  fs.writeFile(
-    "torrent9Torrents.json",
-    JSON.stringify(torrent9Infos),
-    (err) => {
-      if (err) throw err;
-      console.log("torrent9Infos saved!");
-    }
-  );
-  await purifyAllTorrents(ytsInfos, torrent9Infos);
-  fs.writeFile("finalTorrents.json", JSON.stringify(finalTorrents), (err) => {
-    if (err) throw err;
-    console.log("torrent9Infos saved!");
-  });
-  console.log(
-    finalTorrents.number_of_movies,
-    "movies in total after last purify"
-  );
+  //   let ytsInfos = await getYts.fetchAllTorrents();
+  //   console.log(ytsInfos.movies.length, "movies found on YTS");
+  //   console.log(torrent9Infos.movies.length, "movies found on Torrent9");
+  //   console.log("Re-purifying just to be sure there's no duplicates");
+  //   ytsInfos = await checkDuplicates(ytsInfos);
+  //   torrent9Infos = await checkDuplicates(torrent9Infos);
+  //   console.log(ytsInfos.movies.length, "movies found on YTS after purify");
+  //   console.log(
+  //     torrent9Infos.movies.length,
+  //     "movies found on Torrent9 after purify"
+  //   );
+  //   console.log(
+  //     "Creating one big final list before storing it into the database"
+  //   );
+  //   fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
+  //     if (err) throw err;
+  //     console.log("ytsInfos saved!");
+  //   });
+  //   fs.writeFile(
+  //     "torrent9Torrents.json",
+  //     JSON.stringify(torrent9Infos),
+  //     (err) => {
+  //       if (err) throw err;
+  //       console.log("torrent9Infos saved!");
+  //     }
+  //   );
+  //   await purifyAllTorrents(ytsInfos, torrent9Infos);
+  //   fs.writeFile("finalTorrents.json", JSON.stringify(finalTorrents), (err) => {
+  //     if (err) throw err;
+  //     console.log("torrent9Infos saved!");
+  //   });
+  //   console.log(
+  //     finalTorrents.number_of_movies,
+  //     "movies in total after last purify"
+  //   );
   console.timeEnd("initScraping");
 };
 
-searchInTorrent("sex");
+initScraping();

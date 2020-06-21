@@ -43,21 +43,22 @@ const getMovieList = async (page, url) => {
         if (res.data.movies) {
           res.data.movies.map((el) => {
             let infos = {
-              source: "yts",
-              id: el.id,
+              yts_id: el.id,
+              torrent9_id: null,
               title: el.title,
-              production_year: el.year,
+              production_year: el.production_year,
               rating: el.rating,
-              url: el.url,
-              language: el.language,
-              cover_url: el.medium_cover_image,
-              available: el.state,
+              yts_url: el.url,
+              torrent9_url: null,
+              cover_url: el.cover_url,
+              languages: [el.language],
               torrents: [],
             };
             if (el.torrents) {
               el.torrents.map((ele) => {
                 infos.torrents.push({
                   source: "yts",
+                  language: el.language,
                   quality: ele.quality,
                   seeds: ele.seeds,
                   peers: ele.peers,

@@ -2,7 +2,9 @@ const Pool = require("pg").Pool;
 const faker = require("faker");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const fs = require("fs");
 
+let torrents = JSON.parse(fs.readFileSync("./scripts/finalTorrents.json"));
 let totalUser = 42;
 
 const rootPool = new Pool({
@@ -30,7 +32,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL,downloaded_at TIMESTAMP DEFAULT NULL,lastviewed_at TIMESTAMP DEFAULT NULL,delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(255) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT NULL, yts_url VARCHAR(255) DEFAULT NULL, torrent9_url VARCHAR(255) DEFAULT NULL, cover_url VARCHAR(255) DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -91,33 +93,6 @@ const setupUsers = () => {
   });
 };
 
-const insertIntoUsers = (user) => {
-  return new Promise((resolve, reject) => {
-    pool.query(
-      "INSERT INTO users (username, password, firstname, lastname, email, photos, last_connection, verified, verified_value, language) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
-      [
-        user.username,
-        user.password,
-        user.firstname,
-        user.lastname,
-        user.email,
-        user.photos,
-        user.last_connection,
-        user.verified,
-        user.verified_value,
-        user.language,
-      ],
-      (error, results) => {
-        if (error) {
-          resolve(error);
-        } else {
-          resolve(0);
-        }
-      }
-    );
-  });
-};
-
 const hydrateSeed = async (totalUser) => {
   let hash = await bcrypt.hash("Hypertube42", 10);
   let i = 0;
@@ -149,6 +124,62 @@ const hydrateSeed = async (totalUser) => {
   return users;
 };
 
+const insertIntoUsers = (user) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "INSERT INTO users (username, password, firstname, lastname, email, photos, last_connection, verified, verified_value, language) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+      [
+        user.username,
+        user.password,
+        user.firstname,
+        user.lastname,
+        user.email,
+        user.photos,
+        user.last_connection,
+        user.verified,
+        user.verified_value,
+        user.language,
+      ],
+      (error, results) => {
+        if (error) {
+          resolve(error);
+        } else {
+          resolve(0);
+        }
+      }
+    );
+  });
+};
+
+const insertIntoTorrents = (torrent) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "INSERT INTO torrents (yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, torrents, downloaded_at, lastviewed_at, delete_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)",
+      [
+        torrent.yts_id ? torrent.yts_id : null,
+        torrent.torrent9_id ? torrent.torrent9_id : null,
+        torrent.title ? torrent.title : null,
+        torrent.production_year ? torrent.production_year : null,
+        torrent.rating ? torrent.rating : null,
+        torrent.yts_url ? torrent.yts_url : null,
+        torrent.torrent9_url ? torrent.torrent9_url : null,
+        torrent.cover_url ? torrent.cover_url : null,
+        torrent.torrents ? torrent.torrents : null,
+        null,
+        null,
+        null,
+      ],
+      (error, results) => {
+        if (error) {
+          resolve(error);
+        } else {
+          resolve(0);
+        }
+      }
+    );
+  });
+};
+
 const populateUsers = () => {
   return new Promise(async (resolve, reject) => {
     console.log(totalUser + " USERS WILL BE ADDED TO THE TABLE users.");
@@ -158,6 +189,28 @@ const populateUsers = () => {
         console.log(
           totalUser +
             " UNIQUE USERS HAVE BEEN ADDED TO TABLE users, their password is Hypertube42."
+        );
+        resolve(0);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  });
+};
+
+const populateTorrents = () => {
+  return new Promise(async (resolve, reject) => {
+    console.log(
+      torrents.number_of_movies +
+        " TORRENTS WILL BE ADDED TO THE DATABASE. THEY WERE FETCHED THE",
+      moment(torrents.fetched_at).format("MM/DD/YYYY : HH:mm:ss"),
+      "FROM YTS AND TORRENT9"
+    );
+    Promise.all(torrents.movies.map((e) => insertIntoTorrents(e)))
+      .then((res) => {
+        console.log(
+          torrents.number_of_movies +
+            " TORRENTS HAVE BEEN ADDED TO TABLE torrents."
         );
         resolve(0);
       })
@@ -201,7 +254,11 @@ const setupDatabase = () => {
                             if (res[0] && res[1] && res[2] && res[3]) {
                               populateUsers()
                                 .then((res) => {
-                                  resolve(res);
+                                  populateTorrents()
+                                    .then((res) => {
+                                      resolve(res);
+                                    })
+                                    .catch((err) => reject(err));
                                 })
                                 .catch((err) => reject(err));
                             } else {

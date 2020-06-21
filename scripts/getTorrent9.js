@@ -76,6 +76,19 @@ const getLanguage = (title) => {
   return type;
 };
 
+const getCoverUrl = (url) => {
+  return new Promise(function (resolve, reject) {
+    return axios
+      .get(url)
+      .then((res) => {
+        let $ = cheerio.load(res.data);
+        let cover = $("div.movie-detail > div > div > div > img");
+        resolve(cover[0].attribs.src);
+      })
+      .catch((err) => console.log("Error while getting cover url:", err));
+  });
+};
+
 const purifyAllTorrents = async () => {
   let i = 0;
   while (i < torrent9Infos.movies.length) {
@@ -100,6 +113,19 @@ const purifyAllTorrents = async () => {
   }
 };
 
+const getMoreInfos = async (url, i, j) => {
+  return axios
+    .get(url)
+    .then((res) => {
+      let $ = cheerio.load(res.data);
+      let cover = $("div.movie-detail > div > div > div > img");
+      torrent9Infos.movies[i].cover_url =
+        "https://www.torrent9.ac" + cover[0].attribs.src;
+      orrent9Infos.movies[i].torrents[j].magnet = "";
+    })
+    .catch((err) => console.log("Error while getting pages:", err));
+};
+
 const getMovieList = async (url) => {
   return axios
     .get(url)
@@ -108,8 +134,8 @@ const getMovieList = async (url) => {
       let movies = $("tbody > tr");
       movies.map((el) => {
         torrent9Infos.movies.push({
-          source: "torrent9",
-          id: getTitle(
+          yts_id: null,
+          torrent9_id: getTitle(
             movies[el].children[0].next.children[1].next.children[0].data
           ),
           title: getTitle(
@@ -119,17 +145,24 @@ const getMovieList = async (url) => {
             movies[el].children[0].next.children[1].next.children[0].data
           ),
           rating: null,
-          url:
+          yts_url: null,
+          torrent9_url:
             "https://www.torrent9.ac" +
             movies[el].children[0].next.children[1].next.attribs.href,
-          language: getLanguage(
-            movies[el].children[0].next.children[1].next.children[0].data
-          ),
           cover_url: null,
-          available: null,
+          categories: [],
+          languages: [
+            getLanguage(
+              movies[el].children[0].next.children[1].next.children[0].data
+            ),
+          ],
           torrents: [
             {
               source: "torrent9",
+              languages: getLanguage(
+                movies[el].children[0].next.children[1].next.children[0].data
+              ),
+
               quality: getQuality(
                 movies[el].children[0].next.children[1].next.children[0].data
               ),
@@ -144,6 +177,8 @@ const getMovieList = async (url) => {
               url:
                 "https://www.torrent9.ac" +
                 movies[el].children[0].next.children[1].next.attribs.href,
+              magnet: null,
+              torrent: null,
               size: movies[el].children[3].children[0].data.toUpperCase(),
               format: getFormat(
                 movies[el].children[0].next.children[1].next.children[0].data
@@ -198,6 +233,20 @@ const fetchAllTorrents = async () => {
   console.log(torrent9Infos.movies.length, "movies scrapped on Torrent9!");
   console.log("Starting purify list to avoid duplicates");
   await purifyAllTorrents();
+  console.log(torrent9Infos.movies.length, "movies after purify");
+  console.log("Getting more infos for", torrent9Infos.movies.length, "movies");
+  for (let i = 0; i < torrent9Infos.movies.length; i++) {
+    for (let j = 0; j < torrent9Infos.movies.length; j++) {
+      await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
+    }
+    if (i && i % 10 === 0) {
+      console.log(
+        i,
+        "movies done, waiting for 1.5s to avoid being blacklisted"
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
   console.timeEnd("torrent9Scraping");
   return torrent9Infos;
 };
