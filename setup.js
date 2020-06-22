@@ -8,7 +8,7 @@ let torrents = JSON.parse(fs.readFileSync("./scripts/finalTorrents.json"));
 let totalUser = 42;
 
 const rootPool = new Pool({
-  user: "Elise",
+  user: "klm",
   host: "localhost",
   database: "postgres",
   password: "root",
