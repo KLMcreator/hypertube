@@ -301,6 +301,7 @@ const SignUp = (props) => {
       </div>
     );
   }
+
   return (
     <div id="unloggedRoot" className={classes.paperContainer}>
       <Paper className={classes.cardSection} elevation={0}>

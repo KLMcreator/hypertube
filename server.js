@@ -181,7 +181,6 @@ app.post("/api/login", (req, res) => {
     });
 });
 
-//                  not checked, from matcha
 // Post create account user
 app.post("/api/signUp", (req, res) => {
   const upload = multer({ storage: storage }).single("file");
@@ -238,6 +237,43 @@ app.post("/api/signUp", (req, res) => {
   });
 });
 
+// Confirm user account
+app.post("/api/confirm/account", (req, res) => {
+  confirm
+    .usrAccount({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ confirm: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Get torrents search query
+app.post("/api/torrents/query", (req, res) => {
+  torrents
+    .getQueryTorrents({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Get home random torrent
+app.post("/api/torrents/random", (req, res) => {
+  torrents
+    .getRandomTorrents()
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+//                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
   users
@@ -270,18 +306,6 @@ app.post("/api/recover", (req, res) => {
           recover: { msg: "Given informations don't match any users." },
         });
       }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Confirm user account
-app.post("/api/confirm/account", (req, res) => {
-  confirm
-    .usrAccount({ req: req.body })
-    .then((response) => {
-      res.status(200).send({ confirm: response });
     })
     .catch((error) => {
       res.status(500).send(error);

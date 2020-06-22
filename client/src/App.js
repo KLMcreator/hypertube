@@ -459,7 +459,6 @@ const App = (props) => {
   const NavBar = withRouter(withStyles(appBarStyles)(AuthButton));
 
   useEffect(() => {
-    console.log("mount");
     fetch("/api/checkToken")
       .then((resLogged) => resLogged.json())
       .then((resLogged) => {
