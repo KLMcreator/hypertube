@@ -209,7 +209,7 @@ const initScraping = async () => {
   console.timeEnd("initScraping");
 };
 
-searchInTorrent("Marvel");
+searchInTorrent("advent children");
 fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
   if (err) throw err;
   console.log(chalk.green("finalTorrents.json saved!"));
