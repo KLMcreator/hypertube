@@ -19,7 +19,7 @@ body::-webkit-scrollbar {
 }
 
 #unloggedRoot {
-  background-image: url("./../img/coupleDraw.jpg");
+  /*background-image: url("./../img/coupleDraw.jpg");*/
   background-position: 50% 50%;
   background-size: cover;
   position: relative;

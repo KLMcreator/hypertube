@@ -182,42 +182,60 @@ app.post("/api/login", (req, res) => {
 });
 
 //                  not checked, from matcha
-
 // Post create account user
 app.post("/api/signUp", (req, res) => {
-  signUp
-    .userSignUp(req.body)
-    .then((response) => {
-      if (response.signup) {
-        sendMail(
-          req.body.email,
-          1,
-          "http://localhost:3000/confirm?r=" +
-            response.random +
-            "&u=" +
-            req.body.username +
-            "&e=" +
-            req.body.email
-        )
-          .then((result) => {
-            if (result) {
-              res.status(200).send({ signup: { signup: response.signup } });
-            } else {
-              res
-                .status(200)
-                .send({ signup: { msg: "Unable to send email." } });
-            }
-          })
-          .catch((error) => {
-            res.status(200).send({ signup: { msg: "Unable to send email." } });
-          });
-      } else {
-        res.status(200).send({ signup: { msg: "Unable to create account." } });
-      }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
+  const upload = multer({ storage: storage }).single("file");
+  upload(req, res, function (err) {
+    if (!req.body.file) {
+      res.status(200).send({ edit: { msg: "No files uploaded." } });
+    } else {
+      signUp
+        .userSignUp({
+          photo: req.body.file,
+          username: req.body.username,
+          firstName: req.body.firstName,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          password: req.body.password,
+          confirmedPassword: req.body.confirmedPassword,
+        })
+        .then((response) => {
+          if (response.signup) {
+            sendMail(
+              req.body.email,
+              1,
+              "http://localhost:3000/confirm?r=" +
+                response.random +
+                "&u=" +
+                req.body.username +
+                "&e=" +
+                req.body.email
+            )
+              .then((result) => {
+                if (result) {
+                  res.status(200).send({ signup: { signup: response.signup } });
+                } else {
+                  res
+                    .status(200)
+                    .send({ signup: { msg: "Unable to send email." } });
+                }
+              })
+              .catch((error) => {
+                res
+                  .status(200)
+                  .send({ signup: { msg: "Unable to send email." } });
+              });
+          } else {
+            res
+              .status(200)
+              .send({ signup: { msg: "Unable to create account." } });
+          }
+        })
+        .catch((error) => {
+          res.status(500).send(error);
+        });
+    }
+  });
 });
 
 // Recover user password
@@ -436,30 +454,6 @@ app.post("/api/settings/lastname", (req, res) => {
     .catch((error) => {
       res.status(500).send(error);
     });
-});
-
-// Add profile picture
-app.post("/api/settings/add/photo", (req, res) => {
-  const upload = multer({ storage: storage }).single("file");
-  upload(req, res, function (err) {
-    if (!req.file) {
-      res.status(200).send({ edit: { msg: "No files uploaded." } });
-    } else {
-      settings
-        .addUserPhoto({
-          filename: req.file.filename,
-          photos: req.body.photos,
-          index: req.body.index,
-          token: req.cookies._hypertubeAuth,
-        })
-        .then((response) => {
-          res.status(200).send({ edit: response });
-        })
-        .catch((error) => {
-          res.status(500).send(error);
-        });
-    }
-  });
 });
 
 // Delete user account and all the related datas
