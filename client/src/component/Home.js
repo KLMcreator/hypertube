@@ -1,9 +1,17 @@
 // react
 import React, { useState, useEffect } from "react";
 // framework
-import TextField from "@material-ui/core/TextField";
 import { withStyles } from "@material-ui/core/styles";
+import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardActionArea from "@material-ui/core/CardActionArea";
+import CardActions from "@material-ui/core/CardActions";
+import CardContent from "@material-ui/core/CardContent";
+import CardMedia from "@material-ui/core/CardMedia";
+import Typography from "@material-ui/core/Typography";
+import { json } from "body-parser";
 // files
 
 let searchWaiting = 0;
@@ -14,30 +22,88 @@ const HomeStyles = (theme) => ({
     height: "100%",
     textAlign: "center",
   },
+  torrentContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    padding: 10,
+    margin: 20,
+  },
 });
 
-const RenderTorrents = (props) => {
-  const { torrents } = props.torrents;
+const RenderTorrent = (props) => {
+  const { torrent } = props;
+  const languages = JSON.parse(torrent.languages);
+  const categories = JSON.parse(torrent.categories);
+  console.log(torrent);
+
+  const RenderLanguages = () => {
+    return (
+      <span>
+        nice
+        {/* {torrent.languages.length
+          ? torrent.languages.map((el) => console.log(el))
+          : "No informations"} */}
+      </span>
+    );
+  };
+
   return (
-    <div>
-      {torrents.map((el) => {
-        return <h1 key={el.id}>{el.title}</h1>;
-      })}
-    </div>
+    <Card style={{ flex: "0 0 30%", margin: 5 }}>
+      <CardActionArea>
+        <CardMedia
+          image={torrent.cover_url}
+          style={{ height: 300 }}
+          title={torrent.title}
+        />
+        <CardContent>
+          <Typography gutterBottom variant="h5" component="h2">
+            {torrent.title}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            Year: {torrent.production_year}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            Rating: {torrent.rating ? torrent.rating : 0} / 10
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            Languages:{" "}
+            {languages.length
+              ? languages.map((el, i) =>
+                  i < languages.length - 1 ? el + ", " : el
+                )
+              : "No informations"}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            Categories:{" "}
+            {categories.length
+              ? categories.map((el, i) =>
+                  i < categories.length - 1 ? el + ", " : el
+                )
+              : "No informations"}
+          </Typography>
+          <Typography variant="body2" color="textSecondary" component="p">
+            Available on: YTS: {torrent.yts_url ? "Yes" : "No"} | Torrent9:{" "}
+            {torrent.torrent9_url ? "Yes" : "No"}
+          </Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
   );
 };
 
 const Home = (props) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState("");
   const [torrents, setTorrents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;
 
-  const getQueryTorrents = async () => {
+  const getQueryTorrents = async (query, loadMore) => {
     fetch("/api/torrents/query", {
       method: "POST",
       body: JSON.stringify({
-        query: search,
+        query: query,
+        limit: loadMore ? loadMore : limit,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -46,6 +112,9 @@ const Home = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.torrents.torrents) {
+          if (loadMore) {
+            setLimit(limit + 15);
+          }
           setTorrents(res.torrents);
         } else if (res.torrents.msg) {
           props.auth.errorMessage(res.torrents.msg);
@@ -73,15 +142,18 @@ const Home = (props) => {
   };
 
   const handleSearchTorrent = (e) => {
-    setSearch(e.target.value);
+    let query = e.target.value;
+    setSearch(query);
     if (searchWaiting) {
       clearTimeout(searchWaiting);
     }
     searchWaiting = setTimeout(async () => {
       searchWaiting = null;
-      console.log(search);
-      if (search) {
-        await getQueryTorrents(search);
+      if (query) {
+        await getQueryTorrents(query);
+      } else {
+        getRandomTorrents();
+        setLimit(15);
       }
     }, 500);
   };
@@ -121,7 +193,25 @@ const Home = (props) => {
           type="text"
         />
       </div>
-      <RenderTorrents torrents={torrents} />
+      {torrents.torrents && torrents.torrents.length ? (
+        <div className={classes.torrentContainer}>
+          {torrents.torrents.map((el) => (
+            <RenderTorrent key={el.id} torrent={el} />
+          ))}
+        </div>
+      ) : undefined}
+      {search && torrents.torrents && torrents.torrents.length > limit - 1 ? (
+        <Button
+          variant="outlined"
+          color="secondary"
+          type="submit"
+          onClick={() => {
+            getQueryTorrents(search, limit + 15);
+          }}
+        >
+          LOAD MORE
+        </Button>
+      ) : undefined}
     </div>
   );
 };
