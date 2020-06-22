@@ -4,13 +4,9 @@ import React, { useState, useEffect } from "react";
 // framework
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
-import Select from "@material-ui/core/Select";
 import Button from "@material-ui/core/Button";
-import MenuItem from "@material-ui/core/MenuItem";
 import TextField from "@material-ui/core/TextField";
-import InputLabel from "@material-ui/core/InputLabel";
 import { withStyles } from "@material-ui/core/styles";
-import FormControl from "@material-ui/core/FormControl";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // icons
 import ErrorIcon from "@material-ui/icons/Error";
@@ -110,7 +106,6 @@ const SignUp = (props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [newFilePicture, setNewFilePicture] = useState(null);
-  const [newUploadPicture, setNewUploadPicture] = useState(null);
   const [confirmedPassword, setConfirmedPassword] = useState("");
   const [pwdMatches, setPwdMatches] = useState(true);
   const [pwdWhiteSpaces, setPwdWhiteSpaces] = useState(true);
@@ -288,7 +283,6 @@ const SignUp = (props) => {
   const handleUploadPic = (e) => {
     if (e.target.files) {
       setNewFilePicture(e.target.files[0].name);
-      setNewUploadPicture(e.target.files[0]);
     }
   };
 

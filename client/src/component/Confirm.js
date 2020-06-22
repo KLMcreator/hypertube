@@ -20,14 +20,6 @@ const Confirm = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;
 
-  useEffect(() => {
-    verifyAccount();
-    setIsLoading(false);
-    return () => {
-      setIsLoading(true);
-    };
-  }, []);
-
   // r = random, u = user, e = email
   const verifyAccount = () => {
     const params = new URLSearchParams(props.props.location.search);
@@ -59,6 +51,15 @@ const Confirm = (props) => {
       props.props.history.push("/");
     }
   };
+
+  useEffect(() => {
+    verifyAccount();
+    setIsLoading(false);
+    return () => {
+      setIsLoading(true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isLoading) {
     return (
