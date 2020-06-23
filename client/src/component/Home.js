@@ -5,12 +5,9 @@ import { withStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
-import CardActionArea from "@material-ui/core/CardActionArea";
-import CardContent from "@material-ui/core/CardContent";
-import CardMedia from "@material-ui/core/CardMedia";
-import Typography from "@material-ui/core/Typography";
-// files
+// icons
+import StarRateIcon from "@material-ui/icons/StarRate";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 let searchWaiting = 0;
 
@@ -20,6 +17,25 @@ const HomeStyles = (theme) => ({
     height: "100%",
     textAlign: "center",
   },
+  loading: {
+    display: "flex",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingLogo: {
+    color: "#9A1300",
+  },
+});
+
+const SearchBarStyles = (theme) => ({
+  container: {
+    borderWidth: 1,
+    fontSize: 13,
+  },
+});
+
+const TorrentContainerStyles = (theme) => ({
   torrentContainer: {
     justifyContent: "center",
     display: "flex",
@@ -31,77 +47,237 @@ const HomeStyles = (theme) => ({
 
 const TorrentStyles = (theme) => ({
   torrent: {
+    position: "relative",
     flex: "0 0 16%",
     margin: 5,
     [theme.breakpoints.down("md")]: {
-      flex: "0 0 30%",
-    },
-    [theme.breakpoints.down("sm")]: {
-      flex: "0 0 45%",
+      flex: "0 0 31%",
     },
     [theme.breakpoints.down("xs")]: {
-      flex: "0 0 100%",
+      flex: "0 0 90%",
     },
+  },
+  image: {
+    borderRadius: 6,
+    width: "100%",
   },
 });
 
 const RenderTorrent = (props) => {
+  const [hover, setHover] = useState(false);
   const { torrent, classes } = props;
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
-  console.log(torrent);
 
   return (
-    <Card className={classes.torrent}>
-      <CardActionArea>
-        <CardMedia
-          image={torrent.cover_url}
-          style={{ height: 300 }}
-          title={torrent.title}
-        />
-        <CardContent>
-          <Typography gutterBottom variant="h5" component="h2">
-            {torrent.title}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Year: {torrent.production_year}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Rating: {torrent.rating ? torrent.rating : 0} / 10
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Languages:{" "}
-            {languages.length
-              ? languages.map((el, i) =>
-                  i < languages.length - 1 ? el + ", " : el
-                )
-              : "No informations"}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Categories:{" "}
-            {categories.length
-              ? categories.map((el, i) =>
-                  i < categories.length - 1 ? el + ", " : el
-                )
-              : "No informations"}
-          </Typography>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Available on: YTS: {torrent.yts_url ? "Yes" : "No"} | Torrent9:{" "}
-            {torrent.torrent9_url ? "Yes" : "No"}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-    </Card>
+    <div
+      className={classes.torrent}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <img
+        className={classes.image}
+        src={torrent.cover_url}
+        alt={torrent.title}
+        onError={(e) => {
+          e.target.onerror = null;
+          e.target.src = "./src/assets/img/nophotos.png";
+        }}
+      ></img>
+      {hover ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(26, 26, 26, 0.6)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 100,
+              left: 3,
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            <div style={{ display: "flex", marginTop: 10 }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: "center",
+                  marginRight: 2,
+                  fontSize: 15,
+                }}
+              >
+                Language(s):
+              </div>
+              <div style={{ alignSelf: "center", fontSize: 13 }}>
+                {languages.length
+                  ? languages.map((el, i) =>
+                      i < languages.length - 1 ? el + ", " : el
+                    )
+                  : "No informations"}
+              </div>
+            </div>
+            <div style={{ display: "flex", marginTop: 10 }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: "center",
+                  marginRight: 2,
+                  fontSize: 15,
+                }}
+              >
+                Categorie(s):
+              </div>
+              <div style={{ alignSelf: "center", fontSize: 13 }}>
+                {categories.length
+                  ? categories.map((el, i) =>
+                      i < categories.length - 1 ? el + ", " : el
+                    )
+                  : "No informations"}
+              </div>
+            </div>
+            <div style={{ display: "flex", marginTop: 10 }}>
+              <div
+                style={{
+                  fontWeight: "bold",
+                  alignSelf: "center",
+                  marginRight: 2,
+                  fontSize: 15,
+                }}
+              >
+                Available:
+              </div>
+              <div style={{ alignSelf: "center", fontSize: 13 }}>
+                YTS{" "}
+                <FiberManualRecordIcon
+                  style={{
+                    fontSize: 11,
+                    color: torrent.yts_url ? "#0CCA4A" : "#E63946",
+                    verticalAlign: "middle",
+                  }}
+                ></FiberManualRecordIcon>{" "}
+                | Torrent9
+                <FiberManualRecordIcon
+                  style={{
+                    fontSize: 11,
+                    color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
+                    verticalAlign: "middle",
+                  }}
+                ></FiberManualRecordIcon>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : undefined}
+      <div>
+        <div
+          style={{
+            fontWeight: "bold",
+            textAlign: "left",
+            marginRight: 2,
+            fontSize: 14,
+            color: "#EFF1F3",
+          }}
+        >
+          {torrent.title}
+        </div>
+        <div style={{ display: "flex", marginTop: 2 }}>
+          <div
+            style={{
+              flex: 1,
+              textAlign: "left",
+              marginRight: 2,
+              fontSize: 13,
+              color: "#D0D0D0",
+              alignSelf: "center",
+            }}
+          >
+            {torrent.production_year}
+          </div>
+          {torrent.rating ? (
+            <div
+              style={{
+                flex: 1,
+                textAlign: "right",
+                marginRight: 2,
+                fontSize: 13,
+                color: "#D0D0D0",
+                alignSelf: "center",
+              }}
+            >
+              {torrent.rating}
+              <StarRateIcon
+                style={{
+                  fontSize: 25,
+                  color: "#FBBA72",
+                  verticalAlign: "middle",
+                }}
+              ></StarRateIcon>
+            </div>
+          ) : undefined}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RenderTorrents = (props) => {
+  const { torrents, classes } = props;
+  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
+
+  return (
+    <div className={classes.torrentContainer}>
+      {torrents.map((el) => (
+        <Torrent key={el.id} torrent={el} />
+      ))}
+    </div>
+  );
+};
+
+const RenderSearchBar = (props) => {
+  const [search, setSearch] = useState("");
+  const { classes } = props;
+
+  const handleSearchTorrent = (e) => {
+    props.handleSearchTorrent(e.target.value);
+    setSearch(e.target.value);
+  };
+
+  return (
+    <div className={classes.container}>
+      <TextField
+        style={{ width: "50%" }}
+        inputProps={{
+          style: { borderBottom: "1px solid #fff" },
+        }}
+        InputLabelProps={{
+          style: { color: "#fff" },
+        }}
+        required
+        id="search"
+        label="Search for a torrent..."
+        value={search}
+        onChange={handleSearchTorrent}
+        type="text"
+      />
+    </div>
   );
 };
 
 const Home = (props) => {
   const [limit, setLimit] = useState(15);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState([]);
   const [torrents, setTorrents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
   const { classes } = props;
+  const Torrents = withStyles(TorrentContainerStyles)(RenderTorrents);
+  const SearchBar = withStyles(SearchBarStyles)(RenderSearchBar);
 
   const getQueryTorrents = async (query, loadMore) => {
     fetch("/api/torrents/query", {
@@ -146,9 +322,7 @@ const Home = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  const handleSearchTorrent = (e) => {
-    let query = e.target.value;
-    setSearch(query);
+  const handleSearchTorrent = (query) => {
     if (searchWaiting) {
       clearTimeout(searchWaiting);
     }
@@ -156,24 +330,13 @@ const Home = (props) => {
       searchWaiting = null;
       if (query) {
         await getQueryTorrents(query);
+        setSearch(query);
       } else {
+        setSearch("");
         getRandomTorrents();
         setLimit(15);
       }
     }, 500);
-  };
-
-  const RenderTorrents = () => {
-    if (torrents.torrents && torrents.torrents.length) {
-      return (
-        <div className={classes.torrentContainer}>
-          {torrents.torrents.map((el) => (
-            <Torrent key={el.id} torrent={el} />
-          ))}
-        </div>
-      );
-    }
-    return <></>;
   };
 
   const RenderLoadMore = () => {
@@ -212,24 +375,18 @@ const Home = (props) => {
 
   return (
     <div className={classes.root}>
-      <div style={{ borderWidth: 1, fontSize: 13 }}>
-        <TextField
-          style={{ width: "50%" }}
-          inputProps={{
-            style: { borderBottom: "1px solid #fff" },
-          }}
-          InputLabelProps={{
-            style: { color: "#fff" },
-          }}
-          required
-          id="search"
-          label="Search for a torrent..."
-          value={search}
-          onChange={handleSearchTorrent}
-          type="text"
-        />
-      </div>
-      <RenderTorrents />
+      <SearchBar search={search} handleSearchTorrent={handleSearchTorrent} />
+      {torrents.torrents.length ? (
+        <Torrents torrents={torrents.torrents} />
+      ) : (
+        <div className={classes.loading}>
+          <div style={{ color: "#9A1300", fontSize: 30 }}>:(</div>
+          <div style={{ fontSize: 15, color: "#D0D0D0" }}>
+            Nothing match this query
+          </div>
+          <div style={{ color: "#9A1300", fontSize: 30 }}>:(</div>
+        </div>
+      )}
       <RenderLoadMore />
     </div>
   );

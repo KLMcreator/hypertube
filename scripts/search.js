@@ -209,7 +209,7 @@ const initScraping = async () => {
   console.timeEnd("initScraping");
 };
 
-searchInTorrent("advent children");
+searchInTorrent("dofus");
 fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
   if (err) throw err;
   console.log(chalk.green("finalTorrents.json saved!"));
