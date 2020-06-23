@@ -185,12 +185,12 @@ app.post("/api/login", (req, res) => {
 app.post("/api/signUp", (req, res) => {
   const upload = multer({ storage: storage }).single("file");
   upload(req, res, function (err) {
-    if (!req.body.file) {
+    if (!req.file) {
       res.status(200).send({ edit: { msg: "No files uploaded." } });
     } else {
       signUp
         .userSignUp({
-          photo: req.body.file,
+          photo: req.file.filename,
           username: req.body.username,
           firstName: req.body.firstName,
           lastName: req.body.lastName,

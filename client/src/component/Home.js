@@ -7,11 +7,9 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import CardActionArea from "@material-ui/core/CardActionArea";
-import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import CardMedia from "@material-ui/core/CardMedia";
 import Typography from "@material-ui/core/Typography";
-import { json } from "body-parser";
 // files
 
 let searchWaiting = 0;
@@ -23,6 +21,7 @@ const HomeStyles = (theme) => ({
     textAlign: "center",
   },
   torrentContainer: {
+    justifyContent: "center",
     display: "flex",
     flexWrap: "wrap",
     padding: 10,
@@ -30,25 +29,30 @@ const HomeStyles = (theme) => ({
   },
 });
 
+const TorrentStyles = (theme) => ({
+  torrent: {
+    flex: "0 0 16%",
+    margin: 5,
+    [theme.breakpoints.down("md")]: {
+      flex: "0 0 30%",
+    },
+    [theme.breakpoints.down("sm")]: {
+      flex: "0 0 45%",
+    },
+    [theme.breakpoints.down("xs")]: {
+      flex: "0 0 100%",
+    },
+  },
+});
+
 const RenderTorrent = (props) => {
-  const { torrent } = props;
+  const { torrent, classes } = props;
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
   console.log(torrent);
 
-  const RenderLanguages = () => {
-    return (
-      <span>
-        nice
-        {/* {torrent.languages.length
-          ? torrent.languages.map((el) => console.log(el))
-          : "No informations"} */}
-      </span>
-    );
-  };
-
   return (
-    <Card style={{ flex: "0 0 30%", margin: 5 }}>
+    <Card className={classes.torrent}>
       <CardActionArea>
         <CardMedia
           image={torrent.cover_url}
@@ -96,6 +100,7 @@ const Home = (props) => {
   const [search, setSearch] = useState("");
   const [torrents, setTorrents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
   const { classes } = props;
 
   const getQueryTorrents = async (query, loadMore) => {
@@ -158,6 +163,37 @@ const Home = (props) => {
     }, 500);
   };
 
+  const RenderTorrents = () => {
+    if (torrents.torrents && torrents.torrents.length) {
+      return (
+        <div className={classes.torrentContainer}>
+          {torrents.torrents.map((el) => (
+            <Torrent key={el.id} torrent={el} />
+          ))}
+        </div>
+      );
+    }
+    return <></>;
+  };
+
+  const RenderLoadMore = () => {
+    if (search && torrents.torrents && torrents.torrents.length > limit - 1) {
+      return (
+        <Button
+          variant="outlined"
+          color="secondary"
+          type="submit"
+          onClick={() => {
+            getQueryTorrents(search, limit + 15);
+          }}
+        >
+          LOAD MORE
+        </Button>
+      );
+    }
+    return <></>;
+  };
+
   useEffect(() => {
     getRandomTorrents();
     return () => {
@@ -193,25 +229,8 @@ const Home = (props) => {
           type="text"
         />
       </div>
-      {torrents.torrents && torrents.torrents.length ? (
-        <div className={classes.torrentContainer}>
-          {torrents.torrents.map((el) => (
-            <RenderTorrent key={el.id} torrent={el} />
-          ))}
-        </div>
-      ) : undefined}
-      {search && torrents.torrents && torrents.torrents.length > limit - 1 ? (
-        <Button
-          variant="outlined"
-          color="secondary"
-          type="submit"
-          onClick={() => {
-            getQueryTorrents(search, limit + 15);
-          }}
-        >
-          LOAD MORE
-        </Button>
-      ) : undefined}
+      <RenderTorrents />
+      <RenderLoadMore />
     </div>
   );
 };

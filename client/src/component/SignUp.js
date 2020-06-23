@@ -282,7 +282,7 @@ const SignUp = (props) => {
 
   const handleUploadPic = (e) => {
     if (e.target.files) {
-      setNewFilePicture(e.target.files[0].name);
+      setNewFilePicture(e.target.files[0]);
     }
   };
 
