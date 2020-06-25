@@ -125,12 +125,20 @@ const getMoreInfos = async (url, i, j) => {
       let cover = $("div.movie-detail > div > div > div > img");
       let buttons = $("div.download-btn > div");
       let categories = $("ul > li:contains('Sous-Catégories')");
+      let summ = $("div.movie-information > p");
       torrent9Infos.movies[
         i
       ].categories = categories[0].parent.children[5].children[0].attribs.href
         .replace("/torrents/", "")
         .split("-");
+      torrent9Infos.movies[i].summary = summ[1].children[0]
+        ? summ[1].children[0].data
+        : summ[0].children[0]
+        ? summ[0].children[0].data
+        : null;
       torrent9Infos.movies[i].cover_url =
+        "https://www.torrent9.ac" + cover[0].attribs.src;
+      torrent9Infos.movies[i].large_image =
         "https://www.torrent9.ac" + cover[0].attribs.src;
       torrent9Infos.movies[i].torrents[j].magnet =
         buttons[1].children[0].attribs.href;
@@ -164,6 +172,10 @@ const getMovieList = async (url) => {
             "https://www.torrent9.ac" +
             movies[el].children[0].next.children[1].next.attribs.href,
           cover_url: null,
+          large_image: null,
+          summary: null,
+          imdb_code: null,
+          yt_trailer: null,
           categories: [],
           languages: [
             getLanguage(
@@ -291,12 +303,12 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 10 === 0) {
+    if (i && i % 13 === 0) {
       console.log(
         i,
         "movies done on",
         chalk.green("Torrent9,"),
-        "waiting for 2s to avoid being blacklisted"
+        "waiting for 1.5s to avoid being blacklisted"
       );
       await new Promise((resolve) => setTimeout(resolve, 1500));
     }

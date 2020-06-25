@@ -5,9 +5,9 @@ const getYts = require("./getYTS");
 const getTorrent9 = require("./getTorrent9");
 
 const fs = require("fs");
-let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
-let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
-let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+// let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
+// let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
+// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
 
@@ -51,10 +51,6 @@ const purifyAllTorrents = async (t9, yts) => {
     let j = i + 1;
     while (j < finalTorrents.movies.length) {
       if (finalTorrents.movies[i].title === finalTorrents.movies[j].title) {
-        console.log(
-          finalTorrents.movies[i].title,
-          finalTorrents.movies[j].title
-        );
         let infos = {};
         if (finalTorrents.movies[j].yts_id !== null) {
           infos = {
@@ -66,6 +62,12 @@ const purifyAllTorrents = async (t9, yts) => {
             yts_url: finalTorrents.movies[j].yts_url,
             torrent9_url: finalTorrents.movies[i].torrent9_url,
             cover_url: finalTorrents.movies[j].cover_url,
+            large_image: finalTorrents.movies[j].cover_url.large_cover_image,
+            summary: finalTorrents.movies[j].cover_url.summary,
+            imdb_code: finalTorrents.movies[j].cover_url.imdb_code,
+            yt_trailer:
+              "https://www.youtube.com/watch?v=" +
+              finalTorrents.movies[j].cover_url.yt_trailer_code,
             categories: [],
             languages: [],
             torrents: [],
@@ -80,6 +82,12 @@ const purifyAllTorrents = async (t9, yts) => {
             yts_url: finalTorrents.movies[i].yts_url,
             torrent9_url: finalTorrents.movies[j].torrent9_url,
             cover_url: finalTorrents.movies[i].cover_url,
+            large_image: finalTorrents.movies[i].cover_url.large_cover_image,
+            summary: finalTorrents.movies[i].cover_url.summary,
+            imdb_code: finalTorrents.movies[i].cover_url.imdb_code,
+            yt_trailer:
+              "https://www.youtube.com/watch?v=" +
+              finalTorrents.movies[i].cover_url.yt_trailer_code,
             categories: [],
             languages: [],
             torrents: [],
@@ -209,8 +217,10 @@ const initScraping = async () => {
   console.timeEnd("initScraping");
 };
 
-searchInTorrent("dofus");
-fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-  if (err) throw err;
-  console.log(chalk.green("finalTorrents.json saved!"));
-});
+// searchInTorrent("dofus");
+// fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+//   if (err) throw err;
+//   console.log(chalk.green("finalTorrents.json saved!"));
+// });
+
+initScraping();

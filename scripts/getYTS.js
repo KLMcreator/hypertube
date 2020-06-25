@@ -59,6 +59,12 @@ const getMovieList = async (page, url) => {
             yts_url: el.url,
             torrent9_url: null,
             cover_url: el.medium_cover_image,
+            large_image: el.large_cover_image,
+            summary: el.summary ? el.summary : null,
+            imdb_code: el.imdb_code ? el.imdb_code : null,
+            yt_trailer: el.yt_trailer_code
+              ? "https://www.youtube.com/watch?v=" + el.yt_trailer_code
+              : null,
             categories: el.genres,
             languages: [el.language],
             torrents: [],

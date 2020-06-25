@@ -1,5 +1,6 @@
 // react
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useHistory } from "react-router-dom";
 // framework
 import { withStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
@@ -33,6 +34,9 @@ const SearchBarStyles = (theme) => ({
     borderWidth: 1,
     fontSize: 13,
   },
+  halfWidth: {
+    width: "50%",
+  },
 });
 
 const TorrentContainerStyles = (theme) => ({
@@ -57,6 +61,59 @@ const TorrentStyles = (theme) => ({
       flex: "0 0 90%",
     },
   },
+  torrentTitle: {
+    fontWeight: "bold",
+    textAlign: "left",
+    marginRight: 2,
+    fontSize: 14,
+    color: "#EFF1F3",
+  },
+  torrentInfoContainer: {
+    display: "flex",
+    marginTop: 2,
+  },
+  torrentYear: {
+    flex: 1,
+    textAlign: "left",
+    marginRight: 2,
+    fontSize: 13,
+    color: "#D0D0D0",
+    alignSelf: "center",
+  },
+  torrentRating: {
+    flex: 1,
+    textAlign: "right",
+    marginRight: 2,
+    fontSize: 13,
+    color: "#D0D0D0",
+    alignSelf: "center",
+  },
+  hover: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(26, 26, 26, 0.6)",
+    cursor: "pointer",
+  },
+  hoverContent: {
+    position: "absolute",
+    top: 100,
+    left: 3,
+    width: "100%",
+    height: "100%",
+  },
+  hoverContentParent: {
+    display: "flex",
+    marginTop: 10,
+  },
+  hoverContentTitle: {
+    fontWeight: "bold",
+    alignSelf: "center",
+    marginRight: 2,
+    fontSize: 15,
+  },
   image: {
     borderRadius: 6,
     width: "100%",
@@ -66,6 +123,7 @@ const TorrentStyles = (theme) => ({
 const RenderTorrent = (props) => {
   const [hover, setHover] = useState(false);
   const { torrent, classes } = props;
+  const history = useHistory();
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
 
@@ -74,10 +132,17 @@ const RenderTorrent = (props) => {
       className={classes.torrent}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={() =>
+        history.push({
+          pathname: "/Torrent",
+          state: { torrent: torrent },
+        })
+      }
     >
       <img
         className={classes.image}
-        src={torrent.cover_url}
+        src="./src/assets/img/nophotos.png"
+        // src={torrent.cover_url}
         alt={torrent.title}
         onError={(e) => {
           e.target.onerror = null;
@@ -85,36 +150,10 @@ const RenderTorrent = (props) => {
         }}
       ></img>
       {hover ? (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(26, 26, 26, 0.6)",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 100,
-              left: 3,
-              width: "100%",
-              height: "100%",
-            }}
-          >
-            <div style={{ display: "flex", marginTop: 10 }}>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  alignSelf: "center",
-                  marginRight: 2,
-                  fontSize: 15,
-                }}
-              >
-                Language(s):
-              </div>
+        <div className={classes.hover}>
+          <div className={classes.hoverContent}>
+            <div className={classes.hoverContentParent}>
+              <div className={classes.hoverContentTitle}>Language(s):</div>
               <div style={{ alignSelf: "center", fontSize: 13 }}>
                 {languages.length
                   ? languages.map((el, i) =>
@@ -123,17 +162,8 @@ const RenderTorrent = (props) => {
                   : "No informations"}
               </div>
             </div>
-            <div style={{ display: "flex", marginTop: 10 }}>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  alignSelf: "center",
-                  marginRight: 2,
-                  fontSize: 15,
-                }}
-              >
-                Categorie(s):
-              </div>
+            <div className={classes.hoverContentParent}>
+              <div className={classes.hoverContentTitle}>Categorie(s):</div>
               <div style={{ alignSelf: "center", fontSize: 13 }}>
                 {categories.length
                   ? categories.map((el, i) =>
@@ -142,17 +172,8 @@ const RenderTorrent = (props) => {
                   : "No informations"}
               </div>
             </div>
-            <div style={{ display: "flex", marginTop: 10 }}>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  alignSelf: "center",
-                  marginRight: 2,
-                  fontSize: 15,
-                }}
-              >
-                Available:
-              </div>
+            <div className={classes.hoverContentParent}>
+              <div className={classes.hoverContentTitle}>Available:</div>
               <div style={{ alignSelf: "center", fontSize: 13 }}>
                 YTS{" "}
                 <FiberManualRecordIcon
@@ -176,41 +197,11 @@ const RenderTorrent = (props) => {
         </div>
       ) : undefined}
       <div>
-        <div
-          style={{
-            fontWeight: "bold",
-            textAlign: "left",
-            marginRight: 2,
-            fontSize: 14,
-            color: "#EFF1F3",
-          }}
-        >
-          {torrent.title}
-        </div>
-        <div style={{ display: "flex", marginTop: 2 }}>
-          <div
-            style={{
-              flex: 1,
-              textAlign: "left",
-              marginRight: 2,
-              fontSize: 13,
-              color: "#D0D0D0",
-              alignSelf: "center",
-            }}
-          >
-            {torrent.production_year}
-          </div>
+        <div className={classes.torrentTitle}>{torrent.title}</div>
+        <div className={classes.torrentInfoContainer}>
+          <div className={classes.torrentYear}>{torrent.production_year}</div>
           {torrent.rating ? (
-            <div
-              style={{
-                flex: 1,
-                textAlign: "right",
-                marginRight: 2,
-                fontSize: 13,
-                color: "#D0D0D0",
-                alignSelf: "center",
-              }}
-            >
+            <div className={classes.torrentRating}>
               {torrent.rating}
               <StarRateIcon
                 style={{
@@ -252,7 +243,7 @@ const RenderSearchBar = (props) => {
   return (
     <div className={classes.container}>
       <TextField
-        style={{ width: "50%" }}
+        className={classes.halfWidth}
         inputProps={{
           style: { borderBottom: "1px solid #fff" },
         }}
@@ -271,6 +262,7 @@ const RenderSearchBar = (props) => {
 };
 
 const Home = (props) => {
+  const ref = useRef(false);
   const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState([]);
   const [torrents, setTorrents] = useState([]);
@@ -307,16 +299,20 @@ const Home = (props) => {
   };
 
   const getRandomTorrents = () => {
-    fetch("/api/torrents/random", { method: "POST" })
+    fetch("/api/torrents/random", {
+      method: "POST",
+    })
       .then((res) => res.json())
       .then((res) => {
-        if (res.torrents.torrents) {
-          setTorrents(res.torrents);
-          setIsLoading(false);
-        } else if (res.torrents.msg) {
-          props.auth.errorMessage(res.torrents.msg);
-        } else {
-          props.auth.errorMessage("Error while fetching database.");
+        if (ref.current) {
+          if (res.torrents.torrents) {
+            setTorrents(res.torrents);
+            setIsLoading(false);
+          } else if (res.torrents.msg) {
+            props.auth.errorMessage(res.torrents.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
         }
       })
       .catch((err) => props.auth.errorMessage(err));
@@ -358,8 +354,10 @@ const Home = (props) => {
   };
 
   useEffect(() => {
+    ref.current = true;
     getRandomTorrents();
     return () => {
+      ref.current = false;
       setIsLoading(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

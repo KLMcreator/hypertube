@@ -34,6 +34,7 @@ import User from "./component/User";
 import Home from "./component/Home";
 import SignUp from "./component/SignUp";
 import SignIn from "./component/SignIn";
+import Torrent from "./component/Torrent";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
@@ -229,6 +230,10 @@ const PublicRoute = ({ component: Component, ...rest }) => (
   />
 );
 
+const HomeRoute = ({ component: Component, ...rest }) => (
+  <Route {...rest} render={(props) => <Component {...props} />} />
+);
+
 const AuthButton = (props) => {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const { classes, pathname } = props;
@@ -329,6 +334,17 @@ const AuthButton = (props) => {
               className={classes.linkMobile}
               component={Link}
               onClick={() => setMobileMoreAnchorEl(null)}
+              to="/"
+            >
+              <IconButton>
+                <HomeIcon />
+              </IconButton>
+              <Typography variant="inherit">HOME</Typography>
+            </MenuItem>
+            <MenuItem
+              className={classes.linkMobile}
+              component={Link}
+              onClick={() => setMobileMoreAnchorEl(null)}
               to="/SignUp"
             >
               <IconButton>
@@ -391,6 +407,12 @@ const AuthButton = (props) => {
           </div>
         ) : (
           <div>
+            <Link
+              className={pathname === "/" ? classes.linkActive : classes.link}
+              to={"/"}
+            >
+              HOME
+            </Link>
             <Link
               className={
                 pathname === "/SignUp" ? classes.linkActive : classes.link
@@ -480,7 +502,7 @@ const App = (props) => {
         <ToastContainer />
         <NavBar></NavBar>
         <Switch>
-          <PrivateRoute
+          <HomeRoute
             exact
             path="/"
             component={(props) => <Home props={props} auth={auth} />}
@@ -494,6 +516,11 @@ const App = (props) => {
             exact
             path="/User"
             component={(props) => <User props={props} auth={auth} />}
+          />
+          <HomeRoute
+            exact
+            path="/Torrent"
+            component={(props) => <Torrent props={props} auth={auth} />}
           />
           <PublicRoute
             exact
