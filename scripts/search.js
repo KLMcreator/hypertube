@@ -5,9 +5,9 @@ const getYts = require("./getYTS");
 const getTorrent9 = require("./getTorrent9");
 
 const fs = require("fs");
-// let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
-// let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
-// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
+let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
+let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
 
@@ -62,12 +62,10 @@ const purifyAllTorrents = async (t9, yts) => {
             yts_url: finalTorrents.movies[j].yts_url,
             torrent9_url: finalTorrents.movies[i].torrent9_url,
             cover_url: finalTorrents.movies[j].cover_url,
-            large_image: finalTorrents.movies[j].cover_url.large_cover_image,
-            summary: finalTorrents.movies[j].cover_url.summary,
-            imdb_code: finalTorrents.movies[j].cover_url.imdb_code,
-            yt_trailer:
-              "https://www.youtube.com/watch?v=" +
-              finalTorrents.movies[j].cover_url.yt_trailer_code,
+            large_image: finalTorrents.movies[j].large_cover_image,
+            summary: finalTorrents.movies[j].summary,
+            imdb_code: finalTorrents.movies[j].imdb_code,
+            yt_trailer: finalTorrents.movies[j].yt_trailer_code,
             categories: [],
             languages: [],
             torrents: [],
@@ -82,12 +80,10 @@ const purifyAllTorrents = async (t9, yts) => {
             yts_url: finalTorrents.movies[i].yts_url,
             torrent9_url: finalTorrents.movies[j].torrent9_url,
             cover_url: finalTorrents.movies[i].cover_url,
-            large_image: finalTorrents.movies[i].cover_url.large_cover_image,
-            summary: finalTorrents.movies[i].cover_url.summary,
-            imdb_code: finalTorrents.movies[i].cover_url.imdb_code,
-            yt_trailer:
-              "https://www.youtube.com/watch?v=" +
-              finalTorrents.movies[i].cover_url.yt_trailer_code,
+            large_image: finalTorrents.movies[j].large_cover_image,
+            summary: finalTorrents.movies[j].summary,
+            imdb_code: finalTorrents.movies[j].imdb_code,
+            yt_trailer: finalTorrents.movies[j].yt_trailer_code,
             categories: [],
             languages: [],
             torrents: [],
@@ -149,57 +145,57 @@ const searchInTorrent = async (q) => {
 const initScraping = async () => {
   console.time("initScraping");
   console.log("Starting new scrap at", chalk.yellow(moment().format()));
-  let ytsInfos = await getYts.fetchAllTorrents();
-  let torrent9Infos = await getTorrent9.fetchAllTorrents();
-  console.log(
-    ytsInfos.movies.length,
-    "movies total found on",
-    chalk.green("YTS")
-  );
-  console.log(
-    torrent9Infos.movies.length,
-    "movies total found on",
-    chalk.green("Torrent9")
-  );
-  console.log("Re-purifying just to be sure there's no duplicates");
-  ytsInfos = await checkDuplicates(ytsInfos);
-  torrent9Infos = await checkDuplicates(torrent9Infos);
-  console.log(
-    ytsInfos.movies.length,
-    "movies found on",
-    chalk.green("YTS"),
-    "after purify"
-  );
-  console.log(
-    torrent9Infos.movies.length,
-    "movies found on",
-    chalk.green("Torrent9"),
-    "after purify"
-  );
-  console.log(
-    "Saving",
-    chalk.green("ytsInfos"),
-    "to",
-    chalk.green("ytsTorrents.json")
-  );
-  fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
-    if (err) throw err;
-    console.log(chalk.green("ytsTorrents.json saved!"));
-  });
-  console.log(
-    "Saving",
-    chalk.green("torrent9Infos"),
-    "to",
-    chalk.green("torrent9Torrents.json")
-  );
-  fs.writeFile(
-    "torrent9Torrents.json",
-    JSON.stringify(torrent9Infos),
-    (err) => {
-      if (err) throw err;
-      console.log(chalk.green("torrent9Torrents.json saved!"));
-    }
-  );
+  //   let ytsInfos = await getYts.fetchAllTorrents();
+  //   let torrent9Infos = await getTorrent9.fetchAllTorrents();
+  //   console.log(
+  //     ytsInfos.movies.length,
+  //     "movies total found on",
+  //     chalk.green("YTS")
+  //   );
+  //   console.log(
+  //     torrent9Infos.movies.length,
+  //     "movies total found on",
+  //     chalk.green("Torrent9")
+  //   );
+  //   console.log("Re-purifying just to be sure there's no duplicates");
+  //   ytsInfos = await checkDuplicates(ytsInfos);
+  //   torrent9Infos = await checkDuplicates(torrent9Infos);
+  //   console.log(
+  //     ytsInfos.movies.length,
+  //     "movies found on",
+  //     chalk.green("YTS"),
+  //     "after purify"
+  //   );
+  //   console.log(
+  //     torrent9Infos.movies.length,
+  //     "movies found on",
+  //     chalk.green("Torrent9"),
+  //     "after purify"
+  //   );
+  //   console.log(
+  //     "Saving",
+  //     chalk.green("ytsInfos"),
+  //     "to",
+  //     chalk.green("ytsTorrents.json")
+  //   );
+  //   fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
+  //     if (err) throw err;
+  //     console.log(chalk.green("ytsTorrents.json saved!"));
+  //   });
+  //   console.log(
+  //     "Saving",
+  //     chalk.green("torrent9Infos"),
+  //     "to",
+  //     chalk.green("torrent9Torrents.json")
+  //   );
+  //   fs.writeFile(
+  //     "torrent9Torrents.json",
+  //     JSON.stringify(torrent9Infos),
+  //     (err) => {
+  //       if (err) throw err;
+  //       console.log(chalk.green("torrent9Torrents.json saved!"));
+  //     }
+  //   );
   console.log(
     "Creating one big final list for every movies before storing it into the database"
   );
@@ -217,10 +213,10 @@ const initScraping = async () => {
   console.timeEnd("initScraping");
 };
 
-// searchInTorrent("dofus");
-// fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-//   if (err) throw err;
-//   console.log(chalk.green("finalTorrents.json saved!"));
-// });
+searchInTorrent("da 5 bloods");
+fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+  if (err) throw err;
+  console.log(chalk.green("finalTorrents.json saved!"));
+});
 
-initScraping();
+// initScraping();
