@@ -264,7 +264,7 @@ const RenderSearchBar = (props) => {
 const Home = (props) => {
   const ref = useRef(false);
   const [limit, setLimit] = useState(15);
-  const [search, setSearch] = useState([]);
+  const [search, setSearch] = useState("");
   const [torrents, setTorrents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;

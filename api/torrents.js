@@ -18,6 +18,8 @@ const getQueryTorrents = (request, response) => {
           }
         }
       );
+    } else {
+      resolve({ msg: "Missing arguments" });
     }
   });
 };

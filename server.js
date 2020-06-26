@@ -273,6 +273,30 @@ app.post("/api/torrents/random", (req, res) => {
     });
 });
 
+// Get comments by torrent id
+app.post("/api/comments/torrent", (req, res) => {
+  comments
+    .getComments({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ comments: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Send comments to torrent check if logged before
+app.post("/api/comments/send", (req, res) => {
+  comments
+    .sendComment({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ comments: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 //                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
