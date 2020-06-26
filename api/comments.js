@@ -59,4 +59,39 @@ const sendComment = (request, response) => {
   });
 };
 
-module.exports = { getComments, sendComment };
+const deleteComment = (request, response) => {
+  const { req, token } = request;
+  return new Promise(function (resolve, reject) {
+    if (req.video_id && req.comment && token) {
+      req.comment = req.comment.trim();
+      if (req.comment && req.comment.length < 300) {
+        pool.pool.query(
+          "INSERT INTO comments (user_id, video_id, created_at, comment) VALUES ((SELECT id FROM users WHERE connected_token = $1), $2, (SELECT NOW()), $3);",
+          [token, req.video_id, req.comment],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            }
+            if (!results.rowCount) {
+              resolve({
+                msg: "Unable to send your comment.",
+              });
+            } else {
+              resolve({ comments: true });
+            }
+          }
+        );
+      } else {
+        if (req.comment && req.comment.length > 300) {
+          resolve({ msg: "You dirty boy, it's 300 char max, I SAID." });
+        } else {
+          resolve({ msg: "Unable to send empty comments." });
+        }
+      }
+    } else {
+      resolve({ msg: "Unable to send your comment." });
+    }
+  });
+};
+
+module.exports = { getComments, sendComment, deleteComment };

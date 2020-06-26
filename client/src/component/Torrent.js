@@ -27,6 +27,149 @@ const TorrentStyles = (theme) => ({
   loadingLogo: {
     color: "#9A1300",
   },
+  textAlignCenter: {
+    textAlign: "center",
+  },
+  torrentInfoContainer: {
+    display: "flex",
+  },
+  torrentImageContainer: {
+    flex: 2,
+    padding: 20,
+  },
+  torrentImage: {
+    width: "100%",
+    borderRadius: 6,
+  },
+  torrentDetailsContainer: {
+    flex: 4,
+    padding: 20,
+  },
+  torrentTitleContainer: {
+    flex: 5,
+  },
+  torrentYear: {
+    fontSize: 24,
+    color: "#D0D0D0",
+  },
+  torrentTitle: {
+    fontWeight: "bold",
+    fontSize: 24,
+  },
+  torrentRatingContainer: {
+    flex: 1,
+    textAlign: "right",
+    fontSize: 18,
+    color: "#D0D0D0",
+  },
+  torrentRating: {
+    fontWeight: "bold",
+    fontSize: 24,
+  },
+  torrentRatingIcon: {
+    fontSize: 40,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
+  divMargin: {
+    marginTop: 30,
+  },
+  titleSection: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  textSection: {
+    fontSize: 18,
+    color: "#D0D0D0",
+  },
+  directLink: {
+    margin: 5,
+  },
+  torrentListContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
+  torrentElContainer: {
+    flex: 1,
+    flexBasis: "1 0 30%",
+    backgroundColor: "#373737",
+    borderRadius: 6,
+    margin: 10,
+    padding: 10,
+  },
+  torrentElDetail: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  torrentSeedsContainer: {
+    display: "flex",
+    marginTop: 10,
+  },
+  torrentSeedPeers: {
+    flex: 1,
+    textAlign: "center",
+  },
+  peers: {
+    fontSize: 18,
+    color: "#9A1300",
+  },
+  seeds: {
+    fontSize: 18,
+    color: "#4DAA57",
+  },
+  soloFlex: { flex: 1 },
+  commentSectionContainer: {
+    padding: 10,
+  },
+  commentInputContainer: {
+    paddingBottom: 20,
+  },
+  rootSend: {
+    width: "100%",
+  },
+  borderBottom: {
+    "&.MuiInput-underline:before": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:after": {
+      borderBottom: "1px solid #FA7B38",
+    },
+    "&.MuiInput-underline:hover::before": {
+      borderBottom: "2px solid #FBBA72",
+    },
+    "&.MuiInput-underline:hover::after": {
+      borderBottom: "1px solid #FBBA72",
+    },
+  },
+  sendIcon: {
+    color: "#9A1300",
+  },
+  inputColor: {
+    color: "#fff",
+  },
+  commentElContainer: {
+    display: "flex",
+    borderRadius: 6,
+    backgroundColor: "#373737",
+    padding: 10,
+    marginBottom: 10,
+  },
+  commentAvatarContainer: {
+    flex: 1,
+    justifyContent: "center",
+    textAlign: "-webkit-center",
+  },
+  commentTextContainer: {
+    flex: 9,
+  },
+  commentHeader: {
+    color: "#D0D0D0",
+  },
+  commentText: {
+    color: "#EFF1F3",
+    fontSize: 16,
+  },
 });
 
 const Torrent = (props) => {
@@ -90,6 +233,7 @@ const Torrent = (props) => {
         .then((res) => {
           if (res.comments.comments) {
             getComments();
+            setNewComment("");
             props.auth.successMessage("Thanks for your comment!");
           } else {
             props.auth.errorMessage(res.message.msg);
@@ -121,22 +265,10 @@ const Torrent = (props) => {
 
   return (
     <div className={classes.root}>
-      <div
-        style={{
-          display: "flex",
-        }}
-      >
-        <div
-          style={{
-            flex: 2,
-            padding: 20,
-          }}
-        >
+      <div className={classes.torrentInfoContainer}>
+        <div className={classes.torrentImageContainer}>
           <img
-            style={{
-              width: "100%",
-              borderRadius: 6,
-            }}
+            className={classes.torrentImage}
             src={torrent.cover_url}
             alt={torrent.title}
             onError={(e) => {
@@ -145,103 +277,36 @@ const Torrent = (props) => {
             }}
           ></img>
         </div>
-        <div
-          style={{
-            flex: 4,
-            padding: 20,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-            }}
-          >
-            <div
-              style={{
-                flex: 5,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 24,
-                  color: "#D0D0D0",
-                }}
-              >
+        <div className={classes.torrentDetailsContainer}>
+          <div className={classes.torrentInfoContainer}>
+            <div className={classes.torrentTitleContainer}>
+              <span className={classes.torrentYear}>
                 ({torrent.production_year}){" "}
               </span>
-              <span
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 24,
-                }}
-              >
-                {torrent.title}
-              </span>
+              <span className={classes.torrentTitle}>{torrent.title}</span>
             </div>
-            <div
-              style={{
-                flex: 1,
-                textAlign: "right",
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+            <div className={classes.torrentRatingContainer}>
               {torrent.rating ? (
                 <div>
-                  <span
-                    style={{
-                      fontWeight: "bold",
-                      fontSize: 24,
-                    }}
-                  >
+                  <span className={classes.torrentRating}>
                     {torrent.rating}
                   </span>
                   <StarRateIcon
-                    style={{
-                      fontSize: 40,
-                      color: "#FBBA72",
-                      verticalAlign: "middle",
-                    }}
+                    className={classes.torrentRatingIcon}
                   ></StarRateIcon>
                 </div>
               ) : undefined}
             </div>
           </div>
           {torrent.summary ? (
-            <div style={{ marginTop: 30 }}>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 20,
-                }}
-              >
-                Synopsis
-              </div>
-              <div
-                style={{
-                  fontSize: 18,
-                  color: "#D0D0D0",
-                }}
-              >
-                {torrent.summary}
-              </div>
+            <div className={classes.divMargin}>
+              <div className={classes.titleSection}>Synopsis</div>
+              <div className={classes.textSection}>{torrent.summary}</div>
             </div>
           ) : undefined}
-          <div style={{ marginTop: 30 }}>
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Categories:{" "}
-            </span>
-            <span
-              style={{
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <span className={classes.titleSection}>Categories: </span>
+            <span className={classes.textSection}>
               {categories.length
                 ? categories.map((el, i) =>
                     i < categories.length - 1 ? el + " / " : el
@@ -249,21 +314,9 @@ const Torrent = (props) => {
                 : "No informations"}
             </span>
           </div>
-          <div style={{ marginTop: 30 }}>
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Available languages:{" "}
-            </span>
-            <span
-              style={{
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <span className={classes.titleSection}>Available languages: </span>
+            <span className={classes.textSection}>
               {languages.length
                 ? languages.map((el, i) =>
                     i < languages.length - 1 ? el + ", " : el
@@ -271,21 +324,9 @@ const Torrent = (props) => {
                 : "No informations"}
             </span>
           </div>
-          <div style={{ marginTop: 30 }}>
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Available qualities:{" "}
-            </span>
-            <span
-              style={{
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <span className={classes.titleSection}>Available qualities: </span>
+            <span className={classes.textSection}>
               {qualities.length
                 ? qualities.map((el, i) =>
                     i < qualities.length - 1 ? el + ", " : el
@@ -293,58 +334,23 @@ const Torrent = (props) => {
                 : "No informations"}
             </span>
           </div>
-          <div style={{ marginTop: 30 }}>
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Last viewed:{" "}
-            </span>
-            <span
-              style={{
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <span className={classes.titleSection}>Last viewed: </span>
+            <span className={classes.textSection}>
               {torrent.downloaded_at ? torrent.downloaded_at : "Never"}
             </span>
           </div>
-          <div style={{ marginTop: 30 }}>
-            <span
-              style={{
-                fontWeight: "bold",
-                fontSize: 18,
-              }}
-            >
-              Last download:{" "}
-            </span>
-            <span
-              style={{
-                fontSize: 18,
-                color: "#D0D0D0",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <span className={classes.titleSection}>Last download: </span>
+            <span className={classes.textSection}>
               {torrent.lastviewed_at ? torrent.lastviewed_at : "Never"}
             </span>
           </div>
-          <div style={{ marginTop: 30 }}>
-            <div
-              style={{
-                fontWeight: "bold",
-                fontSize: 20,
-              }}
-            >
-              Direct links
-            </div>
-            <div
-              style={{
-                display: "flex",
-              }}
-            >
+          <div className={classes.divMargin}>
+            <div className={classes.titleSection}>Direct links</div>
+            <div className={classes.torrentInfoContainer}>
               {torrent.imdb_code ? (
-                <div style={{ margin: 5 }}>
+                <div className={classes.directLink}>
                   <a
                     href={"https://www.imdb.com/title/" + torrent.imdb_code}
                     target="_blank"
@@ -360,7 +366,7 @@ const Torrent = (props) => {
                 </div>
               ) : undefined}
               {torrent.torrent9_url ? (
-                <div style={{ margin: 5 }}>
+                <div className={classes.directLink}>
                   <a
                     href={torrent.torrent9_url}
                     target="_blank"
@@ -376,7 +382,7 @@ const Torrent = (props) => {
                 </div>
               ) : undefined}
               {torrent.yts_url ? (
-                <div style={{ margin: 5 }}>
+                <div className={classes.directLink}>
                   <a
                     href={torrent.yts_url}
                     target="_blank"
@@ -395,19 +401,10 @@ const Torrent = (props) => {
           </div>
         </div>
       </div>
-      <div>
-        {" "}
-        {torrent.yt_trailer ? (
-          <div>
-            {" "}
-            <div
-              style={{
-                fontWeight: "bold",
-                fontSize: 20,
-              }}
-            >
-              Youtube trailer:
-            </div>
+      {torrent.yt_trailer ? (
+        <div>
+          <div className={classes.titleSection}>Youtube trailer</div>
+          <div className={classes.textAlignCenter}>
             <iframe
               width="560"
               height="315"
@@ -422,187 +419,173 @@ const Torrent = (props) => {
               frameBorder="0"
             ></iframe>
           </div>
-        ) : undefined}
-      </div>
+        </div>
+      ) : undefined}
       {yts_torrents.length ? (
         <div>
-          <div
+          <span className={classes.titleSection}>YTS</span>{" "}
+          <FiberManualRecordIcon
             style={{
-              fontWeight: "bold",
-              fontSize: 24,
+              color: torrent.yts_url ? "#0CCA4A" : "#E63946",
+              verticalAlign: "middle",
             }}
-          >
-            YTS{" "}
-            <FiberManualRecordIcon
-              style={{
-                color: torrent.yts_url ? "#0CCA4A" : "#E63946",
-                verticalAlign: "middle",
-              }}
-            ></FiberManualRecordIcon>
-            {torrent.yts_url ? (
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
-                {yts_torrents.map((el, i) => (
-                  <div
-                    key={el.magnet + i}
-                    style={{ flex: 1, flexBasis: "1 0 30%" }}
-                  >
-                    <div style={{ display: "flex" }}>
-                      <div
-                        style={{ flex: 1, fontWeight: "bold", fontSize: 18 }}
-                      >
-                        {el.language}
-                      </div>
-                      <div
-                        style={{ flex: 1, fontWeight: "bold", fontSize: 18 }}
-                      >
-                        {el.quality}
-                      </div>
-                      <div
-                        style={{ flex: 1, fontWeight: "bold", fontSize: 18 }}
-                      >
-                        {el.size}
+          ></FiberManualRecordIcon>
+          {torrent.yts_url ? (
+            <div className={classes.torrentListContainer}>
+              {yts_torrents.map((el, i) => (
+                <div key={el.magnet + i} className={classes.torrentElContainer}>
+                  <div className={classes.torrentInfoContainer}>
+                    <div className={classes.torrentElDetail}>{el.language}</div>
+                    <div className={classes.torrentElDetail}>{el.quality}</div>
+                    <div className={classes.torrentElDetail}>{el.size}</div>
+                  </div>
+                  <div className={classes.torrentSeedsContainer}>
+                    <div className={classes.torrentSeedPeers}>
+                      <span className={classes.torrentElDetail}>Seeds: </span>
+                      <span className={classes.seeds}>{el.seeds}</span>
+                    </div>
+                    <div className={classes.soloFlex}>
+                      <span className={classes.torrentElDetail}>Peers: </span>
+                      <span className={classes.peers}>{el.peers}</span>
+                    </div>
+                  </div>
+                  <div className={classes.torrentSeedsContainer}>
+                    <div className={classes.torrentSeedPeers}>
+                      <div className={classes.torrentElDetail}>
+                        <a
+                          className={classes.peers}
+                          href={el.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          YTS
+                        </a>
                       </div>
                     </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ flex: 1 }}>
-                        <span
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 18,
-                          }}
-                        >
-                          Seeds:{" "}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 18,
-                            color: "#D0D0D0",
-                          }}
-                        >
-                          {el.seeds}
-                        </span>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <span
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 18,
-                          }}
-                        >
-                          Peers:{" "}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: 18,
-                            color: "#D0D0D0",
-                          }}
-                        >
-                          {el.peers}
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex" }}>
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            fontWeight: "bold",
-                            fontSize: 18,
-                          }}
-                        >
+                    <div className={classes.soloFlex}>
+                      {auth.isLogged ? (
+                        <div className={classes.titleSection}>
                           <a
-                            style={{
-                              color: "#9A1300",
-                            }}
-                            href={el.url}
+                            className={classes.peers}
+                            href={el.torrent}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            YTS
+                            Download
                           </a>
                         </div>
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        {auth.isLogged ? (
-                          <div
-                            style={{
-                              fontWeight: "bold",
-                              fontSize: 18,
-                            }}
+                      ) : undefined}
+                    </div>
+                    <div className={classes.soloFlex}>
+                      {auth.isLogged ? (
+                        <div className={classes.titleSection}>
+                          <a
+                            className={classes.peers}
+                            href={el.torrent}
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
-                            <a
-                              style={{
-                                color: "#9A1300",
-                              }}
-                              href={el.torrent}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Download
-                            </a>
-                          </div>
-                        ) : undefined}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        {auth.isLogged ? (
-                          <div
-                            style={{
-                              fontWeight: "bold",
-                              fontSize: 18,
-                            }}
-                          >
-                            <a
-                              style={{
-                                color: "#9A1300",
-                              }}
-                              href={el.torrent}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Watch
-                            </a>
-                          </div>
-                        ) : undefined}
-                      </div>
+                            Watch
+                          </a>
+                        </div>
+                      ) : undefined}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : undefined}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : undefined}
         </div>
       ) : undefined}
       {t9_torrents.length ? (
         <div>
-          <div
+          <span className={classes.titleSection}>Torrent9</span>{" "}
+          <FiberManualRecordIcon
             style={{
-              fontWeight: "bold",
-              fontSize: 24,
+              color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
+              verticalAlign: "middle",
             }}
-          >
-            Torrent9{" "}
-            <FiberManualRecordIcon
-              style={{
-                color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
-                verticalAlign: "middle",
-              }}
-            ></FiberManualRecordIcon>
-          </div>
+          ></FiberManualRecordIcon>
+          {torrent.torrent9_url ? (
+            <div className={classes.torrentListContainer}>
+              {t9_torrents.map((el, i) => (
+                <div key={el.magnet + i} className={classes.torrentElContainer}>
+                  <div className={classes.torrentInfoContainer}>
+                    <div className={classes.torrentElDetail}>
+                      {el.languages}
+                    </div>
+                    <div className={classes.torrentElDetail}>{el.quality}</div>
+                    <div className={classes.torrentElDetail}>{el.size}</div>
+                  </div>
+                  <div className={classes.torrentSeedsContainer}>
+                    <div className={classes.torrentSeedPeers}>
+                      <span className={classes.torrentElDetail}>Seeds: </span>
+                      <span className={classes.seeds}>{el.seeds}</span>
+                    </div>
+                    <div className={classes.soloFlex}>
+                      <span className={classes.torrentElDetail}>Peers: </span>
+                      <span className={classes.peers}>{el.peers}</span>
+                    </div>
+                  </div>
+                  <div className={classes.torrentSeedsContainer}>
+                    <div className={classes.torrentSeedPeers}>
+                      <div className={classes.torrentElDetail}>
+                        <a
+                          className={classes.peers}
+                          href={el.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Torrent9
+                        </a>
+                      </div>
+                    </div>
+                    <div className={classes.soloFlex}>
+                      {auth.isLogged ? (
+                        <div className={classes.titleSection}>
+                          <a
+                            className={classes.peers}
+                            href={el.torrent}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Download
+                          </a>
+                        </div>
+                      ) : undefined}
+                    </div>
+                    <div className={classes.soloFlex}>
+                      {auth.isLogged ? (
+                        <div className={classes.titleSection}>
+                          <a
+                            className={classes.peers}
+                            href={el.torrent}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Watch
+                          </a>
+                        </div>
+                      ) : undefined}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : undefined}
         </div>
       ) : undefined}
-      <div style={{ padding: 10 }}>
-        <div
-          style={{
-            fontWeight: "bold",
-            fontSize: 24,
-          }}
-        >
-          Comment section
-        </div>
-        <div style={{ paddingBottom: 20 }}>
+      <div className={classes.commentSectionContainer}>
+        <div className={classes.torrentTitle}>Comment section</div>
+        <div className={classes.commentInputContainer}>
           {auth.isLogged ? (
             <form onSubmit={handleSendComment}>
               <Input
-                style={{ width: "100%" }}
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
                 type="text"
                 placeholder="Write a comment about the movie..."
                 value={newComment}
@@ -615,19 +598,14 @@ const Torrent = (props) => {
                     }
                     type="submit"
                   >
-                    <SendIcon></SendIcon>
+                    <SendIcon className={classes.sendIcon}></SendIcon>
                   </IconButton>
                 }
               />
             </form>
           ) : (
             <div>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 18,
-                }}
-              >
+              <div className={classes.titleSection}>
                 You must be logged to post a new comment
               </div>
             </div>
@@ -636,47 +614,25 @@ const Torrent = (props) => {
         <div>
           {comments.length ? (
             comments.map((el) => (
-              <div
-                key={el.id}
-                style={{
-                  display: "flex",
-                  borderRadius: 6,
-                  backgroundColor: "#373737",
-                  padding: 10,
-                  marginBottom: 10,
-                }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    textAlign: "-webkit-center",
-                  }}
-                >
+              <div key={el.id} className={classes.commentElContainer}>
+                <div className={classes.commentAvatarContainer}>
                   <Avatar
                     alt={el.username}
                     src={"./src/assets/photos/" + el.photos}
                   />
                 </div>
-                <div style={{ flex: 9 }}>
-                  <div style={{ color: "#D0D0D0" }}>
+                <div className={classes.commentTextContainer}>
+                  <div className={classes.commentHeader}>
                     From <b>{el.username}</b>,{" "}
                     {moment(el.created_at).format("DD/MM/YYYY HH:mm:ss ")}
                   </div>
-                  <div style={{ color: "#EFF1F3", fontSize: 16 }}>
-                    {el.comment}
-                  </div>
+                  <div className={classes.commentText}>{el.comment}</div>
                 </div>
               </div>
             ))
           ) : (
             <div>
-              <div
-                style={{
-                  fontWeight: "bold",
-                  fontSize: 18,
-                }}
-              >
+              <div className={classes.titleSection}>
                 No comments, be the first to post one
               </div>
             </div>

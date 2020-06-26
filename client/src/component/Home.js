@@ -141,8 +141,8 @@ const RenderTorrent = (props) => {
     >
       <img
         className={classes.image}
-        src="./src/assets/img/nophotos.png"
-        // src={torrent.cover_url}
+        // src="./src/assets/img/nophotos.png"
+        src={torrent.cover_url}
         alt={torrent.title}
         onError={(e) => {
           e.target.onerror = null;
