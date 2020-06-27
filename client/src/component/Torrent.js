@@ -82,6 +82,11 @@ const TorrentStyles = (theme) => ({
     fontSize: 18,
     color: "#D0D0D0",
   },
+  summaryText: {
+    fontSize: 18,
+    color: "#D0D0D0",
+    marginTop: 5,
+  },
   directLink: {
     margin: 5,
   },
@@ -303,8 +308,10 @@ const Torrent = (props) => {
             <div className={classes.divMargin}>
               <div className={classes.titleSection}>Synopsis</div>
               {summary.length
-                ? summary.map((el) => (
-                    <div className={classes.textSection}>{el}</div>
+                ? summary.map((el, i) => (
+                    <div key={"summary" + i} className={classes.summaryText}>
+                      {el}
+                    </div>
                   ))
                 : "No informations"}
             </div>

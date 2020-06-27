@@ -213,13 +213,13 @@ const initScraping = async () => {
   //       console.log(chalk.green("torrent9Torrents.json saved!"));
   //     }
   //   );
-  console.log(
-    "Creating one big final list for every movies before storing it into the database"
-  );
-  console.log(
-    torrent9Infos.movies.length + ytsInfos.movies.length,
-    "movies in total before purify!"
-  );
+  //   console.log(
+  //     "Creating one big final list for every movies before storing it into the database"
+  //   );
+  //   console.log(
+  //     torrent9Infos.movies.length + ytsInfos.movies.length,
+  //     "movies in total before purify!"
+  //   );
   await purifyAllTorrents();
   console.log(
     finalTorrents.number_of_movies,

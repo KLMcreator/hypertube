@@ -136,11 +136,11 @@ const getMoreInfos = async (url, i, j) => {
           i
         ].categories.map((el) => el.charAt(0).toUpperCase() + el.slice(1));
       }
-      torrent9Infos.movies[i].summary = summ[1].children[0]
-        ? summ[1].children[0].data
+      summ[1].children[0]
+        ? torrent9Infos.movies[i].summary.push(summ[1].children[0].data)
         : summ[0].children[0]
-        ? summ[0].children[0].data
-        : null;
+        ? torrent9Infos.movies[i].summary.push(summ[0].children[0].data)
+        : undefined;
       torrent9Infos.movies[i].cover_url =
         "https://www.torrent9.ac" + cover[0].attribs.src;
       torrent9Infos.movies[i].large_image =
@@ -178,7 +178,7 @@ const getMovieList = async (url) => {
             movies[el].children[0].next.children[1].next.attribs.href,
           cover_url: null,
           large_image: null,
-          summary: null,
+          summary: [],
           imdb_code: null,
           yt_trailer: null,
           categories: [],

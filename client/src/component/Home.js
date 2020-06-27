@@ -3,10 +3,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 // framework
 import { withStyles } from "@material-ui/core/styles";
-import TextField from "@material-ui/core/TextField";
+import Input from "@material-ui/core/Input";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Button from "@material-ui/core/Button";
 // icons
+import SearchIcon from "@material-ui/icons/Search";
 import StarRateIcon from "@material-ui/icons/StarRate";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
@@ -33,9 +34,36 @@ const SearchBarStyles = (theme) => ({
   container: {
     borderWidth: 1,
     fontSize: 13,
+    marginTop: 30,
+    marginBottom: 30,
+    marginRight: 40,
+    marginLeft: 40,
   },
   halfWidth: {
     width: "50%",
+  },
+  rootSend: {
+    width: "100%",
+  },
+  borderBottom: {
+    "&.MuiInput-underline:before": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:after": {
+      borderBottom: "1px solid #FA7B38",
+    },
+    "&.MuiInput-underline:hover::before": {
+      borderBottom: "2px solid #FBBA72",
+    },
+    "&.MuiInput-underline:hover::after": {
+      borderBottom: "1px solid #FBBA72",
+    },
+  },
+  sendIcon: {
+    color: "#9A1300",
+  },
+  inputColor: {
+    color: "#fff",
   },
 });
 
@@ -141,7 +169,6 @@ const RenderTorrent = (props) => {
     >
       <img
         className={classes.image}
-        // src="./src/assets/img/nophotos.png"
         src={torrent.cover_url}
         alt={torrent.title}
         onError={(e) => {
@@ -242,20 +269,18 @@ const RenderSearchBar = (props) => {
 
   return (
     <div className={classes.container}>
-      <TextField
-        className={classes.halfWidth}
-        inputProps={{
-          style: { borderBottom: "1px solid #fff" },
+      <Input
+        classes={{
+          root: classes.rootSend,
+          input: classes.inputColor,
+          underline: classes.borderBottom,
         }}
-        InputLabelProps={{
-          style: { color: "#fff" },
-        }}
-        required
-        id="search"
-        label="Search for a torrent..."
-        value={search}
-        onChange={handleSearchTorrent}
         type="text"
+        placeholder="Search for a torrent..."
+        value={search}
+        required
+        onChange={handleSearchTorrent}
+        endAdornment={<SearchIcon className={classes.sendIcon}></SearchIcon>}
       />
     </div>
   );
@@ -332,7 +357,7 @@ const Home = (props) => {
         getRandomTorrents();
         setLimit(15);
       }
-    }, 500);
+    }, 750);
   };
 
   const RenderLoadMore = () => {
