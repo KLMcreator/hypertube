@@ -182,6 +182,7 @@ const Torrent = (props) => {
   const yt_code = torrent.yt_trailer
     ? torrent.yt_trailer.split("https://www.youtube.com/watch?v=")
     : null;
+  const summary = JSON.parse(torrent.summary);
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
   const t9_torrents = JSON.parse(torrent.torrents).filter(
@@ -298,10 +299,14 @@ const Torrent = (props) => {
               ) : undefined}
             </div>
           </div>
-          {torrent.summary ? (
+          {summary.length ? (
             <div className={classes.divMargin}>
               <div className={classes.titleSection}>Synopsis</div>
-              <div className={classes.textSection}>{torrent.summary}</div>
+              {summary.length
+                ? summary.map((el) => (
+                    <div className={classes.textSection}>{el}</div>
+                  ))
+                : "No informations"}
             </div>
           ) : undefined}
           <div className={classes.divMargin}>

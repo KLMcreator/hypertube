@@ -7,7 +7,7 @@ const getTorrent9 = require("./getTorrent9");
 const fs = require("fs");
 let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
 let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
-let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
 
@@ -37,96 +37,113 @@ const checkDuplicates = async (arr) => {
 const purifyAllTorrents = async (t9, yts) => {
   finalTorrents.fetched_at = Date.now();
   let i = 0;
-  while (i < t9.movies.length) {
-    finalTorrents.movies.push(t9.movies[i]);
+  while (i < torrent9Infos.movies.length) {
+    finalTorrents.movies.push(torrent9Infos.movies[i]);
     i++;
   }
   i = 0;
-  while (i < yts.movies.length) {
-    finalTorrents.movies.push(yts.movies[i]);
+  while (i < ytsInfos.movies.length) {
+    finalTorrents.movies.push(ytsInfos.movies[i]);
     i++;
   }
+  torrent9Infos = null;
+  ytsInfos = null;
   i = 0;
   while (i < finalTorrents.movies.length) {
     let j = i + 1;
+    let occurences = [i];
     while (j < finalTorrents.movies.length) {
       if (finalTorrents.movies[i].title === finalTorrents.movies[j].title) {
-        let infos = {};
-        if (finalTorrents.movies[j].yts_id !== null) {
-          infos = {
-            yts_id: finalTorrents.movies[j].yts_id,
-            torrent9_id: finalTorrents.movies[i].torrent9_id,
-            title: finalTorrents.movies[j].title,
-            production_year: finalTorrents.movies[j].production_year,
-            rating: finalTorrents.movies[j].rating,
-            yts_url: finalTorrents.movies[j].yts_url,
-            torrent9_url: finalTorrents.movies[i].torrent9_url,
-            cover_url: finalTorrents.movies[j].cover_url,
-            large_image: finalTorrents.movies[j].large_cover_image,
-            summary: finalTorrents.movies[j].summary,
-            imdb_code: finalTorrents.movies[j].imdb_code,
-            yt_trailer: finalTorrents.movies[j].yt_trailer_code,
-            categories: [],
-            languages: [],
-            torrents: [],
-          };
-        } else {
-          infos = {
-            yts_id: finalTorrents.movies[i].yts_id,
-            torrent9_id: finalTorrents.movies[j].torrent9_id,
-            title: finalTorrents.movies[i].title,
-            production_year: finalTorrents.movies[i].production_year,
-            rating: finalTorrents.movies[i].rating,
-            yts_url: finalTorrents.movies[i].yts_url,
-            torrent9_url: finalTorrents.movies[j].torrent9_url,
-            cover_url: finalTorrents.movies[i].cover_url,
-            large_image: finalTorrents.movies[j].large_cover_image,
-            summary: finalTorrents.movies[j].summary,
-            imdb_code: finalTorrents.movies[j].imdb_code,
-            yt_trailer: finalTorrents.movies[j].yt_trailer_code,
-            categories: [],
-            languages: [],
-            torrents: [],
-          };
-        }
-        if (finalTorrents.movies[j].languages) {
-          finalTorrents.movies[j].languages.map((ele) => {
-            infos.languages.push(ele);
-          });
-        }
-        if (finalTorrents.movies[i].languages) {
-          finalTorrents.movies[i].languages.map((ele) => {
-            infos.languages.push(ele);
-          });
-        }
-        if (finalTorrents.movies[j].categories) {
-          finalTorrents.movies[j].categories.map((ele) => {
-            infos.categories.push(ele);
-          });
-        }
-        if (finalTorrents.movies[i].categories) {
-          finalTorrents.movies[i].categories.map((ele) => {
-            infos.categories.push(ele);
-          });
-        }
-        if (finalTorrents.movies[j].torrents) {
-          finalTorrents.movies[j].torrents.map((ele) => {
-            infos.torrents.push(ele);
-          });
-        }
-        if (finalTorrents.movies[i].torrents) {
-          finalTorrents.movies[i].torrents.map((ele) => {
-            infos.torrents.push(ele);
-          });
-        }
-        finalTorrents.movies.push(infos);
-        finalTorrents.movies.splice(i, 1);
-        finalTorrents.movies.splice(j - 1, 1);
-        i = -1;
-        break;
-      } else {
-        j++;
+        occurences.push(j);
       }
+      j++;
+    }
+    if (occurences.length > 1) {
+      let k = 0;
+      let infos = {
+        yts_id: null,
+        torrent9_id: null,
+        title: null,
+        production_year: null,
+        rating: null,
+        yts_url: null,
+        torrent9_url: null,
+        cover_url: null,
+        large_image: null,
+        summary: [],
+        imdb_code: null,
+        yt_trailer: null,
+        categories: [],
+        languages: [],
+        torrents: [],
+      };
+      while (k < occurences.length) {
+        infos = {
+          yts_id: finalTorrents.movies[occurences[k]].yts_id
+            ? finalTorrents.movies[occurences[k]].yts_id
+            : infos.yts_id,
+          torrent9_id: finalTorrents.movies[occurences[k]].torrent9_id
+            ? finalTorrents.movies[occurences[k]].torrent9_id
+            : infos.torrent9_id,
+          title: finalTorrents.movies[occurences[k]].title
+            ? finalTorrents.movies[occurences[k]].title
+            : infos.title,
+          production_year: finalTorrents.movies[occurences[k]].production_year
+            ? finalTorrents.movies[occurences[k]].production_year
+            : infos.production_year,
+          rating: finalTorrents.movies[occurences[k]].rating
+            ? finalTorrents.movies[occurences[k]].rating
+            : infos.rating,
+          yts_url: finalTorrents.movies[occurences[k]].yts_url
+            ? finalTorrents.movies[occurences[k]].yts_url
+            : infos.yts_url,
+          torrent9_url: finalTorrents.movies[occurences[k]].torrent9_url
+            ? finalTorrents.movies[occurences[k]].torrent9_url
+            : infos.torrent9_url,
+          cover_url: finalTorrents.movies[occurences[k]].cover_url
+            ? finalTorrents.movies[occurences[k]].cover_url
+            : infos.cover_url,
+          large_image: finalTorrents.movies[occurences[k]].large_image
+            ? finalTorrents.movies[occurences[k]].large_image
+            : infos.large_image,
+          summary: infos.summary.length ? infos.summary : [],
+          imdb_code: finalTorrents.movies[occurences[k]].imdb_code
+            ? finalTorrents.movies[occurences[k]].imdb_code
+            : infos.imdb_code,
+          yt_trailer: finalTorrents.movies[occurences[k]].yt_trailer
+            ? finalTorrents.movies[occurences[k]].yt_trailer
+            : infos.yt_trailer,
+          categories: infos.categories.length ? infos.categories : [],
+          languages: infos.languages.length ? infos.languages : [],
+          torrents: infos.torrents.length ? infos.torrents : [],
+        };
+        if (finalTorrents.movies[occurences[k]].summary) {
+          infos.summary.push(finalTorrents.movies[occurences[k]].summary);
+        }
+        if (finalTorrents.movies[occurences[k]].languages) {
+          finalTorrents.movies[occurences[k]].languages.map((ele) => {
+            infos.languages.push(ele);
+          });
+        }
+        if (finalTorrents.movies[occurences[k]].categories) {
+          finalTorrents.movies[occurences[k]].categories.map((ele) => {
+            infos.categories.push(ele);
+          });
+        }
+        if (finalTorrents.movies[occurences[k]].torrents) {
+          finalTorrents.movies[occurences[k]].torrents.map((ele) => {
+            infos.torrents.push(ele);
+          });
+        }
+        k++;
+      }
+      k = 0;
+      while (k < occurences.length) {
+        finalTorrents.movies.splice(occurences[k] - k, 1);
+        k++;
+      }
+      finalTorrents.movies.push(infos);
+      i = -1;
     }
     i++;
   }
@@ -144,7 +161,7 @@ const searchInTorrent = async (q) => {
 
 const initScraping = async () => {
   console.time("initScraping");
-  console.log("Starting new scrap at", chalk.yellow(moment().format()));
+  //   console.log("Starting new scrap at", chalk.yellow(moment().format()));
   //   let ytsInfos = await getYts.fetchAllTorrents();
   //   let torrent9Infos = await getTorrent9.fetchAllTorrents();
   //   console.log(
@@ -199,7 +216,11 @@ const initScraping = async () => {
   console.log(
     "Creating one big final list for every movies before storing it into the database"
   );
-  await purifyAllTorrents(ytsInfos, torrent9Infos);
+  console.log(
+    torrent9Infos.movies.length + ytsInfos.movies.length,
+    "movies in total before purify!"
+  );
+  await purifyAllTorrents();
   console.log(
     finalTorrents.number_of_movies,
     "movies in total after last purify!",
@@ -213,10 +234,10 @@ const initScraping = async () => {
   console.timeEnd("initScraping");
 };
 
-searchInTorrent("da 5 bloods");
-fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-  if (err) throw err;
-  console.log(chalk.green("finalTorrents.json saved!"));
-});
+// searchInTorrent("da 5 bloods");
+// fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+//   if (err) throw err;
+//   console.log(chalk.green("finalTorrents.json saved!"));
+// });
 
-// initScraping();
+initScraping();

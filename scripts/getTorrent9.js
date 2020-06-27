@@ -131,6 +131,11 @@ const getMoreInfos = async (url, i, j) => {
       ].categories = categories[0].parent.children[5].children[0].attribs.href
         .replace("/torrents/", "")
         .split("-");
+      if (torrent9Infos.movies[i].categories.length) {
+        torrent9Infos.movies[i].categories = torrent9Infos.movies[
+          i
+        ].categories.map((el) => el.charAt(0).toUpperCase() + el.slice(1));
+      }
       torrent9Infos.movies[i].summary = summ[1].children[0]
         ? summ[1].children[0].data
         : summ[0].children[0]

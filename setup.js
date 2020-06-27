@@ -172,7 +172,7 @@ const insertIntoTorrents = (torrent) => {
         null,
         null,
         torrent.large_image ? torrent.large_image : null,
-        torrent.summary ? torrent.summary : null,
+        torrent.summary ? JSON.stringify(torrent.summary) : null,
         torrent.imdb_code ? torrent.imdb_code : null,
         torrent.yt_trailer ? torrent.yt_trailer : null,
       ],
