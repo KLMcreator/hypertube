@@ -2,6 +2,8 @@ const moment = require("moment");
 const chalk = require("chalk");
 const request = require("request");
 const crypto = require("crypto");
+const jimp = require("jimp");
+const glob = require("glob");
 
 const Crawler = require("crawler");
 
@@ -333,21 +335,60 @@ const getImages = async () => {
   }
 };
 
+const resizeDirectoryImages = async () => {
+  return new Promise((resolve, reject) => {
+    glob(
+      "*.@(png|jpg|bmp)",
+      {
+        nocase: true,
+        nodir: true,
+        realpath: true,
+        cwd: "./../client/src/assets/torrents",
+      },
+      (err, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(files);
+        }
+      }
+    );
+  })
+    .then((files) => {
+      let i = 0;
+      movies = [];
+      while (i < 1000) {
+        movies.push(files[i]);
+        i++;
+      }
+      return Promise.all(
+        movies.map(async (path) => {
+          const image = await jimp.read(path);
+          await image.resize(160, 240);
+          await image.quality(90);
+          await image.writeAsync(path);
+        })
+      );
+    })
+    .catch((err) => console.log(i, err));
+};
+
 const initScraping = async () => {
   console.time("initScraping");
-  console.log("Starting new scrap at", chalk.yellow(moment().format()));
-  await getMovies();
-  console.log(
-    torrent9Infos.movies.length + ytsInfos.movies.length,
-    "total movies"
-  );
-  console.log(
-    "Starting purify to check one last time if there's no duplicates"
-  );
-  await purifyBeforeGroup();
-  await saveToFile();
-  await groupAndSave();
-  await getImages();
+  //   console.log("Starting new scrap at", chalk.yellow(moment().format()));
+  //   await getMovies();
+  //   console.log(
+  //     torrent9Infos.movies.length + ytsInfos.movies.length,
+  //     "total movies"
+  //   );
+  //   console.log(
+  //     "Starting purify to check one last time if there's no duplicates"
+  //   );
+  //   await purifyBeforeGroup();
+  //   await saveToFile();
+  //   await groupAndSave();
+  //   await getImages();
+  await resizeDirectoryImages().then(console.log("ALL DONE!"));
   console.log(
     "If the process isn't finished yet, there might be some images that are still being saved. Please don't quit either way you won't have the full image bank."
   );
