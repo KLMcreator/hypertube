@@ -275,7 +275,7 @@ const Torrent = (props) => {
         <div className={classes.torrentImageContainer}>
           <img
             className={classes.torrentImage}
-            src={torrent.cover_url}
+            src={"./src/assets/torrents/" + torrent.cover_url}
             alt={torrent.title}
             onError={(e) => {
               e.target.onerror = null;

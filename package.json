@@ -17,6 +17,7 @@
     "chalk": "^4.1.0",
     "cheerio": "^1.0.0-rc.3",
     "cookie-parser": "^1.4.5",
+    "crawler": "^1.2.2",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "faker": "^4.1.0",

@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const moment = require("moment");
 const fs = require("fs");
 
-let torrents = JSON.parse(fs.readFileSync("./scripts/finalTorrents.json"));
+let torrents = JSON.parse(fs.readFileSync("./scripts/torrents.json"));
 let totalUser = 42;
 
 const rootPool = new Pool({
