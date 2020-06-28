@@ -2,6 +2,8 @@ const moment = require("moment");
 const chalk = require("chalk");
 const request = require("request");
 const crypto = require("crypto");
+const jimp = require("jimp");
+const glob = require("glob");
 
 const Crawler = require("crawler");
 
@@ -15,6 +17,15 @@ let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
 let torrentsWithImagePath = JSON.parse(fs.readFileSync("torrents.json"));
 // let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
+
+const searchInTorrent = async (q) => {
+  torrents.movies.map((el) => {
+    if (el.title.toLowerCase().includes(q.toLowerCase())) {
+      console.log(el);
+      searched.push(el);
+    }
+  });
+};
 
 const checkDuplicates = async (arr) => {
   let i = 0;
@@ -219,112 +230,168 @@ const hydrateImageBank = async () => {
   return missingImages;
 };
 
-const searchInTorrent = async (q) => {
-  torrents.movies.map((el) => {
-    if (el.title.toLowerCase().includes(q.toLowerCase())) {
-      console.log(el);
-      searched.push(el);
-    }
+const getMovies = async () => {
+  ytsInfos = await getYts.fetchAllTorrents();
+  console.log(
+    ytsInfos.movies.length,
+    "movies total found on",
+    chalk.green("YTS"),
+    "getting Torrent9 now"
+  );
+  torrent9Infos = await getTorrent9.fetchAllTorrents();
+  console.log(
+    torrent9Infos.movies.length,
+    "movies total found on",
+    chalk.green("Torrent9")
+  );
+};
+
+const purifyBeforeGroup = async () => {
+  ytsInfos = await checkDuplicates(ytsInfos);
+  console.log(
+    ytsInfos.movies.length,
+    "movies found on",
+    chalk.green("YTS"),
+    "after purify, checking Torrent9 now"
+  );
+  torrent9Infos = await checkDuplicates(torrent9Infos);
+  console.log(
+    torrent9Infos.movies.length,
+    "movies found on",
+    chalk.green("Torrent9"),
+    "after purify"
+  );
+};
+
+const saveToFile = async () => {
+  console.log(
+    "Saving",
+    chalk.green("ytsInfos"),
+    "to",
+    chalk.green("ytsTorrents.json")
+  );
+  fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
+    if (err) throw err;
+    console.log(chalk.green("ytsTorrents.json saved!"));
   });
+  console.log(
+    "Saving",
+    chalk.green("torrent9Infos"),
+    "to",
+    chalk.green("torrent9Torrents.json")
+  );
+  fs.writeFile(
+    "torrent9Torrents.json",
+    JSON.stringify(torrent9Infos),
+    (err) => {
+      if (err) throw err;
+      console.log(chalk.green("torrent9Torrents.json saved!"));
+    }
+  );
+};
+
+const groupAndSave = async () => {
+  console.log(
+    "Creating one big final list for every movies before storing it into the database"
+  );
+  console.log(
+    torrent9Infos.movies.length + ytsInfos.movies.length,
+    "movies in total before purify!"
+  );
+  await purifyAllTorrents();
+  console.log(
+    finalTorrents.number_of_movies,
+    "movies in total after last purify!",
+    "Saving it to",
+    chalk.green("finalTorrents.json")
+  );
+  fs.writeFile("finalTorrents.json", JSON.stringify(finalTorrents), (err) => {
+    if (err) throw err;
+    console.log(chalk.green("finalTorrents.json saved!"));
+  });
+};
+
+const getImages = async () => {
+  console.log("Getting images for", torrents.number_of_movies, "movies");
+  let missingImages = await hydrateImageBank();
+  console.log(
+    torrents.number_of_movies,
+    "photos saved in folder",
+    chalk.green("client/src/assets/torrents")
+  );
+  fs.writeFile("torrents.json", JSON.stringify(torrents), (err) => {
+    if (err) throw err;
+    console.log(chalk.green("finalTorrents.json saved!"));
+  });
+  if (missingImages.length) {
+    console.log(
+      "If you see this message, some images aren't saved to the bank. Saving the report to:",
+      chalk.green("missingImages.json")
+    );
+    fs.writeFile("missingImages.json", JSON.stringify(missingImages), (err) => {
+      if (err) throw err;
+      console.log(chalk.green("missingImages.json saved!"));
+    });
+  }
+};
+
+const resizeDirectoryImages = async () => {
+  return new Promise((resolve, reject) => {
+    glob(
+      "*.@(png|jpg|bmp)",
+      {
+        nocase: true,
+        nodir: true,
+        realpath: true,
+        cwd: "./../client/src/assets/torrents",
+      },
+      (err, files) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(files);
+        }
+      }
+    );
+  })
+    .then((files) => {
+      let i = 0;
+      movies = [];
+      while (i < 1000) {
+        movies.push(files[i]);
+        i++;
+      }
+      return Promise.all(
+        movies.map(async (path) => {
+          const image = await jimp.read(path);
+          await image.resize(160, 240);
+          await image.quality(90);
+          await image.writeAsync(path);
+        })
+      );
+    })
+    .catch((err) => console.log(i, err));
 };
 
 const initScraping = async () => {
   console.time("initScraping");
   //   console.log("Starting new scrap at", chalk.yellow(moment().format()));
-  //   let ytsInfos = await getYts.fetchAllTorrents();
-  //   let torrent9Infos = await getTorrent9.fetchAllTorrents();
-  //   console.log(
-  //     ytsInfos.movies.length,
-  //     "movies total found on",
-  //     chalk.green("YTS")
-  //   );
-  //   console.log(
-  //     torrent9Infos.movies.length,
-  //     "movies total found on",
-  //     chalk.green("Torrent9")
-  //   );
-  //   console.log("Re-purifying just to be sure there's no duplicates");
-  //   ytsInfos = await checkDuplicates(ytsInfos);
-  //   torrent9Infos = await checkDuplicates(torrent9Infos);
-  //   console.log(
-  //     ytsInfos.movies.length,
-  //     "movies found on",
-  //     chalk.green("YTS"),
-  //     "after purify"
-  //   );
-  //   console.log(
-  //     torrent9Infos.movies.length,
-  //     "movies found on",
-  //     chalk.green("Torrent9"),
-  //     "after purify"
-  //   );
-  //   console.log(
-  //     "Saving",
-  //     chalk.green("ytsInfos"),
-  //     "to",
-  //     chalk.green("ytsTorrents.json")
-  //   );
-  //   fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
-  //     if (err) throw err;
-  //     console.log(chalk.green("ytsTorrents.json saved!"));
-  //   });
-  //   console.log(
-  //     "Saving",
-  //     chalk.green("torrent9Infos"),
-  //     "to",
-  //     chalk.green("torrent9Torrents.json")
-  //   );
-  //   fs.writeFile(
-  //     "torrent9Torrents.json",
-  //     JSON.stringify(torrent9Infos),
-  //     (err) => {
-  //       if (err) throw err;
-  //       console.log(chalk.green("torrent9Torrents.json saved!"));
-  //     }
-  //   );
-  //   console.log(
-  //     "Creating one big final list for every movies before storing it into the database"
-  //   );
+  //   await getMovies();
   //   console.log(
   //     torrent9Infos.movies.length + ytsInfos.movies.length,
-  //     "movies in total before purify!"
+  //     "total movies"
   //   );
-  //   await purifyAllTorrents();
   //   console.log(
-  //     finalTorrents.number_of_movies,
-  //     "movies in total after last purify!",
-  //     "Saving it to",
-  //     chalk.green("finalTorrents.json")
+  //     "Starting purify to check one last time if there's no duplicates"
   //   );
-  // fs.writeFile("finalTorrents.json", JSON.stringify(finalTorrents), (err) => {
-  //   if (err) throw err;
-  //   console.log(chalk.green("finalTorrents.json saved!"));
-  // });
-  //   console.log("Getting images for", torrents.number_of_movies, "movies");
-  //   let missingImages = await hydrateImageBank();
-  //   console.log(
-  //     torrents.number_of_movies,
-  //     "photos saved in folder",
-  //     chalk.green("client/src/assets/torrents")
-  //   );
-  //   fs.writeFile("torrents.json", JSON.stringify(torrents), (err) => {
-  //     if (err) throw err;
-  //     console.log(chalk.green("finalTorrents.json saved!"));
-  //   });
-  //   if (missingImages.length) {
-  //     console.log(
-  //       "If you see this message, some images aren't saved to the bank. Saving the report to:",
-  //       chalk.green("missingImages.json")
-  //     );
-  //     fs.writeFile("missingImages.json", JSON.stringify(missingImages), (err) => {
-  //       if (err) throw err;
-  //       console.log(chalk.green("missingImages.json saved!"));
-  //     });
-  //   }
-  //   console.log(
-  //     "If the process isn't finished yet, there might be some images that are still being saved. Please don't quit either way you won't have the full image bank."
-  //   );
-  console.log(torrentsWithImagePath.movies[1215]);
+  //   await purifyBeforeGroup();
+  //   await saveToFile();
+  //   await groupAndSave();
+  //   await getImages();
+  await resizeDirectoryImages().then(console.log("ALL DONE!"));
+  console.log(
+    "If the process isn't finished yet, there might be some images that are still being saved. Please don't quit either way you won't have the full image bank."
+  );
   console.timeEnd("initScraping");
 };
 
