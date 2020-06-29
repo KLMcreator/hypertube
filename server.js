@@ -7,6 +7,10 @@ const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+
+//test
+const Jimp = require("jimp");
+
 // files
 const users = require("./api/users");
 const login = require("./api/login");
@@ -38,7 +42,6 @@ const storage = multer.diskStorage({
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
-
 // allow to use static path for files
 app.use(express.static("client"));
 // avoid xss
@@ -183,7 +186,9 @@ app.post("/api/login", (req, res) => {
 
 // Post create account user
 app.post("/api/signUp", (req, res) => {
-  const upload = multer({ storage: storage }).single("file");
+  const upload = multer({
+    storage: storage,
+  }).single("file");
   upload(req, res, function (err) {
     if (!req.file) {
       res.status(200).send({ edit: { msg: "No files uploaded." } });
@@ -212,6 +217,17 @@ app.post("/api/signUp", (req, res) => {
             )
               .then((result) => {
                 if (result) {
+                  let uploadedImg = req.file.path;
+                  Jimp.read(uploadedImg)
+                    .then(function (image) {
+                      image
+                        .resize(200, Jimp.AUTO)
+                        .quality(80)
+                        .write(uploadedImg);
+                    })
+                    .catch(function (err) {
+                      console.error(err);
+                    });
                   res.status(200).send({ signup: { signup: response.signup } });
                 } else {
                   res
@@ -273,6 +289,20 @@ app.post("/api/torrents/random", (req, res) => {
     });
 });
 
+// Get profile information of the logged user
+app.get("/api/profile", (req, res) => {
+  users
+    .getLoggedUser({
+      token: req.cookies._hypertubeAuth,
+    })
+    .then((response) => {
+      res.status(200).send({ user: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 //                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
@@ -306,20 +336,6 @@ app.post("/api/recover", (req, res) => {
           recover: { msg: "Given informations don't match any users." },
         });
       }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get profile information of the logged user
-app.get("/api/profile", (req, res) => {
-  users
-    .getLoggedUser({
-      token: req.cookies._hypertubeAuth,
-    })
-    .then((response) => {
-      res.status(200).send({ user: response });
     })
     .catch((error) => {
       res.status(500).send(error);
