@@ -23,33 +23,53 @@ const getQueryTorrents = (request, response) => {
           if (!results) {
             resolve({ msg: "Error while fetching torrent query" });
           } else {
-            console.log(req.selectedCategories, req.selectedLanguage);
             if (
-              req.selectedCategories &&
-              req.selectedCategories.length &&
-              req.selectedLanguage &&
-              req.selectedLanguage.length
+              (req.selectedCategories && req.selectedCategories.length) ||
+              (req.selectedLanguage && req.selectedLanguage.length)
             ) {
+              req.selectedLanguage = req.selectedLanguage.map((e) => e.value);
+              req.selectedCategories = req.selectedCategories.map(
+                (e) => e.value
+              );
               let torrents = [];
-              results.rows.map((e) => {
-                let languages = JSON.parse(e.languages);
-                let categories = JSON.parse(e.categories);
-                if (languages && languages.length) {
-                  languages.map((el) => {
-                    if (el.indexOf(req.selectedLanguage) >= 0) {
-                      torrents.push(e);
-                    }
-                  });
-                }
-                if (categories && categories.length) {
-                  categories.map((el) => {
-                    if (el.indexOf(req.selectedCategories) >= 0) {
-                      torrents.push(e);
-                    }
-                  });
+              results.rows.map((el) => {
+                let languages = JSON.parse(el.languages);
+                let categories = JSON.parse(el.categories);
+                let found_language = languages.filter(
+                  (language) => req.selectedLanguage.indexOf(language) >= 0
+                );
+                let found_category = categories.filter(
+                  (category) => req.selectedCategories.indexOf(category) >= 0
+                );
+                if (
+                  req.selectedLanguage &&
+                  req.selectedLanguage.length &&
+                  found_language.length &&
+                  req.selectedCategories &&
+                  req.selectedCategories.length &&
+                  found_category.length
+                ) {
+                  torrents.push(el);
+                } else if (
+                  req.selectedLanguage &&
+                  req.selectedLanguage.length &&
+                  found_language.length &&
+                  req.selectedCategories &&
+                  !req.selectedCategories.length &&
+                  !found_category.length
+                ) {
+                  torrents.push(el);
+                } else if (
+                  req.selectedLanguage &&
+                  !req.selectedLanguage.length &&
+                  !found_language.length &&
+                  req.selectedCategories &&
+                  req.selectedCategories.length &&
+                  found_category.length
+                ) {
+                  torrents.push(el);
                 }
               });
-              console.log(results.rows.length, torrents.length);
               resolve({ torrents: torrents });
             } else {
               resolve({ torrents: results.rows });
