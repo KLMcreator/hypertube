@@ -5,8 +5,8 @@ const getComments = (request, response) => {
   return new Promise(function (resolve, reject) {
     if (req.id) {
       pool.pool.query(
-        "SELECT c.id, c.user_id, u.username, u.photos, c.video_id, c.created_at, c.comment FROM comments c INNER JOIN users u ON u.id = c.user_id WHERE c.video_id = $1 ORDER BY id DESC;",
-        [req.id],
+        "SELECT c.id, c.user_id, u.username, u.photos, c.video_id, c.created_at, c.comment FROM comments c INNER JOIN users u ON u.id = c.user_id WHERE c.video_id = $1 ORDER BY id DESC LIMIT $2;",
+        [req.id, req.limit],
         (error, results) => {
           if (error) {
             reject(error);

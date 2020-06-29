@@ -7,6 +7,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import Input from "@material-ui/core/Input";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
+import Button from "@material-ui/core/Button";
 // icons
 import StarRateIcon from "@material-ui/icons/StarRate";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
@@ -150,43 +151,6 @@ const TorrentStyles = (theme) => ({
   commentSectionContainer: {
     padding: 10,
   },
-  commentInputContainer: {
-    paddingBottom: 20,
-  },
-  rootSend: {
-    width: "100%",
-  },
-  borderBottom: {
-    "&.MuiInput-underline:before": {
-      borderBottom: "1px solid #9A1300",
-    },
-    "&.MuiInput-underline:after": {
-      borderBottom: "1px solid #FA7B38",
-    },
-    "&.MuiInput-underline:hover::before": {
-      borderBottom: "2px solid #FBBA72",
-    },
-    "&.MuiInput-underline:hover::after": {
-      borderBottom: "1px solid #FBBA72",
-    },
-  },
-  sendIcon: {
-    color: "#9A1300",
-  },
-  inputColor: {
-    color: "#fff",
-  },
-  commentLength: {
-    marginLeft: 10,
-    color: "#474747",
-    fontSize: 16,
-  },
-  youtubePlayerContainer: {
-    display: "flex",
-  },
-  youtubePlayer: {
-    flex: 1,
-  },
 });
 
 const CommentStyles = (theme) => ({
@@ -219,6 +183,86 @@ const CommentStyles = (theme) => ({
     color: "#FBBA72",
   },
 });
+
+const YoutubeStyles = (theme) => ({
+  titleSection: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  youtubePlayerContainer: {
+    display: "flex",
+  },
+  youtubePlayer: {
+    flex: 1,
+  },
+});
+
+const CommentHeaderStyles = (theme) => ({
+  torrentTitle: {
+    fontWeight: "bold",
+    fontSize: 24,
+  },
+  commentInputContainer: {
+    paddingBottom: 20,
+  },
+  rootSend: {
+    width: "100%",
+  },
+  borderBottom: {
+    "&.MuiInput-underline:before": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:after": {
+      borderBottom: "1px solid #FA7B38",
+    },
+    "&.MuiInput-underline:hover::before": {
+      borderBottom: "2px solid #FBBA72",
+    },
+    "&.MuiInput-underline:hover::after": {
+      borderBottom: "1px solid #FBBA72",
+    },
+  },
+  sendIcon: {
+    color: "#9A1300",
+  },
+  inputColor: {
+    color: "#fff",
+  },
+  commentLength: {
+    marginLeft: 10,
+    color: "#474747",
+    fontSize: 16,
+  },
+});
+
+const RenderYoutube = (props) => {
+  const { isTrailer, ytCode, classes } = props;
+
+  if (isTrailer) {
+    return (
+      <div>
+        <div className={classes.titleSection}>Youtube trailer</div>
+        <div className={classes.youtubePlayerContainer}>
+          <iframe
+            className={classes.youtubePlayer}
+            width="560"
+            height="315"
+            title="player"
+            type="text/html"
+            id="player"
+            src={
+              "https://www.youtube.com/embed/" +
+              ytCode[1] +
+              "?enablejsapi=1&origin=http://example.com"
+            }
+            frameBorder="0"
+          ></iframe>
+        </div>
+      </div>
+    );
+  }
+  return <></>;
+};
 
 const RenderComment = (props) => {
   const [isMouseIn, setIsMouseIn] = useState(false);
@@ -256,10 +300,60 @@ const RenderComment = (props) => {
   );
 };
 
+const RenderCommentHeader = (props) => {
+  const { isLogged, classes, newComment } = props;
+  const [comment, setComment] = useState("");
+
+  const handleSendComment = (e) => {
+    e.preventDefault();
+    props.handleSendComment(comment);
+  };
+
+  return (
+    <div>
+      <div className={classes.torrentTitle}>
+        Comment section
+        <span className={classes.commentLength}>
+          {newComment ? newComment.length + "/1000" : undefined}
+        </span>
+      </div>
+      <div className={classes.commentInputContainer}>
+        {isLogged ? (
+          <form onSubmit={handleSendComment}>
+            <Input
+              classes={{
+                root: classes.rootSend,
+                input: classes.inputColor,
+                underline: classes.borderBottom,
+              }}
+              type="text"
+              placeholder="Write a comment about the movie..."
+              value={comment}
+              required
+              onChange={(e) => setComment(e.target.value)}
+              endAdornment={
+                <IconButton type="submit">
+                  <SendIcon className={classes.sendIcon}></SendIcon>
+                </IconButton>
+              }
+            />
+          </form>
+        ) : (
+          <div>
+            <div className={classes.titleSection}>
+              You must be logged to post a new comment
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const Torrent = (props) => {
   const ref = useRef(false);
+  const [limit, setLimit] = useState(10);
   const [isLoading, setIsLoading] = useState(true);
-  const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState([]);
   const [loggedId, setLoggedId] = useState(false);
   const { classes, auth } = props;
@@ -278,6 +372,8 @@ const Torrent = (props) => {
   );
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const Comment = withStyles(CommentStyles)(RenderComment);
+  const Youtube = withStyles(YoutubeStyles)(RenderYoutube);
+  const CommentHeader = withStyles(CommentHeaderStyles)(RenderCommentHeader);
 
   const checkIfLogged = () => {
     fetch("/api/checkToken")
@@ -290,11 +386,12 @@ const Torrent = (props) => {
       });
   };
 
-  const getComments = () => {
+  const getComments = (loadMore) => {
     fetch("/api/comments/torrent", {
       method: "POST",
       body: JSON.stringify({
         id: torrent.id,
+        limit: loadMore ? loadMore : limit,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -304,6 +401,9 @@ const Torrent = (props) => {
       .then((res) => {
         if (ref.current) {
           if (res.comments.comments) {
+            if (loadMore) {
+              setLimit(limit + 10);
+            }
             setComments(res.comments.comments);
             checkIfLogged();
           } else if (res.comments.msg) {
@@ -316,14 +416,13 @@ const Torrent = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  const handleSendComment = (e) => {
-    e.preventDefault();
-    if (newComment && newComment.length < 1000) {
+  const handleSendComment = (comment) => {
+    if (comment && comment.length < 1000) {
       fetch("/api/comments/send", {
         method: "POST",
         body: JSON.stringify({
           video_id: torrent.id,
-          comment: newComment,
+          comment: comment,
         }),
         headers: { "Content-Type": "application/json" },
       })
@@ -331,7 +430,6 @@ const Torrent = (props) => {
         .then((res) => {
           if (res.comments.comments) {
             getComments();
-            setNewComment("");
             props.auth.successMessage("Thanks for your comment!");
           } else {
             props.auth.errorMessage(res.comments.msg);
@@ -370,6 +468,24 @@ const Torrent = (props) => {
         props.auth.errorMessage("Invalid values.");
       }
     }
+  };
+
+  const RenderLoadMore = () => {
+    if (comments && comments.length > limit - 1) {
+      return (
+        <Button
+          variant="outlined"
+          color="secondary"
+          type="submit"
+          onClick={() => {
+            getComments(limit + 10);
+          }}
+        >
+          LOAD MORE COMMENTS
+        </Button>
+      );
+    }
+    return <></>;
   };
 
   useEffect(() => {
@@ -534,27 +650,7 @@ const Torrent = (props) => {
           </div>
         </div>
       </div>
-      {torrent.yt_trailer ? (
-        <div>
-          <div className={classes.titleSection}>Youtube trailer</div>
-          <div className={classes.youtubePlayerContainer}>
-            <iframe
-              className={classes.youtubePlayer}
-              width="560"
-              height="315"
-              title="player"
-              type="text/html"
-              id="player"
-              src={
-                "https://www.youtube.com/embed/" +
-                yt_code[1] +
-                "?enablejsapi=1&origin=http://example.com"
-              }
-              frameBorder="0"
-            ></iframe>
-          </div>
-        </div>
-      ) : undefined}
+      <Youtube ytCode={yt_code} isTrailer={torrent.yt_trailer ? true : false} />
       {yts_torrents.length ? (
         <div className={classes.torrentContainer}>
           <span className={classes.titleSection}>YTS</span>{" "}
@@ -710,41 +806,10 @@ const Torrent = (props) => {
         </div>
       ) : undefined}
       <div className={classes.commentSectionContainer}>
-        <div className={classes.torrentTitle}>
-          Comment section
-          <span className={classes.commentLength}>
-            {newComment ? newComment.length + "/1000" : undefined}
-          </span>
-        </div>
-        <div className={classes.commentInputContainer}>
-          {auth.isLogged ? (
-            <form onSubmit={handleSendComment}>
-              <Input
-                classes={{
-                  root: classes.rootSend,
-                  input: classes.inputColor,
-                  underline: classes.borderBottom,
-                }}
-                type="text"
-                placeholder="Write a comment about the movie..."
-                value={newComment}
-                required
-                onChange={(e) => setNewComment(e.target.value)}
-                endAdornment={
-                  <IconButton type="submit">
-                    <SendIcon className={classes.sendIcon}></SendIcon>
-                  </IconButton>
-                }
-              />
-            </form>
-          ) : (
-            <div>
-              <div className={classes.titleSection}>
-                You must be logged to post a new comment
-              </div>
-            </div>
-          )}
-        </div>
+        <CommentHeader
+          isLogged={props.auth.isLogged}
+          handleSendComment={handleSendComment}
+        />
         <div>
           {comments.length ? (
             comments.map((el) => (
@@ -761,6 +826,9 @@ const Torrent = (props) => {
               No comments, be the first to post one
             </div>
           )}
+        </div>
+        <div className={classes.textAlignCenter}>
+          <RenderLoadMore />
         </div>
       </div>
     </div>
