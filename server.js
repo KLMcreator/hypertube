@@ -330,6 +330,12 @@ app.post("/api/comments/delete", (req, res) => {
     .deleteComment({ req: req.body, token: req.cookies._hypertubeAuth })
     .then((response) => {
       res.status(200).send({ comments: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Get profile information of the logged user
 app.get("/api/profile", (req, res) => {
   users
