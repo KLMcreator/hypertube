@@ -1,5 +1,9 @@
+// files
+import "rc-slider/assets/index.css";
 // react
 import React, { useState, useEffect, useRef } from "react";
+import Select, { createFilter } from "react-select";
+import Range from "rc-slider/lib/Range";
 import { useHistory } from "react-router-dom";
 // framework
 import { withStyles } from "@material-ui/core/styles";
@@ -10,8 +14,6 @@ import Button from "@material-ui/core/Button";
 import SearchIcon from "@material-ui/icons/Search";
 import StarRateIcon from "@material-ui/icons/StarRate";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
-
-let searchWaiting = 0;
 
 const HomeStyles = (theme) => ({
   root: {
@@ -64,6 +66,25 @@ const SearchBarStyles = (theme) => ({
   },
   inputColor: {
     color: "#fff",
+  },
+  selectContainer: {
+    display: "flex",
+    marginTop: 5,
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
+  },
+  fullWidth: {
+    width: "90%",
+  },
+  rangeContainer: {
+    flex: 1,
+    margin: 3,
+    textAlign: "-webkit-center",
+  },
+  selectDivider: {
+    flex: 1,
+    margin: 3,
   },
 });
 
@@ -259,12 +280,60 @@ const RenderTorrents = (props) => {
 };
 
 const RenderSearchBar = (props) => {
-  const [search, setSearch] = useState("");
-  const { classes } = props;
+  const [search, setSearch] = useState(props.search);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedLanguage, setSelectedLanguage] = useState([]);
+  const [selectedYear, setSelectedYear] = useState([
+    props.settings.minProductionYear,
+    props.settings.maxProductionYear,
+  ]);
+  const [selectedRating, setSelectedRating] = useState([0, 10]);
+  const { settings, classes } = props;
+  const categories = props.settings.categories;
+  const languages = props.settings.languages;
+  const selectStyles = {
+    option: (provided) => ({
+      ...provided,
+
+      borderBottom: "1px solid #EFF1F3",
+      color: "#111",
+      padding: 10,
+      "&:hover": {
+        cursor: "pointer",
+      },
+    }),
+  };
 
   const handleSearchTorrent = (e) => {
-    props.handleSearchTorrent(e.target.value);
-    setSearch(e.target.value);
+    e.preventDefault();
+    props.handleSearchTorrent(
+      search,
+      selectedCategories,
+      selectedLanguage,
+      selectedYear,
+      selectedRating
+    );
+  };
+
+  const handleResetSearch = (e) => {
+    e.preventDefault();
+    props.handleResetSearch();
+  };
+
+  const handleAppendTags = (tagToAdd) => {
+    setSelectedCategories(tagToAdd);
+  };
+
+  const handleAppendLanguage = (languageToAdd) => {
+    setSelectedLanguage(languageToAdd);
+  };
+
+  const handleFilterYear = (e) => {
+    setSelectedYear(e);
+  };
+
+  const handleFilterRating = (e) => {
+    setSelectedRating(e);
   };
 
   return (
@@ -279,9 +348,112 @@ const RenderSearchBar = (props) => {
         placeholder="Search for a torrent..."
         value={search}
         required
-        onChange={handleSearchTorrent}
+        onChange={(e) => setSearch(e.target.value)}
         endAdornment={<SearchIcon className={classes.sendIcon}></SearchIcon>}
       />
+      <div className={classes.selectContainer}>
+        <div className={classes.selectDivider}>
+          <Select
+            styles={selectStyles}
+            closeMenuOnSelect={false}
+            isMulti
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            isSearchable={true}
+            options={categories}
+            key={"changeCategories"}
+            onChange={handleAppendTags}
+            placeholder={"Movie categories"}
+          />
+        </div>
+        <div className={classes.selectDivider}>
+          <Select
+            styles={selectStyles}
+            closeMenuOnSelect={false}
+            isMulti
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            isSearchable={true}
+            options={languages}
+            key={"changeLanguage"}
+            onChange={handleAppendLanguage}
+            placeholder={"Language"}
+          />
+        </div>
+      </div>
+      <div className={classes.selectContainer}>
+        <div className={classes.rangeContainer}>
+          Year: {selectedYear[0] + " - " + selectedYear[1]}
+          <Range
+            className={classes.fullWidth}
+            trackStyle={[{ backgroundColor: "#9A1300" }]}
+            handleStyle={[
+              {
+                borderColor: "#FBBA72",
+                backgroundColor: "#9A1300",
+              },
+              {
+                borderColor: "#FBBA72",
+                backgroundColor: "#9A1300",
+              },
+            ]}
+            min={settings.minProductionYear}
+            max={settings.maxProductionYear}
+            defaultValue={[
+              settings.minProductionYear,
+              settings.maxProductionYear,
+            ]}
+            onChange={handleFilterYear}
+          />
+        </div>
+        <div className={classes.rangeContainer}>
+          Rating: {selectedRating[0] + " - " + selectedRating[1]}
+          <Range
+            className={classes.fullWidth}
+            trackStyle={[{ backgroundColor: "#9A1300" }]}
+            handleStyle={[
+              {
+                borderColor: "#FBBA72",
+                backgroundColor: "#9A1300",
+              },
+              {
+                borderColor: "#FBBA72",
+                backgroundColor: "#9A1300",
+              },
+            ]}
+            min={0}
+            max={10}
+            defaultValue={[0, 10]}
+            onChange={handleFilterRating}
+          />
+        </div>
+      </div>
+      <div className={classes.selectContainer}>
+        <div className={classes.selectDivider}>
+          <Button
+            className={classes.fullWidth}
+            variant="outlined"
+            color="secondary"
+            type="submit"
+            onClick={handleResetSearch}
+          >
+            RESET SEARCH
+          </Button>
+        </div>
+        <div className={classes.selectDivider}>
+          <Button
+            className={classes.fullWidth}
+            variant="outlined"
+            color="secondary"
+            type="submit"
+            onClick={handleSearchTorrent}
+          >
+            SEARCH TORRENTS
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -291,6 +463,7 @@ const Home = (props) => {
   const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState("");
   const [torrents, setTorrents] = useState([]);
+  const [settings, setSettings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;
   const Torrents = withStyles(TorrentContainerStyles)(RenderTorrents);
@@ -300,7 +473,15 @@ const Home = (props) => {
     fetch("/api/torrents/query", {
       method: "POST",
       body: JSON.stringify({
-        query: query,
+        query: query.query,
+        selectedCategories: query.selectedCategories
+          ? query.selectedCategories
+          : null,
+        selectedLanguage: query.selectedLanguage
+          ? query.selectedLanguage
+          : null,
+        selectedYear: query.selectedYear ? query.selectedYear : null,
+        selectedRating: query.selectedRating ? query.selectedRating : null,
         limit: loadMore ? loadMore : limit,
       }),
       headers: {
@@ -323,7 +504,30 @@ const Home = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  const getRandomTorrents = () => {
+  const getTorrentSettings = () => {
+    fetch("/api/torrents/get/settings", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.settings.settings) {
+          setSettings({
+            minProductionYear: res.settings.settings[0].minproductionyear,
+            maxProductionYear: res.settings.settings[0].maxproductionyear,
+            categories: JSON.parse(res.settings.settings[0].categories),
+            languages: JSON.parse(res.settings.settings[0].languages),
+          });
+          setIsLoading(false);
+        } else if (res.settings.msg) {
+          props.auth.errorMessage(res.settings.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
+  const getRandomTorrents = (reset) => {
     fetch("/api/torrents/random", {
       method: "POST",
     })
@@ -332,7 +536,9 @@ const Home = (props) => {
         if (ref.current) {
           if (res.torrents.torrents) {
             setTorrents(res.torrents);
-            setIsLoading(false);
+            if (!reset) {
+              getTorrentSettings();
+            }
           } else if (res.torrents.msg) {
             props.auth.errorMessage(res.torrents.msg);
           } else {
@@ -343,21 +549,26 @@ const Home = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  const handleSearchTorrent = (query) => {
-    if (searchWaiting) {
-      clearTimeout(searchWaiting);
-    }
-    searchWaiting = setTimeout(async () => {
-      searchWaiting = null;
-      if (query) {
-        await getQueryTorrents(query);
-        setSearch(query);
-      } else {
-        setSearch("");
-        getRandomTorrents();
-        setLimit(15);
-      }
-    }, 750);
+  const handleResetSearch = () => {
+    getRandomTorrents(true);
+    setSearch("");
+  };
+
+  const handleSearchTorrent = async (
+    query,
+    selectedCategories,
+    selectedLanguage,
+    selectedYear,
+    selectedRating
+  ) => {
+    await getQueryTorrents({
+      query: query,
+      selectedCategories: selectedCategories,
+      selectedLanguage: selectedLanguage,
+      selectedYear: selectedYear,
+      selectedRating: selectedRating,
+    });
+    setSearch(query);
   };
 
   const RenderLoadMore = () => {
@@ -368,7 +579,7 @@ const Home = (props) => {
           color="secondary"
           type="submit"
           onClick={() => {
-            getQueryTorrents(search, limit + 15);
+            getQueryTorrents({ query: search }, limit + 15);
           }}
         >
           LOAD MORE
@@ -398,7 +609,12 @@ const Home = (props) => {
 
   return (
     <div className={classes.root}>
-      <SearchBar search={search} handleSearchTorrent={handleSearchTorrent} />
+      <SearchBar
+        settings={settings}
+        search={search}
+        handleResetSearch={handleResetSearch}
+        handleSearchTorrent={handleSearchTorrent}
+      />
       {torrents.torrents.length ? (
         <Torrents torrents={torrents.torrents} />
       ) : (

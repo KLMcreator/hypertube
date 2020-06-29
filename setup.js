@@ -32,12 +32,28 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT '0', yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
         } else {
           console.log("TABLE torrents HAS BEEN CREATED.");
+          resolve(true);
+        }
+      }
+    );
+  });
+};
+
+const setupSettings = async () => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      (error, res) => {
+        if (error) {
+          resolve(error);
+        } else {
+          console.log("TABLE settings HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -161,7 +177,7 @@ const insertIntoTorrents = (torrent) => {
         torrent.torrent9_id ? torrent.torrent9_id : null,
         torrent.title ? torrent.title : null,
         torrent.production_year ? torrent.production_year : null,
-        torrent.rating ? torrent.rating : null,
+        torrent.rating ? torrent.rating : "0",
         torrent.yts_url ? torrent.yts_url : null,
         torrent.torrent9_url ? torrent.torrent9_url : null,
         torrent.cover_url ? torrent.cover_url : null,
@@ -227,6 +243,80 @@ const populateTorrents = () => {
   });
 };
 
+const populateSettings = () => {
+  return new Promise(async (resolve, reject) => {
+    console.log(
+      "Getting min/max production year, available languages and every categories"
+    );
+    let settings = {
+      minProductionYear: Number.POSITIVE_INFINITY,
+      maxProductionYear: 0,
+      categories: [],
+      languages: [],
+    };
+    torrents.movies.map((e) => {
+      if (e.production_year && e.production_year > settings.maxProductionYear) {
+        settings.maxProductionYear = e.production_year;
+      }
+      if (e.production_year && e.production_year < settings.minProductionYear) {
+        settings.minProductionYear = e.production_year;
+      }
+      if (e.categories && e.categories.length) {
+        e.categories.map((category) => {
+          let pos = settings.categories
+            .map((e) => {
+              return e.value;
+            })
+            .indexOf(category);
+          if (pos === -1) {
+            settings.categories.push({ value: category, label: category });
+          }
+        });
+      }
+      if (e.languages && e.languages.length) {
+        e.languages.map((languages) => {
+          let pos = settings.languages
+            .map((e) => {
+              return e.value;
+            })
+            .indexOf(languages);
+          if (pos === -1) {
+            settings.languages.push({ value: languages, label: languages });
+          }
+        });
+      }
+    });
+    pool.query(
+      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages) VALUES($1, $2, $3, $4)",
+      [
+        settings.minProductionYear,
+        settings.maxProductionYear,
+        JSON.stringify(settings.categories),
+        JSON.stringify(settings.languages),
+      ],
+      (error, results) => {
+        if (error) {
+          console.log(error);
+          resolve(error);
+        } else {
+          console.log(
+            "Settings saved! Oldest movies is from",
+            settings.minProductionYear,
+            "most recent is from",
+            settings.maxProductionYear,
+            ". With a total of",
+            settings.categories.length,
+            "categories and",
+            settings.languages.length,
+            "languages"
+          );
+          resolve(0);
+        }
+      }
+    );
+  });
+};
+
 const setupDatabase = () => {
   return new Promise(function (resolve, reject) {
     rootPool.query(
@@ -256,6 +346,7 @@ const setupDatabase = () => {
                           setupComments(),
                           setupViews(),
                           setupUsers(),
+                          setupSettings(),
                         ])
                           .then((res) => {
                             if (res[0] && res[1] && res[2] && res[3]) {
@@ -263,7 +354,11 @@ const setupDatabase = () => {
                                 .then((res) => {
                                   populateTorrents()
                                     .then((res) => {
-                                      resolve(res);
+                                      populateSettings()
+                                        .then((res) => {
+                                          resolve(res);
+                                        })
+                                        .catch((err) => reject(err));
                                     })
                                     .catch((err) => reject(err));
                                 })
