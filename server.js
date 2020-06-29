@@ -51,7 +51,6 @@ app.use(bodyParser.raw());
 app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-//                  already checked
 const sendMail = (receiver, type, random) => {
   return new Promise(function (resolve, reject) {
     if (type && (type === 1 || type === 2) && receiver && random) {
@@ -112,7 +111,7 @@ app.get("/api/checkToken", function (req, res) {
           })
           .then((response) => {
             if (response.token === true) {
-              res.send({ status: true });
+              res.send({ status: true, id: response.id });
             } else {
               res.send({ status: false });
             }
@@ -289,6 +288,18 @@ app.post("/api/comments/torrent", (req, res) => {
 app.post("/api/comments/send", (req, res) => {
   comments
     .sendComment({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ comments: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Delete comment
+app.post("/api/comments/delete", (req, res) => {
+  comments
+    .deleteComment({ req: req.body, token: req.cookies._hypertubeAuth })
     .then((response) => {
       res.status(200).send({ comments: response });
     })

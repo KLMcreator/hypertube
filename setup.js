@@ -48,7 +48,7 @@ const setupTorrents = async () => {
 const setupComments = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS comments (id SERIAL,user_id INTEGER NULL DEFAULT NULL,video_id INTEGER NULL DEFAULT NULL,created_at TIMESTAMP DEFAULT NULL,comment VARCHAR(300) DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS comments (id SERIAL,user_id INTEGER NULL DEFAULT NULL,video_id INTEGER NULL DEFAULT NULL,created_at TIMESTAMP DEFAULT NULL,comment VARCHAR(1000) DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);

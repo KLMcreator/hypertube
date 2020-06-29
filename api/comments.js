@@ -29,7 +29,7 @@ const sendComment = (request, response) => {
   return new Promise(function (resolve, reject) {
     if (req.video_id && req.comment && token) {
       req.comment = req.comment.trim();
-      if (req.comment && req.comment.length < 300) {
+      if (req.comment && req.comment.length < 1000) {
         pool.pool.query(
           "INSERT INTO comments (user_id, video_id, created_at, comment) VALUES ((SELECT id FROM users WHERE connected_token = $1), $2, (SELECT NOW()), $3);",
           [token, req.video_id, req.comment],
@@ -47,7 +47,7 @@ const sendComment = (request, response) => {
           }
         );
       } else {
-        if (req.comment && req.comment.length > 300) {
+        if (req.comment && req.comment.length > 1000) {
           resolve({ msg: "You dirty boy, it's 300 char max, I SAID." });
         } else {
           resolve({ msg: "Unable to send empty comments." });
@@ -62,34 +62,25 @@ const sendComment = (request, response) => {
 const deleteComment = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {
-    if (req.video_id && req.comment && token) {
-      req.comment = req.comment.trim();
-      if (req.comment && req.comment.length < 300) {
-        pool.pool.query(
-          "INSERT INTO comments (user_id, video_id, created_at, comment) VALUES ((SELECT id FROM users WHERE connected_token = $1), $2, (SELECT NOW()), $3);",
-          [token, req.video_id, req.comment],
-          (error, results) => {
-            if (error) {
-              reject(error);
-            }
-            if (!results.rowCount) {
-              resolve({
-                msg: "Unable to send your comment.",
-              });
-            } else {
-              resolve({ comments: true });
-            }
+    if (req.user_id && req.video_id && req.comment_id && token) {
+      pool.pool.query(
+        "DELETE FROM comments WHERE video_id = $1 AND user_id = $2 AND user_id = (SELECT id FROM users WHERE connected_token = $3) AND id = $4;",
+        [req.video_id, req.user_id, token, req.comment_id],
+        (error, results) => {
+          if (error) {
+            reject(error);
           }
-        );
-      } else {
-        if (req.comment && req.comment.length > 300) {
-          resolve({ msg: "You dirty boy, it's 300 char max, I SAID." });
-        } else {
-          resolve({ msg: "Unable to send empty comments." });
+          if (!results.rowCount) {
+            resolve({
+              msg: "Unable to delete your comment.",
+            });
+          } else {
+            resolve({ comments: true });
+          }
         }
-      }
+      );
     } else {
-      resolve({ msg: "Unable to send your comment." });
+      resolve({ msg: "Unable to delete your comment." });
     }
   });
 };

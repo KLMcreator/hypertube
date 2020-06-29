@@ -1,9 +1,6 @@
 const moment = require("moment");
 const chalk = require("chalk");
-const request = require("request");
 const crypto = require("crypto");
-const jimp = require("jimp");
-const glob = require("glob");
 
 const Crawler = require("crawler");
 

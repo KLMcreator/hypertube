@@ -10,6 +10,7 @@ import IconButton from "@material-ui/core/IconButton";
 // icons
 import StarRateIcon from "@material-ui/icons/StarRate";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import SendIcon from "@material-ui/icons/Send";
 
 const TorrentStyles = (theme) => ({
@@ -32,8 +33,12 @@ const TorrentStyles = (theme) => ({
   },
   torrentInfoContainer: {
     display: "flex",
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
   },
   torrentImageContainer: {
+    flexDirection: "column",
     flex: 2,
     padding: 20,
   },
@@ -42,8 +47,12 @@ const TorrentStyles = (theme) => ({
     borderRadius: 6,
   },
   torrentDetailsContainer: {
+    flexDirection: "column",
     flex: 4,
     padding: 20,
+    [theme.breakpoints.up("lg")]: {
+      flex: 7,
+    },
   },
   torrentTitleContainer: {
     flex: 5,
@@ -78,6 +87,11 @@ const TorrentStyles = (theme) => ({
     fontWeight: "bold",
     fontSize: 18,
   },
+  titleSectionCenter: {
+    fontWeight: "bold",
+    fontSize: 18,
+    textAlign: "center",
+  },
   textSection: {
     fontSize: 18,
     color: "#D0D0D0",
@@ -90,17 +104,26 @@ const TorrentStyles = (theme) => ({
   directLink: {
     margin: 5,
   },
+  torrentContainer: {
+    marginTop: 10,
+  },
   torrentListContainer: {
     display: "flex",
     flexWrap: "wrap",
   },
   torrentElContainer: {
-    flex: 1,
-    flexBasis: "1 0 30%",
+    flexGrow: 1,
+    width: "40%",
     backgroundColor: "#373737",
     borderRadius: 6,
     margin: 10,
     padding: 10,
+    [theme.breakpoints.up("lg")]: {
+      width: "20%",
+    },
+    [theme.breakpoints.down("xs")]: {
+      width: "100%",
+    },
   },
   torrentElDetail: {
     flex: 1,
@@ -153,6 +176,20 @@ const TorrentStyles = (theme) => ({
   inputColor: {
     color: "#fff",
   },
+  commentLength: {
+    marginLeft: 10,
+    color: "#474747",
+    fontSize: 16,
+  },
+  youtubePlayerContainer: {
+    display: "flex",
+  },
+  youtubePlayer: {
+    flex: 1,
+  },
+});
+
+const CommentStyles = (theme) => ({
   commentElContainer: {
     display: "flex",
     borderRadius: 6,
@@ -164,8 +201,11 @@ const TorrentStyles = (theme) => ({
     flex: 1,
     justifyContent: "center",
     textAlign: "-webkit-center",
+    padding: 3,
+    width: "100%",
   },
   commentTextContainer: {
+    padding: 3,
     flex: 9,
   },
   commentHeader: {
@@ -175,13 +215,53 @@ const TorrentStyles = (theme) => ({
     color: "#EFF1F3",
     fontSize: 16,
   },
+  deleteIcon: {
+    color: "#FBBA72",
+  },
 });
+
+const RenderComment = (props) => {
+  const [isMouseIn, setIsMouseIn] = useState(false);
+  const { auth, loggedId, comment, classes } = props;
+
+  const handleDeleteComment = () => {
+    props.handleDeleteComment(loggedId, comment.id, comment.video_id);
+  };
+
+  return (
+    <div
+      onMouseEnter={() => setIsMouseIn(true)}
+      onMouseLeave={() => setIsMouseIn(false)}
+      className={classes.commentElContainer}
+    >
+      <div className={classes.commentAvatarContainer}>
+        <Avatar
+          alt={comment.username}
+          src={"./src/assets/photos/" + comment.photos}
+        />
+      </div>
+      <div className={classes.commentTextContainer}>
+        <div className={classes.commentHeader}>
+          From <b>{comment.username}</b>,{" "}
+          {moment(comment.created_at).format("DD/MM/YYYY HH:mm:ss ")}
+        </div>
+        <div className={classes.commentText}>{comment.comment}</div>
+      </div>
+      {auth.isLogged && isMouseIn && loggedId === comment.user_id ? (
+        <IconButton onClick={handleDeleteComment}>
+          <DeleteForeverIcon className={classes.deleteIcon}></DeleteForeverIcon>
+        </IconButton>
+      ) : undefined}
+    </div>
+  );
+};
 
 const Torrent = (props) => {
   const ref = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [loggedId, setLoggedId] = useState(false);
   const { classes, auth } = props;
   const { torrent } = props.props.location.state;
   const yt_code = torrent.yt_trailer
@@ -197,6 +277,18 @@ const Torrent = (props) => {
     (el) => el.source === "yts"
   );
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
+  const Comment = withStyles(CommentStyles)(RenderComment);
+
+  const checkIfLogged = () => {
+    fetch("/api/checkToken")
+      .then((resLogged) => resLogged.json())
+      .then((resLogged) => {
+        if (resLogged.status) {
+          setLoggedId(resLogged.id);
+        }
+        setIsLoading(false);
+      });
+  };
 
   const getComments = () => {
     fetch("/api/comments/torrent", {
@@ -213,7 +305,7 @@ const Torrent = (props) => {
         if (ref.current) {
           if (res.comments.comments) {
             setComments(res.comments.comments);
-            setIsLoading(false);
+            checkIfLogged();
           } else if (res.comments.msg) {
             props.auth.errorMessage(res.comments.msg);
           } else {
@@ -226,7 +318,7 @@ const Torrent = (props) => {
 
   const handleSendComment = (e) => {
     e.preventDefault();
-    if (newComment.length < 300) {
+    if (newComment && newComment.length < 1000) {
       fetch("/api/comments/send", {
         method: "POST",
         body: JSON.stringify({
@@ -242,12 +334,41 @@ const Torrent = (props) => {
             setNewComment("");
             props.auth.successMessage("Thanks for your comment!");
           } else {
-            props.auth.errorMessage(res.message.msg);
+            props.auth.errorMessage(res.comments.msg);
           }
         })
         .catch((err) => props.auth.errorMessage(err));
     } else {
-      props.auth.errorMessage("Comment max length is 300 char.");
+      props.auth.errorMessage("Comment max length is 1000 char.");
+    }
+  };
+
+  const handleDeleteComment = (loggedId, id, video_id) => {
+    let confirmed = window.confirm("Would you like to delete your comment?");
+    if (confirmed) {
+      if (loggedId && id && video_id) {
+        fetch("/api/comments/delete", {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: loggedId,
+            video_id: video_id,
+            comment_id: id,
+          }),
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            if (res.comments.comments) {
+              getComments();
+              props.auth.successMessage("Your comment has been deleted");
+            } else {
+              props.auth.errorMessage(res.comments.msg);
+            }
+          })
+          .catch((err) => props.auth.errorMessage(err));
+      } else {
+        props.auth.errorMessage("Invalid values.");
+      }
     }
   };
 
@@ -282,6 +403,59 @@ const Torrent = (props) => {
               e.target.src = "./src/assets/img/nophotos.png";
             }}
           ></img>
+          <div className={classes.divMargin}>
+            <div className={classes.titleSection}>Direct links</div>
+            <div className={classes.torrentInfoContainer}>
+              {torrent.imdb_code ? (
+                <div className={classes.directLink}>
+                  <a
+                    href={"https://www.imdb.com/title/" + torrent.imdb_code}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      alt={torrent.imdb_code}
+                      width="64"
+                      height="32"
+                      src="./src/assets/img/imdb.png"
+                    ></img>
+                  </a>
+                </div>
+              ) : undefined}
+              {torrent.torrent9_url ? (
+                <div className={classes.directLink}>
+                  <a
+                    href={torrent.torrent9_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      alt={torrent.torrent9_url}
+                      width="64"
+                      height="32"
+                      src="./src/assets/img/torrent9.png"
+                    ></img>
+                  </a>
+                </div>
+              ) : undefined}
+              {torrent.yts_url ? (
+                <div className={classes.directLink}>
+                  <a
+                    href={torrent.yts_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      alt={torrent.yts_url}
+                      width="64"
+                      height="32"
+                      src="./src/assets/img/yts.png"
+                    ></img>
+                  </a>
+                </div>
+              ) : undefined}
+            </div>
+          </div>
         </div>
         <div className={classes.torrentDetailsContainer}>
           <div className={classes.torrentInfoContainer}>
@@ -358,66 +532,14 @@ const Torrent = (props) => {
               {torrent.lastviewed_at ? torrent.lastviewed_at : "Never"}
             </span>
           </div>
-          <div className={classes.divMargin}>
-            <div className={classes.titleSection}>Direct links</div>
-            <div className={classes.torrentInfoContainer}>
-              {torrent.imdb_code ? (
-                <div className={classes.directLink}>
-                  <a
-                    href={"https://www.imdb.com/title/" + torrent.imdb_code}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      alt={torrent.imdb_code}
-                      width="64"
-                      height="32"
-                      src="./src/assets/img/imdb.png"
-                    ></img>
-                  </a>
-                </div>
-              ) : undefined}
-              {torrent.torrent9_url ? (
-                <div className={classes.directLink}>
-                  <a
-                    href={torrent.torrent9_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      alt={torrent.torrent9_url}
-                      width="64"
-                      height="32"
-                      src="./src/assets/img/torrent9.png"
-                    ></img>
-                  </a>
-                </div>
-              ) : undefined}
-              {torrent.yts_url ? (
-                <div className={classes.directLink}>
-                  <a
-                    href={torrent.yts_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img
-                      alt={torrent.yts_url}
-                      width="64"
-                      height="32"
-                      src="./src/assets/img/yts.png"
-                    ></img>
-                  </a>
-                </div>
-              ) : undefined}
-            </div>
-          </div>
         </div>
       </div>
       {torrent.yt_trailer ? (
         <div>
           <div className={classes.titleSection}>Youtube trailer</div>
-          <div className={classes.textAlignCenter}>
+          <div className={classes.youtubePlayerContainer}>
             <iframe
+              className={classes.youtubePlayer}
               width="560"
               height="315"
               title="player"
@@ -434,7 +556,7 @@ const Torrent = (props) => {
         </div>
       ) : undefined}
       {yts_torrents.length ? (
-        <div>
+        <div className={classes.torrentContainer}>
           <span className={classes.titleSection}>YTS</span>{" "}
           <FiberManualRecordIcon
             style={{
@@ -463,7 +585,7 @@ const Torrent = (props) => {
                   </div>
                   <div className={classes.torrentSeedsContainer}>
                     <div className={classes.torrentSeedPeers}>
-                      <div className={classes.torrentElDetail}>
+                      <div className={classes.titleSectionCenter}>
                         <a
                           className={classes.peers}
                           href={el.url}
@@ -476,7 +598,7 @@ const Torrent = (props) => {
                     </div>
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
-                        <div className={classes.titleSection}>
+                        <div className={classes.titleSectionCenter}>
                           <a
                             className={classes.peers}
                             href={el.torrent}
@@ -490,7 +612,7 @@ const Torrent = (props) => {
                     </div>
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
-                        <div className={classes.titleSection}>
+                        <div className={classes.titleSectionCenter}>
                           <a
                             className={classes.peers}
                             href={el.torrent}
@@ -510,7 +632,7 @@ const Torrent = (props) => {
         </div>
       ) : undefined}
       {t9_torrents.length ? (
-        <div>
+        <div className={classes.torrentContainer}>
           <span className={classes.titleSection}>Torrent9</span>{" "}
           <FiberManualRecordIcon
             style={{
@@ -541,7 +663,7 @@ const Torrent = (props) => {
                   </div>
                   <div className={classes.torrentSeedsContainer}>
                     <div className={classes.torrentSeedPeers}>
-                      <div className={classes.torrentElDetail}>
+                      <div className={classes.titleSectionCenter}>
                         <a
                           className={classes.peers}
                           href={el.url}
@@ -554,7 +676,7 @@ const Torrent = (props) => {
                     </div>
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
-                        <div className={classes.titleSection}>
+                        <div className={classes.titleSectionCenter}>
                           <a
                             className={classes.peers}
                             href={el.torrent}
@@ -568,7 +690,7 @@ const Torrent = (props) => {
                     </div>
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
-                        <div className={classes.titleSection}>
+                        <div className={classes.titleSectionCenter}>
                           <a
                             className={classes.peers}
                             href={el.torrent}
@@ -588,7 +710,12 @@ const Torrent = (props) => {
         </div>
       ) : undefined}
       <div className={classes.commentSectionContainer}>
-        <div className={classes.torrentTitle}>Comment section</div>
+        <div className={classes.torrentTitle}>
+          Comment section
+          <span className={classes.commentLength}>
+            {newComment ? newComment.length + "/1000" : undefined}
+          </span>
+        </div>
         <div className={classes.commentInputContainer}>
           {auth.isLogged ? (
             <form onSubmit={handleSendComment}>
@@ -604,12 +731,7 @@ const Torrent = (props) => {
                 required
                 onChange={(e) => setNewComment(e.target.value)}
                 endAdornment={
-                  <IconButton
-                    disabled={
-                      !newComment || newComment.length > 300 ? true : false
-                    }
-                    type="submit"
-                  >
+                  <IconButton type="submit">
                     <SendIcon className={classes.sendIcon}></SendIcon>
                   </IconButton>
                 }
@@ -626,27 +748,17 @@ const Torrent = (props) => {
         <div>
           {comments.length ? (
             comments.map((el) => (
-              <div key={el.id} className={classes.commentElContainer}>
-                <div className={classes.commentAvatarContainer}>
-                  <Avatar
-                    alt={el.username}
-                    src={"./src/assets/photos/" + el.photos}
-                  />
-                </div>
-                <div className={classes.commentTextContainer}>
-                  <div className={classes.commentHeader}>
-                    From <b>{el.username}</b>,{" "}
-                    {moment(el.created_at).format("DD/MM/YYYY HH:mm:ss ")}
-                  </div>
-                  <div className={classes.commentText}>{el.comment}</div>
-                </div>
-              </div>
+              <Comment
+                key={el.id}
+                auth={props.auth}
+                loggedId={loggedId}
+                handleDeleteComment={handleDeleteComment}
+                comment={el}
+              ></Comment>
             ))
           ) : (
-            <div>
-              <div className={classes.titleSection}>
-                No comments, be the first to post one
-              </div>
+            <div className={classes.titleSection}>
+              No comments, be the first to post one
             </div>
           )}
         </div>
