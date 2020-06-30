@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
 
 const profileStyles = (theme) => ({
   root: { flexGrow: 1 },
@@ -60,6 +59,7 @@ const Profile = (props) => {
     return () => {
       setIsLoading(true);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (isLoading) {
@@ -75,6 +75,7 @@ const Profile = (props) => {
       <Grid container className={classes.container} spacing={3}>
         <Grid item>
           <img
+            alt={user.photo}
             className={classes.userImage}
             src={"./src/assets/photos/" + user.photo}
           ></img>
