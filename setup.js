@@ -3,8 +3,10 @@ const faker = require("faker");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
 const fs = require("fs");
+const path = "./scripts/finalTorrents.json";
+const scrap_machine = "./scripts/search.js";
 
-let torrents = JSON.parse(fs.readFileSync("./scripts/torrents.json"));
+let torrents;
 let totalUser = 42;
 
 const rootPool = new Pool({
@@ -385,6 +387,20 @@ const setupDatabase = () => {
   });
 };
 
-setupDatabase()
-  .then((res) => process.exit(res))
-  .catch((err) => console.log(err));
+try {
+  if (fs.existsSync(path)) {
+    torrents = JSON.parse(fs.readFileSync(path));
+    setupDatabase()
+      .then((res) => process.exit(res))
+      .catch((err) => console.log(err));
+  } else {
+    console.error("No file found... starting the scrape machine!!!");
+    scrap_machine.initScraping(false);
+    torrents = JSON.parse(fs.readFileSync(path));
+    setupDatabase()
+      .then((res) => process.exit(res))
+      .catch((err) => console.log(err));
+  }
+} catch (err) {
+  console.error(err);
+}

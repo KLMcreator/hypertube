@@ -1,53 +1,58 @@
 const moment = require("moment");
 const chalk = require("chalk");
 const crypto = require("crypto");
-
 const Crawler = require("crawler");
-
-const getYts = require("./getYTS");
-const getTorrent9 = require("./getTorrent9");
-
 const fs = require("fs");
-let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
-let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
-let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
-let torrentsWithImagePath = JSON.parse(fs.readFileSync("torrents.json"));
-// let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
+const getTorrent9 = require("./getTorrent9");
+const getYTS = require("./getYTS");
+let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
+let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
+// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+// let torrentsWithImagePath = JSON.parse(fs.readFileSync("torrents.json"));
+// let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
+// let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
+let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
 
 const searchInTorrent = async (q) => {
+  let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
   torrents.movies.map((el) => {
     if (el.title.toLowerCase().includes(q.toLowerCase())) {
       console.log(el);
       searched.push(el);
     }
   });
+  fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+    if (err) throw err;
+    console.log(chalk.green("finalTorrents.json saved!"));
+  });
 };
 
-const checkDuplicates = async (arr) => {
-  let i = 0;
-  while (i < arr.movies.length) {
-    let j = i + 1;
-    while (j < arr.movies.length) {
-      let k = 0;
-      if (arr.movies[i].title === arr.movies[j].title) {
-        while (k < arr.movies[j].torrents.length) {
-          arr.movies[i].torrents.push(arr.movies[j].torrents[k]);
-          k++;
-        }
-        arr.movies.splice(j, 1);
-        i = -1;
-        break;
-      } else {
-        j++;
-      }
-    }
-    i++;
+const getImages = async () => {
+  console.log("Getting images for", torrents.number_of_movies, "movies");
+  let missingImages = await hydrateImageBank();
+  console.log(
+    torrents.number_of_movies,
+    "photos saved in folder",
+    chalk.green("client/src/assets/torrents")
+  );
+  fs.writeFile("torrents.json", JSON.stringify(torrents), (err) => {
+    if (err) throw err;
+    console.log(chalk.green("finalTorrents.json saved!"));
+  });
+  if (missingImages.length) {
+    console.log(
+      "If you see this message, some images aren't saved to the bank. Saving the report to:",
+      chalk.green("missingImages.json")
+    );
+    fs.writeFile("missingImages.json", JSON.stringify(missingImages), (err) => {
+      if (err) throw err;
+      console.log(chalk.green("missingImages.json saved!"));
+    });
   }
-  return arr;
 };
 
-const purifyAllTorrents = async (t9, yts) => {
+const purifyAllTorrents = async () => {
   finalTorrents.fetched_at = Date.now();
   let i = 0;
   while (i < torrent9Infos.movies.length) {
@@ -228,35 +233,19 @@ const hydrateImageBank = async () => {
 };
 
 const getMovies = async () => {
-  ytsInfos = await getYts.fetchAllTorrents();
+  let movies = await Promise.all([
+    getYTS.fetchAllTorrents(),
+    getTorrent9.fetchAllTorrents(),
+  ]);
+  ytsInfos = movies[0];
+  torrent9Infos = movies[1];
   console.log(
     ytsInfos.movies.length,
     "movies total found on",
     chalk.green("YTS"),
-    "getting Torrent9 now"
-  );
-  torrent9Infos = await getTorrent9.fetchAllTorrents();
-  console.log(
     torrent9Infos.movies.length,
     "movies total found on",
     chalk.green("Torrent9")
-  );
-};
-
-const purifyBeforeGroup = async () => {
-  ytsInfos = await checkDuplicates(ytsInfos);
-  console.log(
-    ytsInfos.movies.length,
-    "movies found on",
-    chalk.green("YTS"),
-    "after purify, checking Torrent9 now"
-  );
-  torrent9Infos = await checkDuplicates(torrent9Infos);
-  console.log(
-    torrent9Infos.movies.length,
-    "movies found on",
-    chalk.green("Torrent9"),
-    "after purify"
   );
 };
 
@@ -308,55 +297,20 @@ const groupAndSave = async () => {
   });
 };
 
-const getImages = async () => {
-  console.log("Getting images for", torrents.number_of_movies, "movies");
-  let missingImages = await hydrateImageBank();
-  console.log(
-    torrents.number_of_movies,
-    "photos saved in folder",
-    chalk.green("client/src/assets/torrents")
-  );
-  fs.writeFile("torrents.json", JSON.stringify(torrents), (err) => {
-    if (err) throw err;
-    console.log(chalk.green("finalTorrents.json saved!"));
-  });
-  if (missingImages.length) {
-    console.log(
-      "If you see this message, some images aren't saved to the bank. Saving the report to:",
-      chalk.green("missingImages.json")
-    );
-    fs.writeFile("missingImages.json", JSON.stringify(missingImages), (err) => {
-      if (err) throw err;
-      console.log(chalk.green("missingImages.json saved!"));
-    });
-  }
-};
-
-const initScraping = async () => {
+const initScraping = async (withImages) => {
   console.time("initScraping");
-  //   console.log("Starting new scrap at", chalk.yellow(moment().format()));
-  //   await getMovies();
-  //   console.log(
-  //     torrent9Infos.movies.length + ytsInfos.movies.length,
-  //     "total movies"
-  //   );
-  //   console.log(
-  //     "Starting purify to check one last time if there's no duplicates"
-  //   );
-  //   await purifyBeforeGroup();
-  //   await saveToFile();
-  //   await groupAndSave();
-  //   await getImages();
+  console.log("Starting new scrap at", chalk.yellow(moment().format()));
+  await getMovies();
   console.log(
-    "If the process isn't finished yet, there might be some images that are still being saved. Please don't quit either way you won't have the full image bank."
+    torrent9Infos.movies.length + ytsInfos.movies.length,
+    "total movies found before group"
   );
+  await saveToFile();
+  await groupAndSave();
+  if (withImages) {
+    await getImages();
+  }
   console.timeEnd("initScraping");
 };
 
-// searchInTorrent("da 5 bloods");
-// fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-//   if (err) throw err;
-//   console.log(chalk.green("finalTorrents.json saved!"));
-// });
-
-initScraping();
+module.exports = { initScraping, searchInTorrent };

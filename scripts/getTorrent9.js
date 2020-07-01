@@ -19,6 +19,7 @@ const getTitle = (title) => {
     "japanese",
     "spanish",
     "russian",
+    "vostfr",
   ];
 
   purify.map((el) => {
@@ -78,43 +79,11 @@ const getLanguage = (title) => {
   return type;
 };
 
-const getCoverUrl = (url) => {
-  return new Promise(function (resolve, reject) {
-    return axios
-      .get(url)
-      .then((res) => {
-        let $ = cheerio.load(res.data);
-        let cover = $("div.movie-detail > div > div > div > img");
-        resolve(cover[0].attribs.src);
-      })
-      .catch((err) =>
-        console.log(chalk.red("Error while getting cover url:", err))
-      );
-  });
-};
+const getSubtitles = (title) => {
+  let type = "";
 
-const purifyAllTorrents = async () => {
-  let i = 0;
-  while (i < torrent9Infos.movies.length) {
-    let j = i + 1;
-    while (j < torrent9Infos.movies.length) {
-      let k = 0;
-      if (torrent9Infos.movies[i].title === torrent9Infos.movies[j].title) {
-        while (k < torrent9Infos.movies[j].torrents.length) {
-          torrent9Infos.movies[i].torrents.push(
-            torrent9Infos.movies[j].torrents[k]
-          );
-          k++;
-        }
-        torrent9Infos.movies.splice(j, 1);
-        i = -1;
-        break;
-      } else {
-        j++;
-      }
-    }
-    i++;
-  }
+  if (title.toLowerCase().indexOf("vostfr") > -1) type = "VOSTFR";
+  return type;
 };
 
 const getMoreInfos = async (url, i, j) => {
@@ -160,63 +129,90 @@ const getMovieList = async (url) => {
       let $ = cheerio.load(res.data);
       let movies = $("tbody > tr");
       movies.map((el) => {
-        torrent9Infos.movies.push({
-          yts_id: null,
-          torrent9_id: getTitle(
-            movies[el].children[0].next.children[1].next.children[0].data
-          ),
-          title: getTitle(
-            movies[el].children[0].next.children[1].next.children[0].data
-          ),
-          production_year: getProductionYear(
-            movies[el].children[0].next.children[1].next.children[0].data
-          ),
-          rating: null,
-          yts_url: null,
-          torrent9_url:
-            "https://www.torrent9.ac" +
-            movies[el].children[0].next.children[1].next.attribs.href,
-          cover_url: null,
-          large_image: null,
-          summary: [],
-          imdb_code: null,
-          yt_trailer: null,
-          categories: [],
-          languages: [
-            getLanguage(
-              movies[el].children[0].next.children[1].next.children[0].data
+        let title = getTitle(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let language = getLanguage(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let year = getProductionYear(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let subtitles = getSubtitles(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let quality = getQuality(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let format = getFormat(
+          movies[el].children[0].next.children[1].next.children[0].data
+        );
+        let isDuplicate = torrent9Infos.movies.findIndex(
+          (dupli) => dupli.title === title
+        );
+        if (isDuplicate >= 0) {
+          torrent9Infos.movies[isDuplicate].torrents.push({
+            source: "torrent9",
+            languages: language,
+            subtitles: subtitles ? [subtitles] : [],
+            quality: quality,
+            seeds: parseInt(
+              movies[el].children[5].children[0].children[0].data.trim(),
+              10
             ),
-          ],
-          torrents: [
-            {
-              source: "torrent9",
-              languages: getLanguage(
-                movies[el].children[0].next.children[1].next.children[0].data
-              ),
-
-              quality: getQuality(
-                movies[el].children[0].next.children[1].next.children[0].data
-              ),
-              seeds: parseInt(
-                movies[el].children[5].children[0].children[0].data.trim(),
-                10
-              ),
-              peers: parseInt(
-                movies[el].children[7].children[0].data.trim(),
-                10
-              ),
-              url:
-                "https://www.torrent9.ac" +
-                movies[el].children[0].next.children[1].next.attribs.href,
-              magnet: null,
-              torrent: null,
-              size: movies[el].children[3].children[0].data.toUpperCase(),
-              format: getFormat(
-                movies[el].children[0].next.children[1].next.children[0].data
-              ),
-            },
-          ],
-        });
+            peers: parseInt(movies[el].children[7].children[0].data.trim(), 10),
+            url:
+              "https://www.torrent9.ac" +
+              movies[el].children[0].next.children[1].next.attribs.href,
+            magnet: null,
+            torrent: null,
+            size: movies[el].children[3].children[0].data.toUpperCase(),
+            format: format,
+          });
+        } else {
+          torrent9Infos.movies.push({
+            yts_id: null,
+            torrent9_id: title,
+            title: title,
+            production_year: year,
+            rating: null,
+            yts_url: null,
+            torrent9_url:
+              "https://www.torrent9.ac" +
+              movies[el].children[0].next.children[1].next.attribs.href,
+            cover_url: null,
+            large_image: null,
+            summary: [],
+            imdb_code: null,
+            yt_trailer: null,
+            categories: [],
+            languages: [language],
+            subtitles: subtitles ? [subtitles] : [],
+            torrents: [
+              {
+                source: "torrent9",
+                languages: language,
+                subtitles: subtitles ? [subtitles] : [],
+                quality: quality,
+                seeds: parseInt(
+                  movies[el].children[5].children[0].children[0].data.trim(),
+                  10
+                ),
+                peers: parseInt(
+                  movies[el].children[7].children[0].data.trim(),
+                  10
+                ),
+                url:
+                  "https://www.torrent9.ac" +
+                  movies[el].children[0].next.children[1].next.attribs.href,
+                magnet: null,
+                torrent: null,
+                size: movies[el].children[3].children[0].data.toUpperCase(),
+                format: format,
+              },
+            ],
+          });
+        }
       });
     })
     .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
@@ -232,7 +228,7 @@ const getTotalPages = async (url) => {
         total.substring(total.indexOf("-") + 1).slice(0, -1),
         10
       );
-      if ($(".pagination li").eq(-1).text() === "Suivant ►")
+      if ($(".pagination li").eq(-1).text() === "Suivant â–º")
         console.log(
           "There's more than",
           total,
@@ -273,14 +269,14 @@ const fetchAllTorrents = async () => {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
-    if (i && i % 15 === 0) {
+    if (i && i % 30 === 0) {
       console.log(
         i,
         "pages done on",
         chalk.green("Torrent9,"),
-        " waiting for 2s to avoid being blacklisted"
+        " waiting for 1.5s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
   console.log(
@@ -292,7 +288,6 @@ const fetchAllTorrents = async () => {
     "Starting purify list to avoid duplicates on",
     chalk.green("Torrent9")
   );
-  await purifyAllTorrents();
   console.log(
     torrent9Infos.movies.length,
     "movies after purify on",
@@ -308,7 +303,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 13 === 0) {
+    if (i && i % 30 === 0) {
       console.log(
         i,
         "movies done on",

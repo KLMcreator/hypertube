@@ -50,48 +50,79 @@ const getMovieList = async (page, url) => {
     .then((res) => {
       if (res.data.movies) {
         res.data.movies.map((el) => {
-          let infos = {
-            yts_id: el.id,
-            torrent9_id: null,
-            title: el.title,
-            production_year: el.year,
-            rating: el.rating,
-            yts_url: el.url,
-            torrent9_url: null,
-            cover_url: el.medium_cover_image,
-            large_image: el.large_cover_image,
-            summary: el.summary ? [el.summary] : null,
-            imdb_code: el.imdb_code ? el.imdb_code : null,
-            yt_trailer: el.yt_trailer_code
-              ? "https://www.youtube.com/watch?v=" + el.yt_trailer_code
-              : null,
-            categories: el.genres,
-            languages: [el.language],
-            torrents: [],
-          };
-          if (el.torrents) {
-            el.torrents.map((ele) => {
-              infos.torrents.push({
-                source: "yts",
-                language: el.language,
-                quality: ele.quality,
-                seeds: ele.seeds,
-                peers: ele.peers,
-                url: el.url,
-                magnet:
-                  "magnet:?xt=urn:btih:" +
-                  ele.hash +
-                  "&dn=" +
-                  el.title_long +
-                  "&tr=" +
-                  trackers.join("&tr="),
-                torrent: ele.url,
-                size: ele.size,
-                format: getFormat(ele.type),
+          let isDuplicate = ytsInfos.movies.findIndex(
+            (dupli) => dupli.title === el.title
+          );
+          if (isDuplicate >= 0) {
+            if (el.torrents) {
+              el.torrents.map((ele) => {
+                ytsInfos.movies[isDuplicate].torrents.push({
+                  source: "yts",
+                  language: el.language,
+                  subtitles: [],
+                  quality: ele.quality,
+                  seeds: ele.seeds,
+                  peers: ele.peers,
+                  url: el.url,
+                  magnet:
+                    "magnet:?xt=urn:btih:" +
+                    ele.hash +
+                    "&dn=" +
+                    el.title_long +
+                    "&tr=" +
+                    trackers.join("&tr="),
+                  torrent: ele.url,
+                  size: ele.size,
+                  format: getFormat(ele.type),
+                });
               });
-            });
+            }
+          } else {
+            let infos = {
+              yts_id: el.id,
+              torrent9_id: null,
+              title: el.title,
+              production_year: el.year,
+              rating: el.rating,
+              yts_url: el.url,
+              torrent9_url: null,
+              cover_url: el.medium_cover_image,
+              large_image: el.large_cover_image,
+              summary: el.summary ? [el.summary] : null,
+              imdb_code: el.imdb_code ? el.imdb_code : null,
+              yt_trailer: el.yt_trailer_code
+                ? "https://www.youtube.com/watch?v=" + el.yt_trailer_code
+                : null,
+              categories: el.genres,
+              languages: [el.language],
+              subtitles: [],
+              torrents: [],
+            };
+            if (el.torrents) {
+              el.torrents.map((ele) => {
+                infos.torrents.push({
+                  source: "yts",
+                  language: el.language,
+                  subtitles: [],
+                  quality: ele.quality,
+                  seeds: ele.seeds,
+                  peers: ele.peers,
+                  url: el.url,
+                  magnet:
+                    "magnet:?xt=urn:btih:" +
+                    ele.hash +
+                    "&dn=" +
+                    el.title_long +
+                    "&tr=" +
+                    trackers.join("&tr="),
+                  torrent: ele.url,
+                  size: ele.size,
+                  format: getFormat(ele.type),
+                });
+              });
+            }
+            ytsInfos.movies.push(infos);
           }
-          ytsInfos.movies.push(infos);
         });
       }
     })
@@ -110,7 +141,6 @@ const fetchAllTorrents = async () => {
   );
   ytsInfos.fetched_at = fetchedAt;
   ytsInfos.number_of_pages = await getTotalPages(url);
-
   console.log(
     ytsInfos.number_of_pages,
     "pages found on",
@@ -119,14 +149,14 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 15 === 0) {
+    if (i && i % 30 === 0) {
       console.log(
         i,
         "pages done on",
         chalk.green("YTS,"),
-        "waiting for 2s to avoid being blacklisted"
+        "waiting for 1.5s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
   console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));

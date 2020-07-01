@@ -6,6 +6,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
 const bodyParser = require("body-parser");
+const session = require("express-session");
 const cookieParser = require("cookie-parser");
 
 //test
@@ -23,7 +24,7 @@ const torrents = require("./api/torrents");
 // const
 const app = express();
 const port = process.env.PORT || 5000;
-const secret = "mysecretsshhh";
+// const secret = "mysecretsshhh";
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./client/src/assets/photos/");
@@ -40,10 +41,21 @@ const storage = multer.diskStorage({
     });
   },
 });
+const sessionConfig = {
+  secret: "mysecretsshhh",
+  name: "hypertube",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    sameSite: "none",
+  },
+};
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
 // allow to use static path for files
 app.use(express.static("client"));
+// config
+app.use(session(sessionConfig));
 // avoid xss
 app.disable("x-powered-by");
 // parsing cookie
@@ -104,7 +116,7 @@ app.get("/api/checkToken", function (req, res) {
   if (!token) {
     res.send({ status: false });
   } else {
-    jwt.verify(token, secret, function (err, decoded) {
+    jwt.verify(token, sessionConfig.secret, function (err, decoded) {
       if (err) {
         res.send({ status: false });
       } else {
@@ -155,7 +167,7 @@ app.post("/api/login", (req, res) => {
     .logUser(req.body)
     .then((response) => {
       if (response === true && res.statusCode === 200) {
-        const token = jwt.sign({ login }, secret, {
+        const token = jwt.sign({ login }, sessionConfig.secret, {
           expiresIn: "24h",
         });
         login
