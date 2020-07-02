@@ -23,9 +23,8 @@ const getTitle = (title) => {
     "MULTi",
     "4K",
     "ULTRA HD",
-    "x265"
+    "x265",
   ];
-  MULTi 4K ULTRA HD x265 2020
 
   purify.map((el) => {
     if (title.toLowerCase().indexOf(el) > -1) {

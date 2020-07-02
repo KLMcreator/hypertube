@@ -654,6 +654,12 @@ const Torrent = (props) => {
                 : "No informations"}
             </span>
           </div>
+          {torrent.duration ? (
+            <div className={classes.divMargin}>
+              <span className={classes.titleSection}>Duration: </span>
+              <span className={classes.textSection}>{torrent.duration}mn</span>
+            </div>
+          ) : undefined}
           <div className={classes.divMargin}>
             <span className={classes.titleSection}>Last viewed: </span>
             <span className={classes.textSection}>

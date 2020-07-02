@@ -3,15 +3,14 @@ const pool = require("./../pool.js");
 const getQueryTorrents = (request, response) => {
   const { req } = request;
   return new Promise(function (resolve, reject) {
-    // if (req.query) {
     let likeQuery = req.query ? "%" + req.query + "%" : "%%";
     pool.pool.query(
       "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query WHERE rating BETWEEN $3 AND $4 AND production_year BETWEEN $5 AND $6 GROUP BY id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration",
       [
         req.query,
         likeQuery,
-        req.selectedRating[0].toString(),
-        req.selectedRating[1].toString(),
+        req.selectedRating[0],
+        req.selectedRating[1],
         req.selectedYear[0],
         req.selectedYear[1],
       ],
@@ -75,9 +74,6 @@ const getQueryTorrents = (request, response) => {
         }
       }
     );
-    // } else {
-    //   resolve({ msg: "Missing arguments" });
-    // }
   });
 };
 

@@ -49,98 +49,7 @@ const getFormat = (title) => {
   }
 };
 
-const getMovieList = async (page, url) => {
-  return fetch(url + "&page=" + page, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  })
-    .then((res) => res.json())
-    .then((res) => {
-      if (res.data.movies) {
-        res.data.movies.map((el) => {
-          let isDuplicate = ytsInfos.movies.findIndex(
-            (dupli) => dupli.title === el.title
-          );
-          if (isDuplicate >= 0) {
-            if (el.torrents) {
-              el.torrents.map((ele) => {
-                ytsInfos.movies[isDuplicate].torrents.push({
-                  source: "yts",
-                  duration: el.runtime ? el.runtime : null,
-                  language: el.language,
-                  subtitles: [],
-                  quality: ele.quality,
-                  seeds: ele.seeds,
-                  peers: ele.peers,
-                  url: el.url,
-                  magnet:
-                    "magnet:?xt=urn:btih:" +
-                    ele.hash +
-                    "&dn=" +
-                    el.title_long +
-                    "&tr=" +
-                    trackers.join("&tr="),
-                  torrent: ele.url,
-                  size: ele.size,
-                  format: getFormat(ele.type),
-                });
-              });
-            }
-          } else {
-            let infos = {
-              yts_id: el.id,
-              torrent9_id: null,
-              title: el.title,
-              production_year: el.year,
-              rating: el.rating,
-              yts_url: el.url,
-              torrent9_url: null,
-              cover_url: el.medium_cover_image,
-              large_image: el.large_cover_image,
-              summary: el.summary ? [el.summary] : null,
-              duration: el.runtime ? el.runtime : null,
-              imdb_code: el.imdb_code ? el.imdb_code : null,
-              yt_trailer: el.yt_trailer_code
-                ? "https://www.youtube.com/watch?v=" + el.yt_trailer_code
-                : null,
-              categories: el.genres,
-              languages: [el.language],
-              subtitles: [],
-              torrents: [],
-            };
-            if (el.torrents) {
-              el.torrents.map((ele) => {
-                infos.torrents.push({
-                  source: "yts",
-                  duration: el.runtime ? el.runtime : null,
-                  language: el.language,
-                  subtitles: [],
-                  quality: ele.quality,
-                  seeds: ele.seeds,
-                  peers: ele.peers,
-                  url: el.url,
-                  magnet:
-                    "magnet:?xt=urn:btih:" +
-                    ele.hash +
-                    "&dn=" +
-                    el.title_long +
-                    "&tr=" +
-                    trackers.join("&tr="),
-                  torrent: ele.url,
-                  size: ele.size,
-                  format: getFormat(ele.type),
-                });
-              });
-            }
-            ytsInfos.movies.push(infos);
-          }
-        });
-      }
-    })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
-};
-
-const getSubs = async (url, i) => {
+const getSubs = async (url) => {
   return got(url)
     .then((res) => cheerio.load(res.body))
     .then(($) => {
@@ -188,8 +97,124 @@ const getSubs = async (url, i) => {
           });
         });
       }
+      return subs;
     })
-    .catch((err) => console.log(chalk.red("Error while getting subs:", err)));
+    .catch(() =>
+      console.log(
+        chalk.red(
+          "Error while getting subs:",
+          "No subs for this movie or might be blacklisted"
+        )
+      )
+    );
+};
+
+const getMovieList = async (page, url) => {
+  return fetch(url + "&page=" + page, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => res.json())
+    .then(async (res) => {
+      if (res.data.movies) {
+        let i = 0;
+        while (i < res.data.movies.length) {
+          let isDuplicate = ytsInfos.movies.findIndex(
+            (dupli) => dupli.title === res.data.movies[i].title
+          );
+          if (isDuplicate >= 0) {
+            if (res.data.movies[i].torrents) {
+              res.data.movies[i].torrents.map((ele) => {
+                ytsInfos.movies[isDuplicate].torrents.push({
+                  source: "yts",
+                  duration: res.data.movies[i].runtime
+                    ? res.data.movies[i].runtime
+                    : null,
+                  language: res.data.movies[i].language,
+                  subtitles: [],
+                  quality: ele.quality,
+                  seeds: ele.seeds,
+                  peers: ele.peers,
+                  url: res.data.movies[i].url,
+                  magnet:
+                    "magnet:?xt=urn:btih:" +
+                    ele.hash +
+                    "&dn=" +
+                    res.data.movies[i].title_long +
+                    "&tr=" +
+                    trackers.join("&tr="),
+                  torrent: ele.url,
+                  size: ele.size,
+                  format: getFormat(ele.type),
+                });
+              });
+            }
+          } else {
+            const subs = await getSubs(
+              "https://www.yifysubtitles.com/movie-imdb/" +
+                res.data.movies[i].imdb_code
+            );
+            let infos = {
+              yts_id: res.data.movies[i].id,
+              torrent9_id: null,
+              title: res.data.movies[i].title,
+              production_year: res.data.movies[i].year,
+              rating: parseInt(res.data.movies[i].rating, 10),
+              yts_url: res.data.movies[i].url,
+              torrent9_url: null,
+              cover_url: res.data.movies[i].medium_cover_image,
+              large_image: res.data.movies[i].large_cover_image,
+              summary: res.data.movies[i].summary
+                ? [res.data.movies[i].summary]
+                : null,
+              duration: res.data.movies[i].runtime
+                ? res.data.movies[i].runtime
+                : null,
+              imdb_code: res.data.movies[i].imdb_code
+                ? res.data.movies[i].imdb_code
+                : null,
+              yt_trailer: res.data.movies[i].yt_trailer_code
+                ? "https://www.youtube.com/watch?v=" +
+                  res.data.movies[i].yt_trailer_code
+                : null,
+              categories: res.data.movies[i].genres,
+              languages: [res.data.movies[i].language],
+              subtitles: subs ? subs : [],
+              torrents: [],
+            };
+            if (res.data.movies[i].torrents) {
+              res.data.movies[i].torrents.map((ele) => {
+                infos.torrents.push({
+                  source: "yts",
+                  duration: res.data.movies[i].runtime
+                    ? res.data.movies[i].runtime
+                    : null,
+                  language: res.data.movies[i].language,
+                  subtitles: [],
+                  quality: ele.quality,
+                  seeds: ele.seeds,
+                  peers: ele.peers,
+                  url: res.data.movies[i].url,
+                  magnet:
+                    "magnet:?xt=urn:btih:" +
+                    ele.hash +
+                    "&dn=" +
+                    res.data.movies[i].title_long +
+                    "&tr=" +
+                    trackers.join("&tr="),
+                  torrent: ele.url,
+                  size: ele.size,
+                  format: getFormat(ele.type),
+                });
+              });
+            }
+            ytsInfos.movies.push(infos);
+          }
+          i++;
+        }
+      }
+    })
+    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
 };
 
 const fetchAllTorrents = async () => {
@@ -208,7 +233,7 @@ const fetchAllTorrents = async () => {
     ytsInfos.number_of_pages,
     "pages found on",
     chalk.green("YTS,"),
-    "starting the scrape machine..."
+    "starting the scrape machine... (getting movies and subs at the same time)"
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
@@ -222,30 +247,34 @@ const fetchAllTorrents = async () => {
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
-  console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
+  //   console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
+  //   console.log(
+  //     "Now trying to getting subs for",
+  //     ytsInfos.movies.length,
+  //     "movies on",
+  //     chalk.green("YTS")
+  //   );
+  //   for (let i = 0; i < ytsInfos.movies.length; i++) {
+  //     await getSubs(
+  //       "https://www.yifysubtitles.com/movie-imdb/" +
+  //         ytsInfos.movies[i].imdb_code,
+  //       i
+  //     );
+  //     if (i && i % 25 === 0) {
+  //       console.log(
+  //         i,
+  //         "movies done on",
+  //         chalk.green("YTS (subs),"),
+  //         "waiting for 1.5s to avoid being blacklisted"
+  //       );
+  //       await new Promise((resolve) => setTimeout(resolve, 1500));
+  //     }
+  //   }
   console.log(
-    "Now trying to getting subs for",
     ytsInfos.movies.length,
-    "movies on",
+    "movies and subs scrapped scrapped!",
     chalk.green("YTS")
   );
-  for (let i = 0; i < ytsInfos.movies.length; i++) {
-    await getSubs(
-      "https://www.yifysubtitles.com/movie-imdb/" +
-        ytsInfos.movies[i].imdb_code,
-      i
-    );
-    if (i && i % 25 === 0) {
-      console.log(
-        i,
-        "movies done on",
-        chalk.green("YTS (subs),"),
-        "waiting for 1.5s to avoid being blacklisted"
-      );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-  }
-  console.log("movies and subs scrapped scrapped!", chalk.green("YTS"));
   console.timeEnd("ytsScraping");
   return ytsInfos;
 };
