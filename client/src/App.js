@@ -334,17 +334,6 @@ const AuthButton = (props) => {
               className={classes.linkMobile}
               component={Link}
               onClick={() => setMobileMoreAnchorEl(null)}
-              to="/"
-            >
-              <IconButton>
-                <HomeIcon />
-              </IconButton>
-              <Typography variant="inherit">HOME</Typography>
-            </MenuItem>
-            <MenuItem
-              className={classes.linkMobile}
-              component={Link}
-              onClick={() => setMobileMoreAnchorEl(null)}
               to="/SignUp"
             >
               <IconButton>
@@ -407,12 +396,6 @@ const AuthButton = (props) => {
           </div>
         ) : (
           <div>
-            <Link
-              className={pathname === "/" ? classes.linkActive : classes.link}
-              to={"/"}
-            >
-              HOME
-            </Link>
             <Link
               className={
                 pathname === "/SignUp" ? classes.linkActive : classes.link
@@ -502,7 +485,7 @@ const App = (props) => {
         <ToastContainer />
         <NavBar></NavBar>
         <Switch>
-          <HomeRoute
+          <PrivateRoute
             exact
             path="/"
             component={(props) => <Home props={props} auth={auth} />}

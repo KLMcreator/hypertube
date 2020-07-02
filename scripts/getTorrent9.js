@@ -20,7 +20,12 @@ const getTitle = (title) => {
     "spanish",
     "russian",
     "vostfr",
+    "MULTi",
+    "4K",
+    "ULTRA HD",
+    "x265"
   ];
+  MULTi 4K ULTRA HD x265 2020
 
   purify.map((el) => {
     if (title.toLowerCase().indexOf(el) > -1) {
@@ -47,7 +52,7 @@ const getFormat = (title) => {
 };
 
 const getQuality = (title) => {
-  const quality = ["720p", "1080p"];
+  const quality = ["720p", "1080p", "4K", "ULTRA HD"];
   let type = "Default";
 
   quality.map((el) => {
@@ -82,7 +87,8 @@ const getLanguage = (title) => {
 const getSubtitles = (title) => {
   let type = "";
 
-  if (title.toLowerCase().indexOf("vostfr") > -1) type = "VOSTFR";
+  if (title.toLowerCase().indexOf("vostfr") > -1)
+    type = { language: "French", url: false };
   return type;
 };
 
@@ -105,7 +111,7 @@ const getMoreInfos = async (url, i, j) => {
           i
         ].categories.map((el) => el.charAt(0).toUpperCase() + el.slice(1));
       }
-      summ[1].children[0]
+      summ[1].children[0] && !torrent9Infos.movies[i].summary
         ? torrent9Infos.movies[i].summary.push(summ[1].children[0].data)
         : summ[0].children[0]
         ? torrent9Infos.movies[i].summary.push(summ[0].children[0].data)
@@ -153,6 +159,7 @@ const getMovieList = async (url) => {
         if (isDuplicate >= 0) {
           torrent9Infos.movies[isDuplicate].torrents.push({
             source: "torrent9",
+            duration: null,
             languages: language,
             subtitles: subtitles ? [subtitles] : [],
             quality: quality,
@@ -183,6 +190,7 @@ const getMovieList = async (url) => {
             cover_url: null,
             large_image: null,
             summary: [],
+            duration: null,
             imdb_code: null,
             yt_trailer: null,
             categories: [],
@@ -191,6 +199,7 @@ const getMovieList = async (url) => {
             torrents: [
               {
                 source: "torrent9",
+                duration: null,
                 languages: language,
                 subtitles: subtitles ? [subtitles] : [],
                 quality: quality,

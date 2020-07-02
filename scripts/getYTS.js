@@ -1,8 +1,16 @@
 const fetch = require("node-fetch");
 const moment = require("moment");
 const chalk = require("chalk");
+const cheerio = require("cheerio");
+const got = require("got");
 
-let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
+let ytsInfos = {
+  fetched_at: 0,
+  number_of_pages: 0,
+  movies_before_purify: 0,
+  movies_after_purify: 0,
+  movies: [],
+};
 let trackers = [
   "udp://open.demonii.com:1337",
   "udp://tracker.istole.it:80",
@@ -58,6 +66,7 @@ const getMovieList = async (page, url) => {
               el.torrents.map((ele) => {
                 ytsInfos.movies[isDuplicate].torrents.push({
                   source: "yts",
+                  duration: el.runtime ? el.runtime : null,
                   language: el.language,
                   subtitles: [],
                   quality: ele.quality,
@@ -89,6 +98,7 @@ const getMovieList = async (page, url) => {
               cover_url: el.medium_cover_image,
               large_image: el.large_cover_image,
               summary: el.summary ? [el.summary] : null,
+              duration: el.runtime ? el.runtime : null,
               imdb_code: el.imdb_code ? el.imdb_code : null,
               yt_trailer: el.yt_trailer_code
                 ? "https://www.youtube.com/watch?v=" + el.yt_trailer_code
@@ -102,6 +112,7 @@ const getMovieList = async (page, url) => {
               el.torrents.map((ele) => {
                 infos.torrents.push({
                   source: "yts",
+                  duration: el.runtime ? el.runtime : null,
                   language: el.language,
                   subtitles: [],
                   quality: ele.quality,
@@ -127,6 +138,58 @@ const getMovieList = async (page, url) => {
       }
     })
     .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+};
+
+const getSubs = async (url, i) => {
+  return got(url)
+    .then((res) => cheerio.load(res.body))
+    .then(($) => {
+      let subs = [];
+      $("tbody tr")
+        .map((i, el) => {
+          const $el = $(el);
+          if ($el.find(".rating-cell").text() >= 0) {
+            let rating = $el.find(".rating-cell").text();
+            let language =
+              $el
+                .find(".flag-cell .sub-lang")
+                .text()
+                .toLowerCase()
+                .charAt(0)
+                .toUpperCase() +
+              $el.find(".flag-cell .sub-lang").text().slice(1);
+            let url =
+              $el
+                .find(".download-cell a")
+                .attr("href")
+                .replace("subtitles/", "subtitle/") + ".zip";
+            let isDuplicate = subs.findIndex(
+              (dupli) => dupli.language === language
+            );
+            if (isDuplicate >= 0) {
+              if (rating > subs[isDuplicate]) {
+                subs[isDuplicate].url = url;
+              }
+            } else {
+              subs.push({
+                rating: rating,
+                language: language,
+                url: url,
+              });
+            }
+          }
+        })
+        .get();
+      if (subs.length) {
+        subs.map((el) => {
+          ytsInfos.movies[i].subtitles.push({
+            language: el.language,
+            url: " https://www.yifysubtitles.com" + el.url,
+          });
+        });
+      }
+    })
+    .catch((err) => console.log(chalk.red("Error while getting subs:", err)));
 };
 
 const fetchAllTorrents = async () => {
@@ -160,6 +223,29 @@ const fetchAllTorrents = async () => {
     }
   }
   console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
+  console.log(
+    "Now trying to getting subs for",
+    ytsInfos.movies.length,
+    "movies on",
+    chalk.green("YTS")
+  );
+  for (let i = 0; i < ytsInfos.movies.length; i++) {
+    await getSubs(
+      "https://www.yifysubtitles.com/movie-imdb/" +
+        ytsInfos.movies[i].imdb_code,
+      i
+    );
+    if (i && i % 25 === 0) {
+      console.log(
+        i,
+        "movies done on",
+        chalk.green("YTS (subs),"),
+        "waiting for 1.5s to avoid being blacklisted"
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
+  console.log("movies and subs scrapped scrapped!", chalk.green("YTS"));
   console.timeEnd("ytsScraping");
   return ytsInfos;
 };

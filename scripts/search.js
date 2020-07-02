@@ -93,10 +93,12 @@ const purifyAllTorrents = async () => {
         cover_url: null,
         large_image: null,
         summary: [],
+        duration: null,
         imdb_code: null,
         yt_trailer: null,
         categories: [],
         languages: [],
+        subtitles: [],
         torrents: [],
       };
       while (k < occurences.length) {
@@ -129,6 +131,7 @@ const purifyAllTorrents = async () => {
             ? finalTorrents.movies[occurences[k]].large_image
             : infos.large_image,
           summary: infos.summary.length ? infos.summary : [],
+          duration: infos.runtime ? infos.runtime : null,
           imdb_code: finalTorrents.movies[occurences[k]].imdb_code
             ? finalTorrents.movies[occurences[k]].imdb_code
             : infos.imdb_code,
@@ -137,6 +140,7 @@ const purifyAllTorrents = async () => {
             : infos.yt_trailer,
           categories: infos.categories.length ? infos.categories : [],
           languages: infos.languages.length ? infos.languages : [],
+          subtitles: infos.subtitles.length ? infos.subtitles : [],
           torrents: infos.torrents.length ? infos.torrents : [],
         };
         if (finalTorrents.movies[occurences[k]].summary) {
@@ -145,6 +149,11 @@ const purifyAllTorrents = async () => {
         if (finalTorrents.movies[occurences[k]].languages) {
           finalTorrents.movies[occurences[k]].languages.map((ele) => {
             infos.languages.push(ele);
+          });
+        }
+        if (finalTorrents.movies[occurences[k]].subtitles) {
+          finalTorrents.movies[occurences[k]].subtitles.map((ele) => {
+            infos.subtitles.push(ele);
           });
         }
         if (finalTorrents.movies[occurences[k]].categories) {

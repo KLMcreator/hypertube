@@ -601,7 +601,7 @@ const Home = (props) => {
   };
 
   const RenderLoadMore = () => {
-    if (search && torrents.torrents && torrents.torrents.length > limit - 1) {
+    if (torrents.torrents && torrents.torrents.length > limit - 1) {
       return (
         <Button
           variant="outlined"

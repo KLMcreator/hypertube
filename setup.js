@@ -34,7 +34,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT '0', yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT '0', yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -172,7 +172,7 @@ const insertIntoUsers = (user) => {
 const insertIntoTorrents = (torrent) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
+      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
       [
         torrent.title ? torrent.title : null,
         torrent.yts_id ? torrent.yts_id : null,
@@ -194,6 +194,7 @@ const insertIntoTorrents = (torrent) => {
         torrent.imdb_code ? torrent.imdb_code : null,
         torrent.yt_trailer ? torrent.yt_trailer : null,
         torrent.subtitles ? JSON.stringify(torrent.subtitles) : null,
+        torrent.duration ? torrent.duration : null,
       ],
       (error, results) => {
         if (error) {
@@ -271,9 +272,12 @@ const populateSettings = () => {
             .map((e) => {
               return e.value;
             })
-            .indexOf(subtitle);
+            .indexOf(subtitle.language);
           if (pos === -1) {
-            settings.subtitles.push({ value: subtitle, label: subtitle });
+            settings.subtitles.push({
+              value: subtitle.language,
+              label: subtitle.language,
+            });
           }
         });
       }
@@ -414,7 +418,7 @@ try {
     (async () => {
       console.error("No file found... starting the scrape machine!!!");
       await scrap_machine.initScraping(false);
-      console.error("All done, please restart");
+      console.error("All done, please restart.");
     })();
   }
 } catch (err) {

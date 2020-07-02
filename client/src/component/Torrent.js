@@ -636,7 +636,9 @@ const Torrent = (props) => {
               <span className={classes.textSection}>
                 {subtitles.length
                   ? subtitles.map((el, i) =>
-                      i < subtitles.length - 1 ? el + ", " : el
+                      i < subtitles.length - 1
+                        ? el.language + ", "
+                        : el.language
                     )
                   : "No informations"}
               </span>
