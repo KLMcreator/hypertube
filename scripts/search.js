@@ -2,6 +2,8 @@ const moment = require("moment");
 const chalk = require("chalk");
 const crypto = require("crypto");
 const Crawler = require("crawler");
+const axios = require("axios");
+const cheerio = require("cheerio");
 const fs = require("fs");
 const getTorrent9 = require("./getTorrent9");
 const getYTS = require("./getYTS");
@@ -334,4 +336,4 @@ const initScraping = async (withImages) => {
   console.timeEnd("initScraping");
 };
 
-module.exports = { initScraping, searchInTorrent };
+module.exports = { initScraping, searchInTorrent, torrents: finalTorrents };

@@ -3,6 +3,7 @@ const moment = require("moment");
 const chalk = require("chalk");
 const cheerio = require("cheerio");
 const got = require("got");
+const tunnel = require("tunnel");
 
 let ytsInfos = {
   fetched_at: 0,
@@ -49,7 +50,7 @@ const getFormat = (title) => {
   }
 };
 
-const getSubs = async (url) => {
+const getSubs = async (url, i) => {
   return got(url)
     .then((res) => cheerio.load(res.body))
     .then(($) => {
@@ -97,14 +98,10 @@ const getSubs = async (url) => {
           });
         });
       }
-      return subs;
     })
     .catch(() =>
       console.log(
-        chalk.red(
-          "Error while getting subs:",
-          "No subs for this movie or might be blacklisted"
-        )
+        chalk.red("Error while getting subs:", "No page found for this id")
       )
     );
 };
@@ -150,10 +147,6 @@ const getMovieList = async (page, url) => {
               });
             }
           } else {
-            const subs = await getSubs(
-              "https://www.yifysubtitles.com/movie-imdb/" +
-                res.data.movies[i].imdb_code
-            );
             let infos = {
               yts_id: res.data.movies[i].id,
               torrent9_id: null,
@@ -179,7 +172,7 @@ const getMovieList = async (page, url) => {
                 : null,
               categories: res.data.movies[i].genres,
               languages: [res.data.movies[i].language],
-              subtitles: subs ? subs : [],
+              subtitles: [],
               torrents: [],
             };
             if (res.data.movies[i].torrents) {
@@ -237,39 +230,39 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 75 === 0) {
+    if (i && i % 70 === 0) {
       console.log(
         i,
-        "pages done on",
+        "movies done on",
         chalk.green("YTS,"),
-        "waiting for 2s to avoid being blacklisted"
+        "waiting for 1.5s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
-  //   console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
-  //   console.log(
-  //     "Now trying to getting subs for",
-  //     ytsInfos.movies.length,
-  //     "movies on",
-  //     chalk.green("YTS")
-  //   );
-  //   for (let i = 0; i < ytsInfos.movies.length; i++) {
-  //     await getSubs(
-  //       "https://www.yifysubtitles.com/movie-imdb/" +
-  //         ytsInfos.movies[i].imdb_code,
-  //       i
-  //     );
-  //     if (i && i % 25 === 0) {
-  //       console.log(
-  //         i,
-  //         "movies done on",
-  //         chalk.green("YTS (subs),"),
-  //         "waiting for 1.5s to avoid being blacklisted"
-  //       );
-  //       await new Promise((resolve) => setTimeout(resolve, 1500));
-  //     }
-  //   }
+  console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
+  console.log(
+    "Now trying to getting subs for",
+    ytsInfos.movies.length,
+    "movies on",
+    chalk.green("YTS")
+  );
+  for (let i = 0; i < ytsInfos.movies.length; i++) {
+    await getSubs(
+      "https://www.yifysubtitles.com/movie-imdb/" +
+        ytsInfos.movies[i].imdb_code,
+      i
+    );
+    if (i && i % 40 === 0) {
+      console.log(
+        i,
+        "movies done on",
+        chalk.green("YTS (subs),"),
+        "waiting for 1.5s to avoid being blacklisted"
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
+  }
   console.log(
     ytsInfos.movies.length,
     "movies and subs scrapped scrapped!",

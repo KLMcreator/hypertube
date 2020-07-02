@@ -277,7 +277,7 @@ const fetchAllTorrents = async () => {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
-    if (i && i % 75 === 0) {
+    if (i && i % 70 === 0) {
       console.log(
         i,
         "pages done on",
@@ -302,7 +302,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 25 === 0) {
+    if (i && i % 40 === 0) {
       console.log(
         i,
         "movies done on",

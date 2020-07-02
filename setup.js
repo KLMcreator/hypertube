@@ -416,9 +416,12 @@ try {
       .catch((err) => console.log(err));
   } else {
     (async () => {
-      console.error("No file found... starting the scrape machine!!!");
+      console.error("No file found... getting some proxy for better scrapping");
       await scrap_machine.initScraping(false);
-      console.error("All done, please restart.");
+      torrents = scrap_machine.torrents;
+      setupDatabase()
+        .then((res) => process.exit(res))
+        .catch((err) => console.log(err));
     })();
   }
 } catch (err) {
