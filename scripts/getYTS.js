@@ -149,14 +149,14 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 30 === 0) {
+    if (i && i % 75 === 0) {
       console.log(
         i,
         "pages done on",
         chalk.green("YTS,"),
-        "waiting for 1.5s to avoid being blacklisted"
+        "waiting for 2s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
   console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));

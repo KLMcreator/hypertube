@@ -7,25 +7,29 @@ const getTorrent9 = require("./getTorrent9");
 const getYTS = require("./getYTS");
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
-// let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
-// let torrentsWithImagePath = JSON.parse(fs.readFileSync("torrents.json"));
-// let torrent9Infos = JSON.parse(fs.readFileSync("torrent9Torrents.json"));
-// let ytsInfos = JSON.parse(fs.readFileSync("ytsTorrents.json"));
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 let searched = [];
 
 const searchInTorrent = async (q) => {
-  let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
-  torrents.movies.map((el) => {
-    if (el.title.toLowerCase().includes(q.toLowerCase())) {
-      console.log(el);
-      searched.push(el);
+  try {
+    if (fs.existsSync("finalTorrents.json")) {
+      let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+      torrents.movies.map((el) => {
+        if (el.title.toLowerCase().includes(q.toLowerCase())) {
+          console.log(el);
+          searched.push(el);
+        }
+      });
+      fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+        if (err) throw err;
+        console.log(chalk.green("finalTorrents.json saved!"));
+      });
+    } else {
+      console.log("Search will be available after a full scrap");
     }
-  });
-  fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-    if (err) throw err;
-    console.log(chalk.green("finalTorrents.json saved!"));
-  });
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 const getImages = async () => {
@@ -256,10 +260,14 @@ const saveToFile = async () => {
     "to",
     chalk.green("ytsTorrents.json")
   );
-  fs.writeFile("ytsTorrents.json", JSON.stringify(ytsInfos), (err) => {
-    if (err) throw err;
-    console.log(chalk.green("ytsTorrents.json saved!"));
-  });
+  fs.writeFile(
+    "./scripts/ytsTorrents.json",
+    JSON.stringify(ytsInfos),
+    (err) => {
+      if (err) throw err;
+      console.log(chalk.green("ytsTorrents.json saved!"));
+    }
+  );
   console.log(
     "Saving",
     chalk.green("torrent9Infos"),
@@ -267,7 +275,7 @@ const saveToFile = async () => {
     chalk.green("torrent9Torrents.json")
   );
   fs.writeFile(
-    "torrent9Torrents.json",
+    "./scripts/torrent9Torrents.json",
     JSON.stringify(torrent9Infos),
     (err) => {
       if (err) throw err;
@@ -291,10 +299,14 @@ const groupAndSave = async () => {
     "Saving it to",
     chalk.green("finalTorrents.json")
   );
-  fs.writeFile("finalTorrents.json", JSON.stringify(finalTorrents), (err) => {
-    if (err) throw err;
-    console.log(chalk.green("finalTorrents.json saved!"));
-  });
+  fs.writeFile(
+    "./scripts/finalTorrents.json",
+    JSON.stringify(finalTorrents),
+    (err) => {
+      if (err) throw err;
+      console.log(chalk.green("finalTorrents.json saved!"));
+    }
+  );
 };
 
 const initScraping = async (withImages) => {

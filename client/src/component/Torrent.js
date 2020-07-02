@@ -362,8 +362,9 @@ const Torrent = (props) => {
     ? torrent.yt_trailer.split("https://www.youtube.com/watch?v=")
     : null;
   const summary = JSON.parse(torrent.summary);
-  const languages = JSON.parse(torrent.languages);
-  const categories = JSON.parse(torrent.categories);
+  const languages = torrent.languages ? JSON.parse(torrent.languages) : [];
+  const categories = torrent.categories ? JSON.parse(torrent.categories) : [];
+  const subtitles = torrent.subtitles ? JSON.parse(torrent.subtitles) : [];
   const t9_torrents = JSON.parse(torrent.torrents).filter(
     (el) => el.source === "torrent9"
   );
@@ -627,6 +628,20 @@ const Torrent = (props) => {
                 : "No informations"}
             </span>
           </div>
+          {subtitles && subtitles.length ? (
+            <div className={classes.divMargin}>
+              <span className={classes.titleSection}>
+                Available subtitles:{" "}
+              </span>
+              <span className={classes.textSection}>
+                {subtitles.length
+                  ? subtitles.map((el, i) =>
+                      i < subtitles.length - 1 ? el + ", " : el
+                    )
+                  : "No informations"}
+              </span>
+            </div>
+          ) : undefined}
           <div className={classes.divMargin}>
             <span className={classes.titleSection}>Available qualities: </span>
             <span className={classes.textSection}>

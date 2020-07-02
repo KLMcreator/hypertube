@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const moment = require("moment");
 const fs = require("fs");
 const path = "./scripts/finalTorrents.json";
-const scrap_machine = "./scripts/search.js";
+const scrap_machine = require("./scripts/search");
 
 let torrents;
 let totalUser = 42;
@@ -34,7 +34,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT '0', yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, rating VARCHAR(255) DEFAULT '0', yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -50,7 +50,7 @@ const setupTorrents = async () => {
 const setupSettings = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -172,7 +172,7 @@ const insertIntoUsers = (user) => {
 const insertIntoTorrents = (torrent) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)",
+      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)",
       [
         torrent.title ? torrent.title : null,
         torrent.yts_id ? torrent.yts_id : null,
@@ -193,6 +193,7 @@ const insertIntoTorrents = (torrent) => {
         torrent.summary ? JSON.stringify(torrent.summary) : null,
         torrent.imdb_code ? torrent.imdb_code : null,
         torrent.yt_trailer ? torrent.yt_trailer : null,
+        torrent.subtitles ? JSON.stringify(torrent.subtitles) : null,
       ],
       (error, results) => {
         if (error) {
@@ -248,13 +249,14 @@ const populateTorrents = () => {
 const populateSettings = () => {
   return new Promise(async (resolve, reject) => {
     console.log(
-      "Getting min/max production year, available languages and every categories"
+      "Getting min/max production year, available languages/subtitles and every categories"
     );
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
       categories: [],
       languages: [],
+      subtitles: [],
     };
     torrents.movies.map((e) => {
       if (e.production_year && e.production_year > settings.maxProductionYear) {
@@ -262,6 +264,18 @@ const populateSettings = () => {
       }
       if (e.production_year && e.production_year < settings.minProductionYear) {
         settings.minProductionYear = e.production_year;
+      }
+      if (e.subtitles && e.subtitles.length) {
+        e.subtitles.map((subtitle) => {
+          let pos = settings.subtitles
+            .map((e) => {
+              return e.value;
+            })
+            .indexOf(subtitle);
+          if (pos === -1) {
+            settings.subtitles.push({ value: subtitle, label: subtitle });
+          }
+        });
       }
       if (e.categories && e.categories.length) {
         e.categories.map((category) => {
@@ -289,12 +303,13 @@ const populateSettings = () => {
       }
     });
     pool.query(
-      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages) VALUES($1, $2, $3, $4)",
+      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles) VALUES($1, $2, $3, $4, $5)",
       [
         settings.minProductionYear,
         settings.maxProductionYear,
         JSON.stringify(settings.categories),
         JSON.stringify(settings.languages),
+        JSON.stringify(settings.subtitles),
       ],
       (error, results) => {
         if (error) {
@@ -308,9 +323,11 @@ const populateSettings = () => {
             settings.maxProductionYear,
             ". With a total of",
             settings.categories.length,
-            "categories and",
+            "categories,",
             settings.languages.length,
-            "languages"
+            "languages and",
+            settings.subtitles.length,
+            "subtitles"
           );
           resolve(0);
         }
@@ -394,12 +411,11 @@ try {
       .then((res) => process.exit(res))
       .catch((err) => console.log(err));
   } else {
-    console.error("No file found... starting the scrape machine!!!");
-    scrap_machine.initScraping(false);
-    torrents = JSON.parse(fs.readFileSync(path));
-    setupDatabase()
-      .then((res) => process.exit(res))
-      .catch((err) => console.log(err));
+    (async () => {
+      console.error("No file found... starting the scrape machine!!!");
+      await scrap_machine.initScraping(false);
+      console.error("All done, please restart");
+    })();
   }
 } catch (err) {
   console.error(err);

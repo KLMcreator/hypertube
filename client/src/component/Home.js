@@ -284,6 +284,7 @@ const RenderSearchBar = (props) => {
   const [search, setSearch] = useState(props.search);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState([]);
+  const [selectedSubs, setSelectedSubs] = useState([]);
   const [selectedYear, setSelectedYear] = useState([
     props.settings.minProductionYear,
     props.settings.maxProductionYear,
@@ -292,6 +293,7 @@ const RenderSearchBar = (props) => {
   const { settings, classes } = props;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
+  const subtitles = props.settings.subtitles;
   const selectStyles = {
     option: (provided) => ({
       ...provided,
@@ -312,7 +314,8 @@ const RenderSearchBar = (props) => {
       selectedCategories,
       selectedLanguage,
       selectedYear,
-      selectedRating
+      selectedRating,
+      selectedSubs
     );
   };
 
@@ -327,6 +330,10 @@ const RenderSearchBar = (props) => {
 
   const handleAppendLanguage = (languageToAdd) => {
     setSelectedLanguage(languageToAdd);
+  };
+
+  const handleAppendSubs = (subsToAdd) => {
+    setSelectedSubs(subsToAdd);
   };
 
   const handleFilterYear = (e) => {
@@ -365,7 +372,7 @@ const RenderSearchBar = (props) => {
             options={categories}
             key={"changeCategories"}
             onChange={handleAppendTags}
-            placeholder={"Movie categories"}
+            placeholder={"Movie categories: ALL"}
           />
         </div>
         <div className={classes.selectDivider}>
@@ -380,7 +387,22 @@ const RenderSearchBar = (props) => {
             options={languages}
             key={"changeLanguage"}
             onChange={handleAppendLanguage}
-            placeholder={"Language"}
+            placeholder={"Language: ALL"}
+          />
+        </div>
+        <div className={classes.selectDivider}>
+          <Select
+            styles={selectStyles}
+            closeMenuOnSelect={false}
+            isMulti
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            isSearchable={true}
+            options={subtitles}
+            key={"changeSubs"}
+            onChange={handleAppendSubs}
+            placeholder={"Subtitles: ALL"}
           />
         </div>
       </div>
@@ -481,8 +503,11 @@ const Home = (props) => {
         selectedLanguage: query.selectedLanguage
           ? query.selectedLanguage
           : null,
-        selectedYear: query.selectedYear ? query.selectedYear : null,
-        selectedRating: query.selectedRating ? query.selectedRating : null,
+        selectedYear: query.selectedYear
+          ? query.selectedYear
+          : [settings.minProductionYear, settings.maxProductionYear],
+        selectedRating: query.selectedRating ? query.selectedRating : [0, 10],
+        selectedSubs: query.selectedSubs ? query.selectedSubs : null,
         limit: loadMore ? loadMore : limit,
       }),
       headers: {
@@ -517,6 +542,7 @@ const Home = (props) => {
             maxProductionYear: res.settings.settings[0].maxproductionyear,
             categories: JSON.parse(res.settings.settings[0].categories),
             languages: JSON.parse(res.settings.settings[0].languages),
+            subtitles: JSON.parse(res.settings.settings[0].subtitles),
           });
           setIsLoading(false);
         } else if (res.settings.msg) {
@@ -560,7 +586,8 @@ const Home = (props) => {
     selectedCategories,
     selectedLanguage,
     selectedYear,
-    selectedRating
+    selectedRating,
+    selectedSubs
   ) => {
     await getQueryTorrents({
       query: query,
@@ -568,6 +595,7 @@ const Home = (props) => {
       selectedLanguage: selectedLanguage,
       selectedYear: selectedYear,
       selectedRating: selectedRating,
+      selectedSubs: selectedSubs,
     });
     setSearch(query);
   };

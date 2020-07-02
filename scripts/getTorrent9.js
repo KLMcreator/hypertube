@@ -269,7 +269,7 @@ const fetchAllTorrents = async () => {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
-    if (i && i % 30 === 0) {
+    if (i && i % 75 === 0) {
       console.log(
         i,
         "pages done on",
@@ -285,15 +285,6 @@ const fetchAllTorrents = async () => {
     chalk.green("Torrent9")
   );
   console.log(
-    "Starting purify list to avoid duplicates on",
-    chalk.green("Torrent9")
-  );
-  console.log(
-    torrent9Infos.movies.length,
-    "movies after purify on",
-    chalk.green("Torrent9")
-  );
-  console.log(
     "Getting more infos for",
     torrent9Infos.movies.length,
     "movies on",
@@ -303,7 +294,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 30 === 0) {
+    if (i && i % 25 === 0) {
       console.log(
         i,
         "movies done on",
