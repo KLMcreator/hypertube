@@ -50,11 +50,16 @@ const getFormat = (title) => {
   }
 };
 
-const getSubs = async (url, i) => {
-  return got(url)
+const getSubs = async (url) => {
+  return got(url, {
+    retry: {
+      limit: 0,
+    },
+  })
     .then((res) => cheerio.load(res.body))
     .then(($) => {
       let subs = [];
+      let finals = [];
       $("tbody tr")
         .map((i, el) => {
           const $el = $(el);
@@ -90,14 +95,15 @@ const getSubs = async (url, i) => {
           }
         })
         .get();
-      if (subs.length) {
+      if (subs && subs.length) {
         subs.map((el) => {
-          ytsInfos.movies[i].subtitles.push({
+          finals.push({
             language: el.language,
             url: " https://www.yifysubtitles.com" + el.url,
           });
         });
       }
+      return finals && finals.length ? finals : [];
     })
     .catch(() =>
       console.log(
@@ -147,6 +153,17 @@ const getMovieList = async (page, url) => {
               });
             }
           } else {
+            let subs = [];
+            if (
+              res.data.movies[i].imdb_code &&
+              res.data.movies[i].year > 2000 &&
+              parseInt(res.data.movies[i].rating, 10) > 4
+            ) {
+              subs = await getSubs(
+                "https://www.yifysubtitles.com/movie-imdb/" +
+                  res.data.movies[i].imdb_code
+              );
+            }
             let infos = {
               yts_id: res.data.movies[i].id,
               torrent9_id: null,
@@ -172,7 +189,7 @@ const getMovieList = async (page, url) => {
                 : null,
               categories: res.data.movies[i].genres,
               languages: [res.data.movies[i].language],
-              subtitles: [],
+              subtitles: subs && subs.length ? subs : [],
               torrents: [],
             };
             if (res.data.movies[i].torrents) {
@@ -226,41 +243,18 @@ const fetchAllTorrents = async () => {
     ytsInfos.number_of_pages,
     "pages found on",
     chalk.green("YTS,"),
-    "starting the scrape machine... (getting movies and subs at the same time)"
+    "starting the scrape machine... (getting movies and subs at the same time)."
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 70 === 0) {
+    if (i && i % 5 === 0) {
       console.log(
         i,
-        "movies done on",
+        "pages done on",
         chalk.green("YTS,"),
-        "waiting for 1.5s to avoid being blacklisted"
+        "waiting for 1s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-    }
-  }
-  console.log(ytsInfos.movies.length, "movies scrapped on", chalk.green("YTS"));
-  console.log(
-    "Now trying to getting subs for",
-    ytsInfos.movies.length,
-    "movies on",
-    chalk.green("YTS")
-  );
-  for (let i = 0; i < ytsInfos.movies.length; i++) {
-    await getSubs(
-      "https://www.yifysubtitles.com/movie-imdb/" +
-        ytsInfos.movies[i].imdb_code,
-      i
-    );
-    if (i && i % 40 === 0) {
-      console.log(
-        i,
-        "movies done on",
-        chalk.green("YTS (subs),"),
-        "waiting for 1.5s to avoid being blacklisted"
-      );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
   console.log(

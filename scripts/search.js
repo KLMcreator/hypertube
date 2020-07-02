@@ -7,6 +7,7 @@ const cheerio = require("cheerio");
 const fs = require("fs");
 const getTorrent9 = require("./getTorrent9");
 const getYTS = require("./getYTS");
+const { Worker } = require("worker_threads");
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
