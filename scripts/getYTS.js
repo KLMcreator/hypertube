@@ -3,13 +3,10 @@ const moment = require("moment");
 const chalk = require("chalk");
 const cheerio = require("cheerio");
 const got = require("got");
-const tunnel = require("tunnel");
 
 let ytsInfos = {
   fetched_at: 0,
   number_of_pages: 0,
-  movies_before_purify: 0,
-  movies_after_purify: 0,
   movies: [],
 };
 let trackers = [
@@ -104,12 +101,7 @@ const getSubs = async (url) => {
         });
       }
       return finals && finals.length ? finals : [];
-    })
-    .catch(() =>
-      console.log(
-        chalk.red("Error while getting subs:", "No page found for this id")
-      )
-    );
+    });
 };
 
 const getMovieList = async (page, url) => {
@@ -157,7 +149,7 @@ const getMovieList = async (page, url) => {
             if (
               res.data.movies[i].imdb_code &&
               res.data.movies[i].year > 2000 &&
-              parseInt(res.data.movies[i].rating, 10) > 4
+              parseInt(res.data.movies[i].rating, 10) > 5
             ) {
               subs = await getSubs(
                 "https://www.yifysubtitles.com/movie-imdb/" +
