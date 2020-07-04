@@ -175,6 +175,7 @@ const RenderTorrent = (props) => {
   const history = useHistory();
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
+  const subtitles = JSON.parse(torrent.subtitles);
 
   return (
     <div
@@ -191,7 +192,6 @@ const RenderTorrent = (props) => {
       <img
         className={classes.image}
         src={torrent.cover_url}
-        // src={"./src/assets/torrents/" + torrent.cover_url}
         alt={torrent.title}
         onError={(e) => {
           e.target.onerror = null;
@@ -207,6 +207,18 @@ const RenderTorrent = (props) => {
                 {languages.length
                   ? languages.map((el, i) =>
                       i < languages.length - 1 ? el + ", " : el
+                    )
+                  : "No informations"}
+              </div>
+            </div>
+            <div className={classes.hoverContentParent}>
+              <div className={classes.hoverContentTitle}>Subtitles(s):</div>
+              <div style={{ alignSelf: "center", fontSize: 13 }}>
+                {subtitles.length
+                  ? subtitles.map((el, i) =>
+                      i < subtitles.length - 1
+                        ? el.language + ", "
+                        : el.language
                     )
                   : "No informations"}
               </div>
@@ -282,14 +294,17 @@ const RenderTorrents = (props) => {
 
 const RenderSearchBar = (props) => {
   const [search, setSearch] = useState(props.search);
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedLanguage, setSelectedLanguage] = useState([]);
-  const [selectedSubs, setSelectedSubs] = useState([]);
-  const [selectedYear, setSelectedYear] = useState([
-    props.settings.minProductionYear,
-    props.settings.maxProductionYear,
-  ]);
-  const [selectedRating, setSelectedRating] = useState([0, 10]);
+  const [selectedCategories, setSelectedCategories] = useState(
+    props.filters.selectedCategories
+  );
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    props.filters.selectedLanguage
+  );
+  const [selectedSubs, setSelectedSubs] = useState(props.filters.selectedSubs);
+  const [selectedYear, setSelectedYear] = useState(props.filters.selectedYear);
+  const [selectedRating, setSelectedRating] = useState(
+    props.filters.selectedRating
+  );
   const { settings, classes } = props;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
@@ -297,7 +312,6 @@ const RenderSearchBar = (props) => {
   const selectStyles = {
     option: (provided) => ({
       ...provided,
-
       borderBottom: "1px solid #EFF1F3",
       color: "#111",
       padding: 10,
@@ -344,6 +358,14 @@ const RenderSearchBar = (props) => {
     setSelectedRating(e);
   };
 
+  console.log(
+    selectedCategories,
+    selectedLanguage,
+    selectedYear,
+    selectedRating,
+    selectedSubs
+  );
+
   return (
     <div className={classes.container}>
       <Input
@@ -362,6 +384,7 @@ const RenderSearchBar = (props) => {
       <div className={classes.selectContainer}>
         <div className={classes.selectDivider}>
           <Select
+            value={selectedCategories}
             styles={selectStyles}
             closeMenuOnSelect={false}
             isMulti
@@ -377,6 +400,7 @@ const RenderSearchBar = (props) => {
         </div>
         <div className={classes.selectDivider}>
           <Select
+            value={selectedLanguage}
             styles={selectStyles}
             closeMenuOnSelect={false}
             isMulti
@@ -392,6 +416,7 @@ const RenderSearchBar = (props) => {
         </div>
         <div className={classes.selectDivider}>
           <Select
+            value={selectedSubs}
             styles={selectStyles}
             closeMenuOnSelect={false}
             isMulti
@@ -424,10 +449,7 @@ const RenderSearchBar = (props) => {
             ]}
             min={settings.minProductionYear}
             max={settings.maxProductionYear}
-            defaultValue={[
-              settings.minProductionYear,
-              settings.maxProductionYear,
-            ]}
+            defaultValue={[selectedYear[0], selectedYear[1]]}
             onChange={handleFilterYear}
           />
         </div>
@@ -448,7 +470,7 @@ const RenderSearchBar = (props) => {
             ]}
             min={0}
             max={10}
-            defaultValue={[0, 10]}
+            defaultValue={[selectedRating[0], selectedRating[1]]}
             onChange={handleFilterRating}
           />
         </div>
@@ -485,6 +507,7 @@ const Home = (props) => {
   const ref = useRef(false);
   const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({});
   const [torrents, setTorrents] = useState([]);
   const [settings, setSettings] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -544,6 +567,16 @@ const Home = (props) => {
             languages: JSON.parse(res.settings.settings[0].languages),
             subtitles: JSON.parse(res.settings.settings[0].subtitles),
           });
+          setFilters({
+            selectedCategories: [],
+            selectedLanguage: [],
+            selectedYear: [
+              res.settings.settings[0].minproductionyear,
+              res.settings.settings[0].maxproductionyear,
+            ],
+            selectedRating: [0, 10],
+            selectedSubs: [],
+          });
           setIsLoading(false);
         } else if (res.settings.msg) {
           props.auth.errorMessage(res.settings.msg);
@@ -579,6 +612,13 @@ const Home = (props) => {
   const handleResetSearch = () => {
     getRandomTorrents(true);
     setSearch("");
+    setFilters({
+      selectedCategories: [],
+      selectedLanguage: [],
+      selectedYear: [settings.minProductionYear, settings.maxProductionYear],
+      selectedRating: [0, 10],
+      selectedSubs: [],
+    });
   };
 
   const handleSearchTorrent = async (
@@ -598,6 +638,13 @@ const Home = (props) => {
       selectedSubs: selectedSubs,
     });
     setSearch(query);
+    setFilters({
+      selectedCategories: selectedCategories ? selectedCategories : null,
+      selectedLanguage: selectedLanguage ? selectedLanguage : null,
+      selectedYear: selectedYear ? selectedYear : null,
+      selectedRating: selectedRating ? selectedRating : null,
+      selectedSubs: selectedSubs ? selectedSubs : null,
+    });
   };
 
   const RenderLoadMore = () => {
@@ -608,10 +655,20 @@ const Home = (props) => {
           color="secondary"
           type="submit"
           onClick={() => {
-            getQueryTorrents({ query: search }, limit + 15);
+            getQueryTorrents(
+              {
+                query: search,
+                selectedCategories: filters.selectedCategories,
+                selectedLanguage: filters.selectedLanguage,
+                selectedYear: filters.selectedYear,
+                selectedRating: filters.selectedRating,
+                selectedSubs: filters.selectedSubs,
+              },
+              limit + 15
+            );
           }}
         >
-          LOAD MORE
+          {search ? "LOAD MORE" : "GIMME MORE RANDOM MOVIES"}
         </Button>
       );
     }
@@ -641,6 +698,7 @@ const Home = (props) => {
       <SearchBar
         settings={settings}
         search={search}
+        filters={filters}
         handleResetSearch={handleResetSearch}
         handleSearchTorrent={handleSearchTorrent}
       />

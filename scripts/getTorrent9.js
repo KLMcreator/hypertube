@@ -1,5 +1,5 @@
 const cheerio = require("cheerio");
-const axios = require("axios");
+const got = require("got");
 const moment = require("moment");
 const chalk = require("chalk");
 
@@ -92,10 +92,13 @@ const getSubtitles = (title) => {
 };
 
 const getMoreInfos = async (url, i, j) => {
-  return axios
-    .get(url)
-    .then((res) => {
-      let $ = cheerio.load(res.data);
+  return got(url, {
+    retry: {
+      limit: 1,
+    },
+  })
+    .then((res) => cheerio.load(res.body))
+    .then(($) => {
       let cover = $("div.movie-detail > div > div > div > img");
       let buttons = $("div.download-btn > div");
       let categories = $("ul > li:contains('Sous-Catégories')");
@@ -124,14 +127,19 @@ const getMoreInfos = async (url, i, j) => {
       torrent9Infos.movies[i].torrents[j].torrent =
         "https://www.torrent9.ac" + buttons[0].children[0].attribs.href;
     })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+    .catch((err) =>
+      console.log(chalk.red("Torrent9: Error while getting pages:", err))
+    );
 };
 
 const getMovieList = async (url) => {
-  return axios
-    .get(url)
-    .then((res) => {
-      let $ = cheerio.load(res.data);
+  return got(url, {
+    retry: {
+      limit: 0,
+    },
+  })
+    .then((res) => cheerio.load(res.body))
+    .then(($) => {
       let movies = $("tbody > tr");
       movies.map((el) => {
         let title = getTitle(
@@ -223,20 +231,25 @@ const getMovieList = async (url) => {
         }
       });
     })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+    .catch((err) =>
+      console.log(chalk.red("Torrent9: Error while getting pages:", err))
+    );
 };
 
 const getTotalPages = async (url) => {
-  return axios
-    .get(url)
-    .then((res) => {
-      let $ = cheerio.load(res.data);
+  return got(url, {
+    retry: {
+      limit: 1,
+    },
+  })
+    .then((res) => cheerio.load(res.body))
+    .then(($) => {
       let total = $(".pagination li").eq(-2).text();
       total = parseInt(
         total.substring(total.indexOf("-") + 1).slice(0, -1),
         10
       );
-      if ($(".pagination li").eq(-1).text() === "Suivant â–º")
+      if ($(".pagination li").eq(-1).text() === "Suivant ►")
         console.log(
           "There's more than",
           total,
@@ -251,7 +264,9 @@ const getTotalPages = async (url) => {
         );
       return Math.ceil(total / 50);
     })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+    .catch((err) =>
+      console.log(chalk.red("Torrent9: Error while getting pages:", err))
+    );
 };
 
 const fetchAllTorrents = async () => {
@@ -265,7 +280,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4400"
+    "https://www.torrent9.ac/torrents/films/4500"
   );
   console.log(
     torrent9Infos.number_of_pages,
@@ -282,7 +297,8 @@ const fetchAllTorrents = async () => {
         i,
         "pages done on",
         chalk.green("Torrent9,"),
-        " waiting for 1.5s to avoid being blacklisted"
+        " waiting for 1.5s to avoid being blacklisted. Total movies:",
+        torrent9Infos.movies.length
       );
       await new Promise((resolve) => setTimeout(resolve, 1500));
     }

@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 const moment = require("moment");
 const chalk = require("chalk");
 const cheerio = require("cheerio");
@@ -21,11 +20,14 @@ let trackers = [
 ];
 
 const getTotalPages = async (url) => {
-  return fetch(url, {
-    method: "GET",
+  return got(url, {
+    retry: {
+      limit: 1,
+    },
     headers: { "Content-Type": "application/json" },
+    responseType: "json",
+    resolveBodyOnly: true,
   })
-    .then((res) => res.json())
     .then((res) => {
       console.log(
         chalk.yellow(res.data.movie_count),
@@ -34,7 +36,9 @@ const getTotalPages = async (url) => {
       );
       return Math.ceil(res.data.movie_count / 50);
     })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+    .catch((err) =>
+      console.log(chalk.red("YTS: Error while getting pages:", err))
+    );
 };
 
 const getFormat = (title) => {
@@ -101,15 +105,27 @@ const getSubs = async (url) => {
         });
       }
       return finals && finals.length ? finals : [];
-    });
+    })
+    .catch(() =>
+      console.log(
+        chalk.red(
+          "YTS: Error while getting subs:",
+          "no sub page for this movie"
+        )
+      )
+    );
 };
 
 const getMovieList = async (page, url) => {
-  return fetch(url + "&page=" + page, {
-    method: "GET",
+  return got(url, {
+    searchParams: { page: page, limit: 50 },
+    retry: {
+      limit: 1,
+    },
     headers: { "Content-Type": "application/json" },
+    responseType: "json",
+    resolveBodyOnly: true,
   })
-    .then((res) => res.json())
     .then(async (res) => {
       if (res.data.movies) {
         let i = 0;
@@ -144,7 +160,7 @@ const getMovieList = async (page, url) => {
                 });
               });
             }
-          } else {
+          } else if (res.data.movies[i].year > 1930) {
             let subs = [];
             if (
               res.data.movies[i].imdb_code &&
@@ -161,7 +177,7 @@ const getMovieList = async (page, url) => {
               torrent9_id: null,
               title: res.data.movies[i].title,
               production_year: res.data.movies[i].year,
-              rating: parseInt(res.data.movies[i].rating, 10),
+              rating: parseFloat(res.data.movies[i].rating),
               yts_url: res.data.movies[i].url,
               torrent9_url: null,
               cover_url: res.data.movies[i].medium_cover_image,
@@ -216,7 +232,9 @@ const getMovieList = async (page, url) => {
         }
       }
     })
-    .catch((err) => console.log(chalk.red("Error while getting pages:", err)));
+    .catch((err) =>
+      console.log(chalk.red("YTS: Error while getting pages:", err))
+    );
 };
 
 const fetchAllTorrents = async () => {
@@ -244,9 +262,10 @@ const fetchAllTorrents = async () => {
         i,
         "pages done on",
         chalk.green("YTS,"),
-        "waiting for 1s to avoid being blacklisted"
+        "waiting for 1.5s to avoid being blacklisted. Total movies:",
+        ytsInfos.movies.length
       );
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
   }
   console.log(

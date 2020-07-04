@@ -2,6 +2,7 @@ const Pool = require("pg").Pool;
 const faker = require("faker");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const chalk = require("chalk");
 const fs = require("fs");
 const path = "./scripts/finalTorrents.json";
 const scrap_machine = require("./scripts/search");
@@ -34,12 +35,12 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating INTEGER DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating DOUBLE PRECISION DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, downloaded_at TIMESTAMP DEFAULT NULL, lastviewed_at TIMESTAMP DEFAULT NULL, delete_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
         } else {
-          console.log("TABLE torrents HAS BEEN CREATED.");
+          console.log("TABLE", chalk.green("torrents"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -55,7 +56,7 @@ const setupSettings = async () => {
         if (error) {
           resolve(error);
         } else {
-          console.log("TABLE settings HAS BEEN CREATED.");
+          console.log("TABLE", chalk.green("settings"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -71,7 +72,7 @@ const setupComments = async () => {
         if (error) {
           resolve(error);
         } else {
-          console.log("TABLE comments HAS BEEN CREATED.");
+          console.log("TABLE", chalk.green("comments"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -87,7 +88,7 @@ const setupViews = () => {
         if (error) {
           resolve(error);
         } else {
-          console.log("TABLE views HAS BEEN CREATED.");
+          console.log("TABLE", chalk.green("views"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -103,7 +104,7 @@ const setupUsers = () => {
         if (error) {
           resolve(error);
         } else {
-          console.log("TABLE users HAS BEEN CREATED.");
+          console.log("TABLE", chalk.green("users"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -209,13 +210,16 @@ const insertIntoTorrents = (torrent) => {
 
 const populateUsers = () => {
   return new Promise(async (resolve, reject) => {
-    console.log(totalUser + " USERS WILL BE ADDED TO THE TABLE users.");
+    console.log(
+      chalk.yellow(totalUser),
+      "USERS WILL BE ADDED TO THE TABLE users."
+    );
     const users = await hydrateSeed(totalUser);
     Promise.all(users.map((e) => insertIntoUsers(e)))
       .then((res) => {
         console.log(
-          totalUser +
-            " UNIQUE USERS HAVE BEEN ADDED TO TABLE users, their password is Hypertube42."
+          chalk.yellow(totalUser),
+          "UNIQUE USERS HAVE BEEN ADDED TO TABLE users, their password is Hypertube42."
         );
         resolve(0);
       })
@@ -228,16 +232,16 @@ const populateUsers = () => {
 const populateTorrents = () => {
   return new Promise(async (resolve, reject) => {
     console.log(
-      torrents.number_of_movies +
-        " TORRENTS WILL BE ADDED TO THE DATABASE. THEY WERE FETCHED THE",
-      moment(torrents.fetched_at).format("MM/DD/YYYY : HH:mm:ss"),
+      chalk.yellow(torrents.number_of_movies),
+      "TORRENTS WILL BE ADDED TO THE DATABASE. THEY WERE FETCHED THE",
+      chalk.yellow(moment(torrents.fetched_at).format("MM/DD/YYYY : HH:mm:ss")),
       "FROM YTS AND TORRENT9"
     );
     Promise.all(torrents.movies.map((e) => insertIntoTorrents(e)))
       .then((res) => {
         console.log(
-          torrents.number_of_movies +
-            " TORRENTS HAVE BEEN ADDED TO TABLE torrents."
+          chalk.yellow(torrents.number_of_movies),
+          "TORRENTS HAVE BEEN ADDED TO TABLE torrents."
         );
         resolve(0);
       })
@@ -348,22 +352,34 @@ const setupDatabase = () => {
         if (error) {
           reject(error);
         } else {
-          console.log("ROLE me CREATED WITH PASSWORD 'root'.");
+          console.log(
+            "ROLE",
+            chalk.green("me"),
+            "CREATED WITH PASSWORD 'root'."
+          );
           rootPool.query("ALTER ROLE me WITH LOGIN;", (error, reslogin) => {
             if (error) {
               reject(error);
             } else {
-              console.log("ROLE me CAN NOW LOGIN.");
+              console.log("ROLE", chalk.green("me"), "CAN NOW LOGIN.");
               rootPool.query("ALTER ROLE me CREATEDB;", (error, rescreate) => {
                 if (error) {
                   reject(error);
                 } else {
-                  console.log("ROLE me CAN NOW CREATE DATABASES.");
+                  console.log(
+                    "ROLE",
+                    chalk.green("me"),
+                    "CAN NOW CREATE DATABASES."
+                  );
                   rootPool.query(
                     "CREATE DATABASE hypertube;",
                     (error, resdatname) => {
                       if (!error || error.code === "42P04") {
-                        console.log("DATABASE hypertube HAS BEEN CREATED.");
+                        console.log(
+                          "DATABASE",
+                          chalk.green("hypertube"),
+                          "HAS BEEN CREATED."
+                        );
                         Promise.all([
                           setupTorrents(),
                           setupComments(),
@@ -416,7 +432,7 @@ try {
       .catch((err) => console.log(err));
   } else {
     (async () => {
-      console.error("No file found... getting some proxy for better scrapping");
+      console.error("No file found... lets start the scrape machine!!");
       await scrap_machine.initScraping(false);
       torrents = scrap_machine.torrents;
       setupDatabase()
