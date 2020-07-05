@@ -140,6 +140,20 @@ const hydrateSeed = async (totalUser) => {
       i++;
     }
   }
+  users.push({
+    username: "user42",
+    password: hash,
+    firstname: "Clement Elise Marie",
+    lastname: "Vannicatte Ozimek Many",
+    email: "vannicattec@gmail.com",
+    photos: faker.internet.avatar(),
+    last_connection: moment(
+      randomDate(new Date(2018, 0, 1), new Date())
+    ).format("DD/MM/YYYY hh:mm:ss"),
+    verified: 1,
+    verified_value: 1,
+    language: "French",
+  });
   return users;
 };
 
@@ -215,11 +229,19 @@ const populateUsers = () => {
       "USERS WILL BE ADDED TO THE TABLE users."
     );
     const users = await hydrateSeed(totalUser);
+    console.log(
+      chalk.yellow(totalUser),
+      "Default user logs is:",
+      chalk.green("user42"),
+      " - ",
+      chalk.green("Hypertube42")
+    );
     Promise.all(users.map((e) => insertIntoUsers(e)))
       .then((res) => {
         console.log(
           chalk.yellow(totalUser),
-          "UNIQUE USERS HAVE BEEN ADDED TO TABLE users, their password is Hypertube42."
+          "UNIQUE USERS HAVE BEEN ADDED TO TABLE users, their password is",
+          chalk.green("Hypertube42.")
         );
         resolve(0);
       })
