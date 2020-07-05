@@ -46,20 +46,6 @@ const getQueryTorrents = (request, response) => {
               categories: req.selectedCategories,
               subtitles: req.selectedSubs,
             });
-            // filterData = (data, query) => {
-            //   const filteredData = data.filter((item) => {
-            //     for (let key in query) {
-            //       if (
-            //         item[key] === undefined ||
-            //         !query[key].includes(item[key])
-            //       ) {
-            //         return false;
-            //       }
-            //     }
-            //     return true;
-            //   });
-            //   return filteredData;
-            // };
             while (torrents.length < req.limit && i < results.rowCount) {
               let isAble = true;
               for (let key in query) {
