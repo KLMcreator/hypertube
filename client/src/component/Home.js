@@ -175,7 +175,10 @@ const RenderTorrent = (props) => {
   const history = useHistory();
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
-  const subtitles = JSON.parse(torrent.subtitles);
+  const subtitles =
+    JSON.parse(torrent.subtitles).length > 5
+      ? JSON.parse(torrent.subtitles).slice(0, 5)
+      : JSON.parse(torrent.subtitles);
 
   return (
     <div
@@ -516,6 +519,7 @@ const Home = (props) => {
   const SearchBar = withStyles(SearchBarStyles)(RenderSearchBar);
 
   const getQueryTorrents = async (query, loadMore) => {
+    setIsLoading(true);
     fetch("/api/torrents/query", {
       method: "POST",
       body: JSON.stringify({
@@ -544,6 +548,7 @@ const Home = (props) => {
             setLimit(limit + 15);
           }
           setTorrents(res.torrents);
+          setIsLoading(false);
         } else if (res.torrents.msg) {
           props.auth.errorMessage(res.torrents.msg);
         } else {

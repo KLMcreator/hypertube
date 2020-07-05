@@ -136,28 +136,30 @@ const getMovieList = async (page, url) => {
           if (isDuplicate >= 0) {
             if (res.data.movies[i].torrents) {
               res.data.movies[i].torrents.map((ele) => {
-                ytsInfos.movies[isDuplicate].torrents.push({
-                  source: "yts",
-                  duration: res.data.movies[i].runtime
-                    ? res.data.movies[i].runtime
-                    : null,
-                  language: res.data.movies[i].language,
-                  subtitles: [],
-                  quality: ele.quality,
-                  seeds: ele.seeds,
-                  peers: ele.peers,
-                  url: res.data.movies[i].url,
-                  magnet:
-                    "magnet:?xt=urn:btih:" +
-                    ele.hash +
-                    "&dn=" +
-                    res.data.movies[i].title_long +
-                    "&tr=" +
-                    trackers.join("&tr="),
-                  torrent: ele.url,
-                  size: ele.size,
-                  format: getFormat(ele.type),
-                });
+                if (ele.seeds > 0) {
+                  ytsInfos.movies[isDuplicate].torrents.push({
+                    source: "yts",
+                    duration: res.data.movies[i].runtime
+                      ? res.data.movies[i].runtime
+                      : null,
+                    language: res.data.movies[i].language,
+                    subtitles: [],
+                    quality: ele.quality,
+                    seeds: ele.seeds,
+                    peers: ele.peers,
+                    url: res.data.movies[i].url,
+                    magnet:
+                      "magnet:?xt=urn:btih:" +
+                      ele.hash +
+                      "&dn=" +
+                      res.data.movies[i].title_long +
+                      "&tr=" +
+                      trackers.join("&tr="),
+                    torrent: ele.url,
+                    size: ele.size,
+                    format: getFormat(ele.type),
+                  });
+                }
               });
             }
           } else if (res.data.movies[i].year > 1930) {
@@ -202,31 +204,35 @@ const getMovieList = async (page, url) => {
             };
             if (res.data.movies[i].torrents) {
               res.data.movies[i].torrents.map((ele) => {
-                infos.torrents.push({
-                  source: "yts",
-                  duration: res.data.movies[i].runtime
-                    ? res.data.movies[i].runtime
-                    : null,
-                  language: res.data.movies[i].language,
-                  subtitles: [],
-                  quality: ele.quality,
-                  seeds: ele.seeds,
-                  peers: ele.peers,
-                  url: res.data.movies[i].url,
-                  magnet:
-                    "magnet:?xt=urn:btih:" +
-                    ele.hash +
-                    "&dn=" +
-                    res.data.movies[i].title_long +
-                    "&tr=" +
-                    trackers.join("&tr="),
-                  torrent: ele.url,
-                  size: ele.size,
-                  format: getFormat(ele.type),
-                });
+                if (ele.seeds > 0) {
+                  infos.torrents.push({
+                    source: "yts",
+                    duration: res.data.movies[i].runtime
+                      ? res.data.movies[i].runtime
+                      : null,
+                    language: res.data.movies[i].language,
+                    subtitles: [],
+                    quality: ele.quality,
+                    seeds: ele.seeds,
+                    peers: ele.peers,
+                    url: res.data.movies[i].url,
+                    magnet:
+                      "magnet:?xt=urn:btih:" +
+                      ele.hash +
+                      "&dn=" +
+                      res.data.movies[i].title_long +
+                      "&tr=" +
+                      trackers.join("&tr="),
+                    torrent: ele.url,
+                    size: ele.size,
+                    format: getFormat(ele.type),
+                  });
+                }
               });
             }
-            ytsInfos.movies.push(infos);
+            if (infos.torrents.length) {
+              ytsInfos.movies.push(infos);
+            }
           }
           i++;
         }
@@ -257,7 +263,7 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 5 === 0) {
+    if (i && i % 10 === 0) {
       console.log(
         i,
         "pages done on",
@@ -265,7 +271,7 @@ const fetchAllTorrents = async () => {
         "waiting for 1.5s to avoid being blacklisted. Total movies:",
         ytsInfos.movies.length
       );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
   console.log(

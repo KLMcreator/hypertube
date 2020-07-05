@@ -1,11 +1,21 @@
 const pool = require("./../pool.js");
 
+buildFilter = (filter) => {
+  let query = {};
+  for (let keys in filter) {
+    if (filter[keys].constructor === Array && filter[keys].length > 0) {
+      query[keys] = filter[keys];
+    }
+  }
+  return query;
+};
+
 const getQueryTorrents = (request, response) => {
   const { req } = request;
   return new Promise(function (resolve, reject) {
     let likeQuery = req.query ? "%" + req.query + "%" : "%%";
     pool.pool.query(
-      "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query WHERE rating BETWEEN $3 AND $4 AND production_year BETWEEN $5 AND $6 GROUP BY id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration",
+      "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, production_year FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query WHERE rating BETWEEN $3 AND $4 AND production_year BETWEEN $5 AND $6 GROUP BY id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration",
       [
         req.query,
         likeQuery,
@@ -31,32 +41,45 @@ const getQueryTorrents = (request, response) => {
             req.selectedSubs = req.selectedSubs.map((e) => e.value);
             let torrents = [];
             let i = 0;
+            let query = buildFilter({
+              languages: req.selectedLanguage,
+              categories: req.selectedCategories,
+              subtitles: req.selectedSubs,
+            });
+            // filterData = (data, query) => {
+            //   const filteredData = data.filter((item) => {
+            //     for (let key in query) {
+            //       if (
+            //         item[key] === undefined ||
+            //         !query[key].includes(item[key])
+            //       ) {
+            //         return false;
+            //       }
+            //     }
+            //     return true;
+            //   });
+            //   return filteredData;
+            // };
             while (torrents.length < req.limit && i < results.rowCount) {
-              let languages = JSON.parse(results.rows[i].languages);
-              let categories = JSON.parse(results.rows[i].categories);
-              let subtitles = JSON.parse(results.rows[i].subtitles);
-              let found_language = languages.filter(
-                (language) => req.selectedLanguage.indexOf(language) >= 0
-              );
-              let found_subtitles = subtitles.filter((subtitle) => {
-                return req.selectedSubs.findIndex(
-                  (subs) => subtitle.language === subs
-                );
-              });
-              let found_category = categories.filter(
-                (category) => req.selectedCategories.indexOf(category) >= 0
-              );
-              if (
-                (req.selectedLanguage &&
-                  req.selectedLanguage.length &&
-                  found_language.length) ||
-                (req.selectedCategories &&
-                  req.selectedCategories.length &&
-                  found_category.length) ||
-                (req.selectedSubs &&
-                  req.selectedSubs.length &&
-                  found_subtitles.length)
-              ) {
+              let isAble = true;
+              for (let key in query) {
+                let item = [];
+                if (key === "subtitles") {
+                  item = JSON.parse(results.rows[i][key]).map(
+                    (e) => e.language
+                  );
+                } else {
+                  item = JSON.parse(results.rows[i][key]);
+                }
+                if (
+                  item === null ||
+                  item === undefined ||
+                  !query[key].some((i) => item.indexOf(i) >= 0)
+                ) {
+                  isAble = false;
+                }
+              }
+              if (isAble) {
                 torrents.push(results.rows[i]);
               }
               i++;

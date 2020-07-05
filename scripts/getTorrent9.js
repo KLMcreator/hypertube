@@ -164,70 +164,87 @@ const getMovieList = async (url) => {
           (dupli) => dupli.title === title
         );
         if (isDuplicate >= 0) {
-          torrent9Infos.movies[isDuplicate].torrents.push({
-            source: "torrent9",
-            duration: null,
-            languages: language,
-            subtitles: subtitles ? [subtitles] : [],
-            quality: quality,
-            seeds: parseInt(
+          if (
+            parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ),
-            peers: parseInt(movies[el].children[7].children[0].data.trim(), 10),
-            url:
-              "https://www.torrent9.ac" +
-              movies[el].children[0].next.children[1].next.attribs.href,
-            magnet: null,
-            torrent: null,
-            size: movies[el].children[3].children[0].data.toUpperCase(),
-            format: format,
-          });
+            ) > 0
+          ) {
+            torrent9Infos.movies[isDuplicate].torrents.push({
+              source: "torrent9",
+              duration: null,
+              languages: language,
+              subtitles: subtitles ? [subtitles] : [],
+              quality: quality,
+              seeds: parseInt(
+                movies[el].children[5].children[0].children[0].data.trim(),
+                10
+              ),
+              peers: parseInt(
+                movies[el].children[7].children[0].data.trim(),
+                10
+              ),
+              url:
+                "https://www.torrent9.ac" +
+                movies[el].children[0].next.children[1].next.attribs.href,
+              magnet: null,
+              torrent: null,
+              size: movies[el].children[3].children[0].data.toUpperCase(),
+              format: format,
+            });
+          }
         } else {
-          torrent9Infos.movies.push({
-            yts_id: null,
-            torrent9_id: title,
-            title: title,
-            production_year: year,
-            rating: null,
-            yts_url: null,
-            torrent9_url:
-              "https://www.torrent9.ac" +
-              movies[el].children[0].next.children[1].next.attribs.href,
-            cover_url: null,
-            large_image: null,
-            summary: [],
-            duration: null,
-            imdb_code: null,
-            yt_trailer: null,
-            categories: [],
-            languages: [language],
-            subtitles: subtitles ? [subtitles] : [],
-            torrents: [
-              {
-                source: "torrent9",
-                duration: null,
-                languages: language,
-                subtitles: subtitles ? [subtitles] : [],
-                quality: quality,
-                seeds: parseInt(
-                  movies[el].children[5].children[0].children[0].data.trim(),
-                  10
-                ),
-                peers: parseInt(
-                  movies[el].children[7].children[0].data.trim(),
-                  10
-                ),
-                url:
-                  "https://www.torrent9.ac" +
-                  movies[el].children[0].next.children[1].next.attribs.href,
-                magnet: null,
-                torrent: null,
-                size: movies[el].children[3].children[0].data.toUpperCase(),
-                format: format,
-              },
-            ],
-          });
+          if (
+            parseInt(
+              movies[el].children[5].children[0].children[0].data.trim(),
+              10
+            ) > 0
+          ) {
+            torrent9Infos.movies.push({
+              yts_id: null,
+              torrent9_id: title,
+              title: title,
+              production_year: year,
+              rating: null,
+              yts_url: null,
+              torrent9_url:
+                "https://www.torrent9.ac" +
+                movies[el].children[0].next.children[1].next.attribs.href,
+              cover_url: null,
+              large_image: null,
+              summary: [],
+              duration: null,
+              imdb_code: null,
+              yt_trailer: null,
+              categories: [],
+              languages: [language],
+              subtitles: subtitles ? [subtitles] : [],
+              torrents: [
+                {
+                  source: "torrent9",
+                  duration: null,
+                  languages: language,
+                  subtitles: subtitles ? [subtitles] : [],
+                  quality: quality,
+                  seeds: parseInt(
+                    movies[el].children[5].children[0].children[0].data.trim(),
+                    10
+                  ),
+                  peers: parseInt(
+                    movies[el].children[7].children[0].data.trim(),
+                    10
+                  ),
+                  url:
+                    "https://www.torrent9.ac" +
+                    movies[el].children[0].next.children[1].next.attribs.href,
+                  magnet: null,
+                  torrent: null,
+                  size: movies[el].children[3].children[0].data.toUpperCase(),
+                  format: format,
+                },
+              ],
+            });
+          }
         }
       });
     })
