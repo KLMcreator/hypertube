@@ -1,7 +1,10 @@
 const pool = require("./../pool.js");
-
+const router = require("express").Router();
 const ts = require("torrent-stream");
 const path = require("path");
+const ffmpeg = require("fluent-ffmpeg");
+const pump = require("pump");
+const fs = require("fs");
 
 const config = {
   connections: 100, // Max amount of peers to be connected to.
@@ -184,28 +187,66 @@ const handleReadTorrent = (request, response) => {
   const { torrent } = request.req;
   return new Promise(function (resolve, reject) {
     const engine = ts(torrent.magnet, config);
-    let files = [];
-
-    engine.on("download", (piece) => {
-      console.log(piece, "downloaded");
-      console.log(engine.swarm.downloaded, "/", torrent.size);
-    });
-
+    console.log(engine);
     engine.on("ready", () => {
-      if (!engine.files.length) resolve({ msg: "Torrent is empty" });
-      files = engine.files.sort((a, b) =>
-        a.length > b.length ? -1 : a.length < b.length ? 1 : 0
-      );
-      //   console.log(files);
-      //   engine.files.forEach((file) => {
-      //     console.log(file.path);
-      //     let ext = path.extname(file.path);
-      //     if (types[ext]) {
-      //       console.log([ext]);
-      //       resolve({ file: file, ext: ext });
-      //     }
-      //   });
+      engine.files.forEach((file) => {
+        // if (file.name === filename) {
+        console.log("-----file selected for streaming-----");
+        file.select();
+        const stream = file.createReadStream();
+        console.log(stream);
+        // if (realExtension === "mp4" || realExtension === "mkv") {
+        //   pump(stream, res);
+        // } else {
+        ffmpeg()
+          .input(stream)
+          .outputOptions("-movflags frag_keyframe+empty_moov")
+          .outputFormat("mp4")
+          .on("start", () => {
+            console.log("start");
+          })
+          .on("progress", (progress) => {
+            console.log(`progress: ${progress.timemark}`);
+          })
+          .on("end", () => {
+            console.log("Finished processing");
+          })
+          .on("error", (err) => {
+            console.log(`ERROR: ${err.message}`);
+          })
+          //   .inputFormat(realExtension)
+          .audioCodec("aac")
+          .videoCodec("libx264");
+        //   .pipe(res);
+        // res.on("close", () => {
+        //   stream.destroy();
+        // });
+        // }
+        // } else {
+        //   console.log("-----file with wrong extension-----");
+        // }
+      });
     });
+
+    // engine.on("download", (piece) => {
+    //   console.log(piece, "downloaded");
+    //   console.log(engine.swarm.downloaded, "/", torrent.size);
+    // });
+    // engine.on("ready", () => {
+    //   if (!engine.files.length) resolve({ msg: "Torrent is empty" });
+    //   files = engine.files.sort((a, b) =>
+    //     a.length > b.length ? -1 : a.length < b.length ? 1 : 0
+    //   );
+    //   console.log(files);
+    //   engine.files.forEach((file) => {
+    //     console.log(file.path);
+    //     let ext = path.extname(file.path);
+    //     if (types[ext]) {
+    //       console.log([ext]);
+    //       resolve({ file: file, ext: ext });
+    //     }
+    //   });
+    // });
   });
 };
 

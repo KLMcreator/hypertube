@@ -9,14 +9,14 @@ let ytsInfos = {
   movies: [],
 };
 let trackers = [
-  "udp://open.demonii.com:1337",
-  "udp://tracker.istole.it:80",
-  "http://tracker.yify-torrents.com/announce",
-  "udp://tracker.publicbt.com:80",
+  "udp://glotorrents.pw:6969/announce",
+  "udp://tracker.opentrackr.org:1337/announce",
+  "udp://torrent.gresille.org:80/announce",
   "udp://tracker.openbittorrent.com:80",
   "udp://tracker.coppersurfer.tk:6969",
-  "udp://exodus.desync.com:6969",
-  "http://exodus.desync.com:6969/announce",
+  "udp://tracker.leechers-paradise.org:6969",
+  "udp://p4p.arenabg.ch:1337",
+  "udp://tracker.internetwarriors.net:1337",
 ];
 
 const getTotalPages = async (url) => {
@@ -106,21 +106,14 @@ const getSubs = async (url) => {
       }
       return finals && finals.length ? finals : [];
     })
-    .catch(() =>
-      console.log(
-        chalk.red(
-          "YTS: Error while getting subs:",
-          "no sub page for this movie"
-        )
-      )
-    );
+    .catch(() => {});
 };
 
 const getMovieList = async (page, url) => {
   return got(url, {
     searchParams: { page: page, limit: 50 },
     retry: {
-      limit: 1,
+      limit: 0,
     },
     headers: { "Content-Type": "application/json" },
     responseType: "json",
@@ -134,7 +127,11 @@ const getMovieList = async (page, url) => {
             (dupli) => dupli.title === res.data.movies[i].title
           );
           if (isDuplicate >= 0) {
-            if (res.data.movies[i].torrents) {
+            if (
+              res.data.movies[i].torrents &&
+              res.data.movies[i].torrents.length &&
+              res.data.movies[i].torrents[0].seeds > 0
+            ) {
               res.data.movies[i].torrents.map((ele) => {
                 if (ele.seeds > 0) {
                   ytsInfos.movies[isDuplicate].torrents.push({
@@ -162,12 +159,21 @@ const getMovieList = async (page, url) => {
                 }
               });
             }
-          } else if (res.data.movies[i].year > 1930) {
+          } else if (
+            (res.data.movies[i].year > 1980 ||
+              (res.data.movies[i].year > 1950 &&
+                parseInt(res.data.movies[i].rating) > 8)) &&
+            res.data.movies[i].torrents &&
+            res.data.movies[i].torrents.length &&
+            res.data.movies[i].torrents[0].seeds > 0
+          ) {
             let subs = [];
             if (
               res.data.movies[i].imdb_code &&
-              res.data.movies[i].year > 2000 &&
-              parseInt(res.data.movies[i].rating, 10) > 5
+              ((res.data.movies[i].year > 2005 &&
+                parseInt(res.data.movies[i].rating, 10) > 6) ||
+                (res.data.movies[i].year > 1980 &&
+                  parseInt(res.data.movies[i].rating, 10) > 8))
             ) {
               subs = await getSubs(
                 "https://www.yifysubtitles.com/movie-imdb/" +
@@ -207,6 +213,7 @@ const getMovieList = async (page, url) => {
                 if (ele.seeds > 0) {
                   infos.torrents.push({
                     source: "yts",
+                    hash: ele.hash,
                     duration: res.data.movies[i].runtime
                       ? res.data.movies[i].runtime
                       : null,

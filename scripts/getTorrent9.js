@@ -24,6 +24,15 @@ const getTitle = (title) => {
     "4K",
     "ULTRA HD",
     "x265",
+    "dvdscr",
+    "(trilogie)",
+    "(integrale)",
+    "truefrench",
+    "1CD",
+    "2CD",
+    "3CD",
+    "4CD",
+    "5CD",
   ];
 
   purify.map((el) => {
@@ -40,7 +49,14 @@ const getTitle = (title) => {
 };
 
 const getFormat = (title) => {
-  const format = ["bluray", "dvdrip", "hdlight", "webrip"];
+  const format = [
+    "bluray",
+    "dvdrip",
+    "dvdscr",
+    "hdlight",
+    "webrip",
+    "truefrench",
+  ];
   let type = "Undefined";
 
   format.map((el) => {
@@ -83,6 +99,57 @@ const getLanguage = (title) => {
   return type;
 };
 
+const getCategories = (title) => {
+  const language = [
+    "french",
+    "english",
+    "german",
+    "japanese",
+    "spanish",
+    "russian",
+  ];
+  let type = "English";
+
+  language.map((el) => {
+    if (title.toLowerCase().indexOf(el) > -1)
+      type = el.charAt(0).toUpperCase() + el.slice(1);
+  });
+  return type;
+};
+
+const getCategoriesTranslated = (categories) => {
+  if (categories === "action") return "Action";
+  if (categories === "animation") return "Animation";
+  if (categories === "aventure") return "Adventure";
+  if (categories === "biopic") return "Biopic";
+  if (categories.indexOf("comédie") > -1) return "Comedy";
+  if (categories === "documentaire") return "Documentary";
+  if (
+    categories === "drama" ||
+    categories === "drame" ||
+    categories === "comédie dramatique"
+  )
+    return "Drama";
+  if (
+    categories === "epouvante-horreur" ||
+    categories === "epouvante" ||
+    categories === "horreur"
+  )
+    return "Horror";
+  if (categories === "historique") return "Historical";
+  if (categories === "policier") return "Crime";
+  if (
+    categories === "fantastique" ||
+    categories === "science fiction" ||
+    categories === "science-fiction" ||
+    categories === "science" ||
+    categories === "fiction"
+  )
+    return "Sci-Fi";
+  if (categories === "Spectacle") return "Show";
+  return categories;
+};
+
 const getSubtitles = (title) => {
   let type = "";
 
@@ -94,7 +161,7 @@ const getSubtitles = (title) => {
 const getMoreInfos = async (url, i, j) => {
   return got(url, {
     retry: {
-      limit: 1,
+      limit: 0,
     },
   })
     .then((res) => cheerio.load(res.body))
@@ -111,7 +178,7 @@ const getMoreInfos = async (url, i, j) => {
       if (torrent9Infos.movies[i].categories.length) {
         torrent9Infos.movies[i].categories = torrent9Infos.movies[
           i
-        ].categories.map((el) => el.charAt(0).toUpperCase() + el.slice(1));
+        ].categories.map((el) => getCategoriesTranslated(el.toLowerCase()));
       }
       summ[1].children[0] && !torrent9Infos.movies[i].summary.length
         ? torrent9Infos.movies[i].summary.push(summ[1].children[0].data)
@@ -124,6 +191,12 @@ const getMoreInfos = async (url, i, j) => {
         "https://www.torrent9.ac" + cover[0].attribs.src;
       torrent9Infos.movies[i].torrents[j].magnet =
         buttons[1].children[0].attribs.href;
+      torrent9Infos.movies[i].torrents[
+        j
+      ].hash = buttons[1].children[0].attribs.href
+        .split("urn:btih:")
+        .pop()
+        .split(";tr=")[0];
       torrent9Infos.movies[i].torrents[j].torrent =
         "https://www.torrent9.ac" + buttons[0].children[0].attribs.href;
     })
@@ -172,6 +245,7 @@ const getMovieList = async (url) => {
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               source: "torrent9",
+              hash: null,
               duration: null,
               languages: language,
               subtitles: subtitles ? [subtitles] : [],
@@ -222,6 +296,7 @@ const getMovieList = async (url) => {
               torrents: [
                 {
                   source: "torrent9",
+                  hash: null,
                   duration: null,
                   languages: language,
                   subtitles: subtitles ? [subtitles] : [],
@@ -256,7 +331,7 @@ const getMovieList = async (url) => {
 const getTotalPages = async (url) => {
   return got(url, {
     retry: {
-      limit: 1,
+      limit: 0,
     },
   })
     .then((res) => cheerio.load(res.body))
@@ -335,7 +410,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 40 === 0) {
+    if (i && i % 45 === 0) {
       console.log(
         i,
         "movies done on",

@@ -22,6 +22,7 @@
     "express": "^4.17.1",
     "express-session": "^1.17.1",
     "faker": "^4.1.0",
+    "fluent-ffmpeg": "^2.1.2",
     "got": "^11.3.0",
     "jimp": "^0.14.0",
     "jsonwebtoken": "^8.5.1",
@@ -32,6 +33,7 @@
     "node-fetch": "^2.6.0",
     "nodemailer": "^6.4.6",
     "pg": "^8.0.2",
+    "pump": "^3.0.0",
     "react-window": "^1.8.5",
     "request": "^2.88.2",
     "torrent-stream": "^1.2.0"

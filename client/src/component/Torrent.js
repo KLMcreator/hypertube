@@ -835,14 +835,9 @@ const Torrent = (props) => {
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
                         <div className={classes.titleSectionCenter}>
-                          <a
-                            className={classes.peers}
-                            href={el.torrent}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                          <Button onClick={() => handleReadTorrent(el)}>
                             Watch
-                          </a>
+                          </Button>
                         </div>
                       ) : undefined}
                     </div>
