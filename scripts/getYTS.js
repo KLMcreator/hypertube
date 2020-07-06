@@ -162,7 +162,8 @@ const getMovieList = async (page, url) => {
           } else if (
             (res.data.movies[i].year > 1980 ||
               (res.data.movies[i].year > 1950 &&
-                parseInt(res.data.movies[i].rating) > 8)) &&
+                parseInt(res.data.movies[i].rating) > 8 &&
+                ytsInfos.movies.length < 5000)) &&
             res.data.movies[i].torrents &&
             res.data.movies[i].torrents.length &&
             res.data.movies[i].torrents[0].seeds > 0
