@@ -361,14 +361,6 @@ const RenderSearchBar = (props) => {
     setSelectedRating(e);
   };
 
-  console.log(
-    selectedCategories,
-    selectedLanguage,
-    selectedYear,
-    selectedRating,
-    selectedSubs
-  );
-
   return (
     <div className={classes.container}>
       <Input
@@ -656,6 +648,7 @@ const Home = (props) => {
     if (torrents.torrents && torrents.torrents.length > limit - 1) {
       return (
         <Button
+          style={{ marginBottom: 20 }}
           variant="outlined"
           color="secondary"
           type="submit"
@@ -673,7 +666,7 @@ const Home = (props) => {
             );
           }}
         >
-          {search ? "LOAD MORE" : "GIMME MORE RANDOM MOVIES"}
+          {search ? "LOAD MORE" : "GIMME MORE MOVIES"}
         </Button>
       );
     }

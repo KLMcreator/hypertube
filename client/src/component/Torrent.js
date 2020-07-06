@@ -489,6 +489,36 @@ const Torrent = (props) => {
     return <></>;
   };
 
+  const handleReadTorrent = (torrent) => {
+    fetch("/api/torrents/read", {
+      method: "POST",
+      body: JSON.stringify({
+        torrent: torrent,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res);
+        //   if (ref.current) {
+        //     if (res.comments.comments) {
+        //       if (loadMore) {
+        //         setLimit(limit + 10);
+        //       }
+        //       setComments(res.comments.comments);
+        //       checkIfLogged();
+        //     } else if (res.comments.msg) {
+        //       props.auth.errorMessage(res.comments.msg);
+        //     } else {
+        //       props.auth.errorMessage("Error while fetching database.");
+        //     }
+        //   }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   useEffect(() => {
     ref.current = true;
     getComments();
@@ -732,14 +762,9 @@ const Torrent = (props) => {
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
                         <div className={classes.titleSectionCenter}>
-                          <a
-                            className={classes.peers}
-                            href={el.torrent}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
+                          <Button onClick={() => handleReadTorrent(el)}>
                             Watch
-                          </a>
+                          </Button>
                         </div>
                       ) : undefined}
                     </div>

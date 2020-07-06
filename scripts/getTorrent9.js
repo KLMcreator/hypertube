@@ -113,9 +113,9 @@ const getMoreInfos = async (url, i, j) => {
           i
         ].categories.map((el) => el.charAt(0).toUpperCase() + el.slice(1));
       }
-      summ[1].children[0] && !torrent9Infos.movies[i].summary
+      summ[1].children[0] && !torrent9Infos.movies[i].summary.length
         ? torrent9Infos.movies[i].summary.push(summ[1].children[0].data)
-        : summ[0].children[0]
+        : summ[0].children[0] && !torrent9Infos.movies[i].summary.length
         ? torrent9Infos.movies[i].summary.push(summ[0].children[0].data)
         : undefined;
       torrent9Infos.movies[i].cover_url =

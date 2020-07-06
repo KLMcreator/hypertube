@@ -1,6 +1,55 @@
 const pool = require("./../pool.js");
 
-buildFilter = (filter) => {
+const ts = require("torrent-stream");
+const path = require("path");
+
+const config = {
+  connections: 100, // Max amount of peers to be connected to.
+  uploads: 10, // Number of upload slots.
+  tmp: "./torrents/tmp/", // Root folder for the files storage.
+  // Defaults to '/tmp' or temp folder specific to your OS.
+  // Each torrent will be placed into a separate folder under /tmp/torrent-stream/{infoHash}
+  path: "./torrents/downloads/", // Where to save the files. Overrides `tmp`.
+  verify: true, // Verify previously stored data before starting
+  // Defaults to true
+  dht: true, // Whether or not to use DHT to initialize the swarm.
+  // Defaults to true
+  tracker: true, // Whether or not to use trackers from torrent file or magnet link
+  // Defaults to true
+  // trackers: [
+  //     'udp://tracker.openbittorrent.com:80',
+  //     'udp://tracker.ccc.de:80'
+  // ],
+  // Allows to declare additional custom trackers to use
+  // Defaults to empty
+  // storage: myStorage()  // Use a custom storage backend rather than the default disk-backed one
+};
+
+const types = {
+  ".f4v": "video/mp4",
+  ".f4p": "video/mp4",
+  ".mp4": "video/mp4",
+  ".ts": "video/mp2t",
+  ".ogg": "video/ogg",
+  ".mpa": "video/mpeg",
+  ".mpe": "video/mpeg",
+  ".mpg": "video/mpeg",
+  ".mp2": "video/mpeg",
+  ".webm": "video/webm",
+  ".mpeg": "video/mpeg",
+  ".mpv2": "video/mpeg",
+  ".flv": "video/x-flv",
+  ".qt": "video/quicktime",
+  ".mkv": "video/matroska",
+  ".asf": "video/x-ms-asf",
+  ".asr": "video/x-ms-asf",
+  ".asx": "video/x-ms-asf",
+  ".avi": "video/x-msvideo",
+  ".mov": "video/quicktime",
+  ".movie": "video/x-sgi-movie",
+};
+
+const buildFilter = (filter) => {
   let query = {};
   for (let keys in filter) {
     if (filter[keys].constructor === Array && filter[keys].length > 0) {
@@ -131,4 +180,38 @@ const getTorrentSettings = (request, response) => {
   });
 };
 
-module.exports = { getQueryTorrents, getRandomTorrents, getTorrentSettings };
+const handleReadTorrent = (request, response) => {
+  const { torrent } = request.req;
+  return new Promise(function (resolve, reject) {
+    const engine = ts(torrent.magnet, config);
+    let files = [];
+
+    engine.on("download", (piece) => {
+      console.log(piece, "downloaded");
+      console.log(engine.swarm.downloaded, "/", torrent.size);
+    });
+
+    engine.on("ready", () => {
+      if (!engine.files.length) resolve({ msg: "Torrent is empty" });
+      files = engine.files.sort((a, b) =>
+        a.length > b.length ? -1 : a.length < b.length ? 1 : 0
+      );
+      //   console.log(files);
+      //   engine.files.forEach((file) => {
+      //     console.log(file.path);
+      //     let ext = path.extname(file.path);
+      //     if (types[ext]) {
+      //       console.log([ext]);
+      //       resolve({ file: file, ext: ext });
+      //     }
+      //   });
+    });
+  });
+};
+
+module.exports = {
+  getQueryTorrents,
+  getRandomTorrents,
+  getTorrentSettings,
+  handleReadTorrent,
+};
