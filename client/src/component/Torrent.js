@@ -213,13 +213,13 @@ const CommentHeaderStyles = (theme) => ({
       borderBottom: "1px solid #9A1300",
     },
     "&.MuiInput-underline:after": {
-      borderBottom: "1px solid #FA7B38",
+      borderBottom: "1px solid #9A1300",
     },
     "&.MuiInput-underline:hover::before": {
-      borderBottom: "2px solid #FBBA72",
+      borderBottom: "2px solid #9A1300",
     },
     "&.MuiInput-underline:hover::after": {
-      borderBottom: "1px solid #FBBA72",
+      borderBottom: "1px solid #9A1300",
     },
   },
   sendIcon: {

@@ -172,7 +172,7 @@ const getMovieList = async (page, url) => {
             if (
               res.data.movies[i].imdb_code &&
               ((res.data.movies[i].year > 2005 &&
-                parseInt(res.data.movies[i].rating, 10) > 6) ||
+                parseInt(res.data.movies[i].rating, 10) > 5) ||
                 (res.data.movies[i].year > 1980 &&
                   parseInt(res.data.movies[i].rating, 10) > 8))
             ) {
@@ -246,9 +246,9 @@ const getMovieList = async (page, url) => {
         }
       }
     })
-    .catch((err) =>
-      console.log(chalk.red("YTS: Error while getting pages:", err))
-    );
+    .catch((err) => {
+      //   console.log(chalk.red("YTS: Error while getting pages:", err))
+    });
 };
 
 const fetchAllTorrents = async () => {

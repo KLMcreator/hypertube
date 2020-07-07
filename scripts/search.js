@@ -494,7 +494,6 @@ const initScraping = async (withImages) => {
     torrent9Infos.movies.length + ytsInfos.movies.length,
     "total movies found before group"
   );
-  await saveToFile();
   await groupAndSave();
   if (withImages) {
     await getImages();

@@ -1,56 +1,39 @@
 const pool = require("./../pool.js");
 const router = require("express").Router();
 const ts = require("torrent-stream");
-const path = require("path");
-const ffmpeg = require("fluent-ffmpeg");
-const pump = require("pump");
-const fs = require("fs");
+// const path = require("path");
+// const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+// const ffmpeg = require("fluent-ffmpeg");
+// ffmpeg.setFfmpegPath(ffmpegPath);
+// const pump = require("pump");
+// const fs = require("fs");
 
-const config = {
-  connections: 100, // Max amount of peers to be connected to.
-  uploads: 10, // Number of upload slots.
-  tmp: "./torrents/tmp/", // Root folder for the files storage.
-  // Defaults to '/tmp' or temp folder specific to your OS.
-  // Each torrent will be placed into a separate folder under /tmp/torrent-stream/{infoHash}
-  path: "./torrents/downloads/", // Where to save the files. Overrides `tmp`.
-  verify: true, // Verify previously stored data before starting
-  // Defaults to true
-  dht: true, // Whether or not to use DHT to initialize the swarm.
-  // Defaults to true
-  tracker: true, // Whether or not to use trackers from torrent file or magnet link
-  // Defaults to true
-  // trackers: [
-  //     'udp://tracker.openbittorrent.com:80',
-  //     'udp://tracker.ccc.de:80'
-  // ],
-  // Allows to declare additional custom trackers to use
-  // Defaults to empty
-  // storage: myStorage()  // Use a custom storage backend rather than the default disk-backed one
-};
+// let currentDownloads = {
+//   torrent9: {},
+//   yts: {},
+// };
 
-const types = {
-  ".f4v": "video/mp4",
-  ".f4p": "video/mp4",
-  ".mp4": "video/mp4",
-  ".ts": "video/mp2t",
-  ".ogg": "video/ogg",
-  ".mpa": "video/mpeg",
-  ".mpe": "video/mpeg",
-  ".mpg": "video/mpeg",
-  ".mp2": "video/mpeg",
-  ".webm": "video/webm",
-  ".mpeg": "video/mpeg",
-  ".mpv2": "video/mpeg",
-  ".flv": "video/x-flv",
-  ".qt": "video/quicktime",
-  ".mkv": "video/matroska",
-  ".asf": "video/x-ms-asf",
-  ".asr": "video/x-ms-asf",
-  ".asx": "video/x-ms-asf",
-  ".avi": "video/x-msvideo",
-  ".mov": "video/quicktime",
-  ".movie": "video/x-sgi-movie",
-};
+// const config = {
+//   connections: 100, // Max amount of peers to be connected to.
+//   uploads: 10, // Number of upload slots.
+//   tmp: "./torrents/tmp/", // Root folder for the files storage.
+//   // Defaults to '/tmp' or temp folder specific to your OS.
+//   // Each torrent will be placed into a separate folder under /tmp/torrent-stream/{infoHash}
+//   path: "./torrents/downloads/", // Where to save the files. Overrides `tmp`.
+//   verify: true, // Verify previously stored data before starting
+//   // Defaults to true
+//   dht: true, // Whether or not to use DHT to initialize the swarm.
+//   // Defaults to true
+//   tracker: true, // Whether or not to use trackers from torrent file or magnet link
+//   // Defaults to true
+//   // trackers: [
+//   //     'udp://tracker.openbittorrent.com:80',
+//   //     'udp://tracker.ccc.de:80'
+//   // ],
+//   // Allows to declare additional custom trackers to use
+//   // Defaults to empty
+//   // storage: myStorage()  // Use a custom storage backend rather than the default disk-backed one
+// };
 
 const buildFilter = (filter) => {
   let query = {};
@@ -183,76 +166,166 @@ const getTorrentSettings = (request, response) => {
   });
 };
 
-const handleReadTorrent = (request, response) => {
-  const { torrent } = request.req;
-  return new Promise(function (resolve, reject) {
-    const engine = ts(torrent.magnet, config);
-    console.log(engine);
-    engine.on("ready", () => {
-      engine.files.forEach((file) => {
-        // if (file.name === filename) {
-        console.log("-----file selected for streaming-----");
-        file.select();
-        const stream = file.createReadStream();
-        console.log(stream);
-        // if (realExtension === "mp4" || realExtension === "mkv") {
-        //   pump(stream, res);
-        // } else {
-        ffmpeg()
-          .input(stream)
-          .outputOptions("-movflags frag_keyframe+empty_moov")
-          .outputFormat("mp4")
-          .on("start", () => {
-            console.log("start");
-          })
-          .on("progress", (progress) => {
-            console.log(`progress: ${progress.timemark}`);
-          })
-          .on("end", () => {
-            console.log("Finished processing");
-          })
-          .on("error", (err) => {
-            console.log(`ERROR: ${err.message}`);
-          })
-          //   .inputFormat(realExtension)
-          .audioCodec("aac")
-          .videoCodec("libx264");
-        //   .pipe(res);
-        // res.on("close", () => {
-        //   stream.destroy();
-        // });
-        // }
-        // } else {
-        //   console.log("-----file with wrong extension-----");
-        // }
-      });
-    });
+// const convertVideo = async (source, identifier, path) => {
+//   let runningConvert = {};
+//   let outputPath =
+//     "./torrents/downloads/" + path.split("/").pop() + "_hypertube.webm";
 
-    // engine.on("download", (piece) => {
-    //   console.log(piece, "downloaded");
-    //   console.log(engine.swarm.downloaded, "/", torrent.size);
-    // });
-    // engine.on("ready", () => {
-    //   if (!engine.files.length) resolve({ msg: "Torrent is empty" });
-    //   files = engine.files.sort((a, b) =>
-    //     a.length > b.length ? -1 : a.length < b.length ? 1 : 0
-    //   );
-    //   console.log(files);
-    //   engine.files.forEach((file) => {
-    //     console.log(file.path);
-    //     let ext = path.extname(file.path);
-    //     if (types[ext]) {
-    //       console.log([ext]);
-    //       resolve({ file: file, ext: ext });
-    //     }
-    //   });
-    // });
-  });
-};
+//   if (!runningConvert[path]) {
+//     console.log("convertVideo: starting running for ", path);
+//     runningConvert[path] = true;
+//   } else {
+//     console.log("convertVideo: already running for ", path);
+//     return Promise.resolve("ALREADY_DONE");
+//   }
+
+//   return new Promise((resolve, reject) => {
+//     let output = new ffmpeg(path)
+//       .videoCodec("libvpx")
+//       .outputOptions(["-deadline realtime"])
+//       .audioCodec("libvorbis")
+//       .audioBitrate(128)
+//       .output(outputPath);
+
+//     output.on("stderr", (stderr) => {
+//       console.log("ffmpeg stderr:", stderr);
+//     });
+
+//     output.on("error", (err) => {
+//       console.log("Error while converting: ", err);
+//       runningConvert[path] = null;
+//       reject("err", err);
+//     });
+
+//     output.on("end", async () => {
+//       console.log("Finished converting video");
+//       runningConvert[path] = null;
+
+//       // update db with new path and bool downloaded true
+//       // await setVideoPath(source, identifier, outputPath);
+//       // await setVideoComplete(source, identifier);
+
+//       resolve("OK");
+//     });
+
+//     output.run();
+//   });
+// };
+
+// const startDownload = async (torrent) => {
+//   // If download has already started
+//   if (currentDownloads[torrent.source][torrent.magnet]) {
+//     console.log("Torrent download was already started, continuing..");
+//     return Promise.resolve(currentDownloads[torrent.source][torrent.magnet]);
+//   }
+
+//   // Promise will be resolved when we start the download of the file
+//   return new Promise((resolve) => {
+//     console.log("Download started");
+//     let engine = ts(torrent.magnet, config);
+//     let dlFile = null;
+//     //   let subs = [];
+//     let resolved = false;
+//     let res;
+
+//     engine.on("ready", () => {
+//       for (let file of engine.files) {
+//         console.log(`Found file ${file.name}`);
+//         let ext = file.name.split(".").pop();
+//         let allowedExts = ["mp4", "mkv", "webm", "avi"];
+
+//         if (ext.toLowerCase() === "srt") {
+//           console.log("Engine downloading subtitle file:", file.__proto__.name);
+//           subs.push(file);
+//           file.select();
+//           continue;
+//         }
+
+//         // if file doesn't have one of allowedExts, don't download it
+//         if (allowedExts.indexOf(ext.toLowerCase()) === -1) {
+//           console.log("wrong extension");
+//           file.deselect();
+//           continue;
+//         }
+
+//         // Only download 1 file (the first video found in the torrent)
+//         if (!dlFile) {
+//           console.log("!dlFile");
+//           dlFile = { file, complete: false };
+//           // file.select();
+
+//           res = {
+//             ext,
+//             source: torrent.source,
+//             identifier: torrent.magnet,
+//             file,
+//           };
+
+//           // Save currentDownload to avoid starting 2 downloads if client refresh
+//           currentDownloads[torrent.source][torrent.magnet] = res;
+//         }
+//       }
+//       // start video dl now if no subs, otherwise dl will start after subs are downloaded
+//       // if (!subs.length) {
+//       dlFile.file.select();
+//       resolved = true;
+//       return resolve(res);
+//       // }
+//     });
+
+//     engine.on("download", (info) => {
+//       // debug('downloading subs: ', subs.map(sub => sub.__proto__));
+//       // debug(`Engine on download (${torrent.source}:${torrent.magnet}) - ${info} (total: ${dlFile.file.length})`);
+//       //
+//       // debug('swarm dl', engine.swarm.downloaded);
+//     });
+
+//     engine.on("idle", async () => {
+//       console.log("Engine idle");
+
+//       // subs are finished
+//       if (dlFile && !dlFile.complete && !resolved) {
+//         //   await saveSubs(torrent.source, torrent.magnet, subs);
+
+//         console.log("Engine starting download of", dlFile.file.__proto__);
+//         dlFile.file.select();
+//         resolved = true;
+//         resolve(res);
+//       }
+
+//       // video is finished
+//       else {
+//         dlFile.complete = true;
+//         await convertVideo(
+//           torrent.source,
+//           torrent.magnet,
+//           "./torrents/downloads/" + dlFile.file.path
+//         );
+//       }
+//     });
+//   });
+// };
+
+// const handleReadTorrent = (request, response) => {
+//   const { torrent } = request.req;
+//   return new Promise(async function (resolve, reject) {
+//     await startDownload(torrent);
+//     resolve(true);
+
+//     // let subs = await torrentService.getSubs(source, identifier);
+//     // subs.forEach((sub) => {
+//     //     if (sub.path) sub.path = sub.path.split("/app/src/public")[1];
+//     // });
+//     // torrentInfos.subs = subs;
+//     // debug("subs = ", subs);
+
+//     // return res.json(util.formatResponse(true, null, torrentInfos));
+//   });
+// };
 
 module.exports = {
   getQueryTorrents,
   getRandomTorrents,
   getTorrentSettings,
-  handleReadTorrent,
+  //   handleReadTorrent,
 };

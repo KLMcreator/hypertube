@@ -46,19 +46,20 @@ const SearchBarStyles = (theme) => ({
   },
   rootSend: {
     width: "100%",
+    marginBottom: 5,
   },
   borderBottom: {
     "&.MuiInput-underline:before": {
       borderBottom: "1px solid #9A1300",
     },
     "&.MuiInput-underline:after": {
-      borderBottom: "1px solid #FA7B38",
+      borderBottom: "1px solid #9A1300",
     },
     "&.MuiInput-underline:hover::before": {
-      borderBottom: "2px solid #FBBA72",
+      borderBottom: "2px solid #9A1300",
     },
     "&.MuiInput-underline:hover::after": {
-      borderBottom: "1px solid #FBBA72",
+      borderBottom: "1px solid #9A1300",
     },
   },
   sendIcon: {
@@ -283,14 +284,102 @@ const RenderTorrent = (props) => {
 };
 
 const RenderTorrents = (props) => {
-  const { torrents, classes } = props;
+  const [sortBy, setSortBy] = useState({
+    label: "ASC. NAME",
+    value: "ascname",
+  });
+  const { classes } = props;
+  let { torrents } = props;
+  const sortOptions = [
+    { label: "ASC. NAME", value: "ascname" },
+    { label: "DESC. NAME", value: "descname" },
+    { label: "ASC. RATING", value: "ascrating" },
+    { label: "DESC. RATING", value: "descrating" },
+    { label: "ASC. YEAR", value: "ascyear" },
+    { label: "DESC. YEAR", value: "descyear" },
+  ];
   const Torrent = withStyles(TorrentStyles)(RenderTorrent);
+  const selectStyles = {
+    option: (provided) => ({
+      ...provided,
+      borderBottom: "1px solid #EFF1F3",
+      color: "#111",
+      padding: 10,
+      "&:hover": {
+        cursor: "pointer",
+      },
+    }),
+  };
+
+  const handleSortList = (el) => {
+    setSortBy(el);
+    if (el.value === "ascname") {
+      torrents.sort((a, b) =>
+        a.title < b.title ? -1 : a.title > b.title ? 1 : 0
+      );
+    } else if (el.value === "descname") {
+      torrents.sort((a, b) =>
+        a.title > b.title ? -1 : a.title < b.title ? 1 : 0
+      );
+    } else if (el.value === "ascrating") {
+      torrents.sort((a, b) =>
+        a.rating < b.rating ? -1 : a.rating > b.rating ? 1 : 0
+      );
+    } else if (el.value === "descrating") {
+      torrents.sort((a, b) =>
+        a.rating > b.rating ? -1 : a.rating < b.rating ? 1 : 0
+      );
+    } else if (el.value === "ascyear") {
+      torrents.sort((a, b) =>
+        a.production_year < b.production_year
+          ? -1
+          : a.production_year > b.production_year
+          ? 1
+          : 0
+      );
+    } else if (el.value === "descyear") {
+      torrents.sort((a, b) =>
+        a.production_year > b.production_year
+          ? -1
+          : a.production_year < b.production_year
+          ? 1
+          : 0
+      );
+    }
+  };
 
   return (
-    <div className={classes.torrentContainer}>
-      {torrents.map((el) => (
-        <Torrent key={el.id} torrent={el} />
-      ))}
+    <div>
+      <div style={{ display: "flex", marginLeft: 70, marginRight: 70 }}>
+        <div
+          style={{
+            flex: 3,
+            textAlign: "left",
+            alignSelf: "center",
+            fontWeight: "bold",
+          }}
+        >
+          AVAILABLE TORRENTS
+        </div>
+        <div style={{ flex: 1, textAlign: "right" }}>
+          <Select
+            value={sortBy}
+            styles={selectStyles}
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            options={sortOptions}
+            key={"sortList"}
+            onChange={handleSortList}
+            placeholder={"SORT BY: " + sortBy.label}
+          />
+        </div>
+      </div>
+      <div className={classes.torrentContainer}>
+        {torrents.map((el) => (
+          <Torrent key={el.id} torrent={el} />
+        ))}
+      </div>
     </div>
   );
 };
@@ -370,7 +459,7 @@ const RenderSearchBar = (props) => {
           underline: classes.borderBottom,
         }}
         type="text"
-        placeholder="Search for a torrent..."
+        placeholder="Search torrent"
         value={search}
         required
         onChange={(e) => setSearch(e.target.value)}

@@ -25,9 +25,9 @@ import HelpIcon from "@material-ui/icons/Help";
 import HomeIcon from "@material-ui/icons/Home";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import PersonIcon from "@material-ui/icons/Person";
-import LoyaltyIcon from "@material-ui/icons/Loyalty";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
+import MovieFilterIcon from "@material-ui/icons/MovieFilter";
 import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
 // components
 import User from "./component/User";
@@ -437,7 +437,7 @@ const AuthButton = (props) => {
               className={classes.title}
             >
               HYPERTUBE
-              <LoyaltyIcon className={classes.titleIcon} />
+              <MovieFilterIcon className={classes.titleIcon} />
             </Link>
           </Typography>
           <div className={classes.grow} />

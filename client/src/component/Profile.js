@@ -77,7 +77,11 @@ const Profile = (props) => {
           <img
             alt={user.photo}
             className={classes.userImage}
-            src={"./src/assets/photos/" + user.photo}
+            src={
+              user.photo.startsWith("https://")
+                ? user.photo
+                : "./src/assets/photos/" + user.photo
+            }
           ></img>
         </Grid>
         <Grid item className={classes.gridImage} xs={12} sm>

@@ -122,12 +122,14 @@ const getCategoriesTranslated = (categories) => {
   if (categories === "animation") return "Animation";
   if (categories === "aventure") return "Adventure";
   if (categories === "biopic") return "Biopic";
-  if (categories.indexOf("comÃ©die") > -1) return "Comedy";
+  if (categories === "comedie" || categories === "comédie") return "Comedy";
   if (categories === "documentaire") return "Documentary";
   if (
     categories === "drama" ||
     categories === "drame" ||
-    categories === "comÃ©die dramatique"
+    categories === "comédie dramatique" ||
+    categories === "dramatique" ||
+    categories === "romance"
   )
     return "Drama";
   if (
@@ -137,6 +139,7 @@ const getCategoriesTranslated = (categories) => {
   )
     return "Horror";
   if (categories === "historique") return "Historical";
+  if (categories === "thriller") return "Thriller";
   if (categories === "policier") return "Crime";
   if (
     categories === "fantastique" ||
@@ -146,7 +149,9 @@ const getCategoriesTranslated = (categories) => {
     categories === "fiction"
   )
     return "Sci-Fi";
-  if (categories === "Spectacle") return "Show";
+  if (categories === "music" || categories === "musicale") return "Music";
+  if (categories === "spectacle" || categories === "spectacles") return "Show";
+  if (categories === "western") return "Western";
   return categories;
 };
 
