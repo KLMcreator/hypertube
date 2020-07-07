@@ -122,12 +122,12 @@ const getCategoriesTranslated = (categories) => {
   if (categories === "animation") return "Animation";
   if (categories === "aventure") return "Adventure";
   if (categories === "biopic") return "Biopic";
-  if (categories.indexOf("comédie") > -1) return "Comedy";
+  if (categories.indexOf("comÃ©die") > -1) return "Comedy";
   if (categories === "documentaire") return "Documentary";
   if (
     categories === "drama" ||
     categories === "drame" ||
-    categories === "comédie dramatique"
+    categories === "comÃ©die dramatique"
   )
     return "Drama";
   if (
@@ -168,14 +168,20 @@ const getMoreInfos = async (url, i, j) => {
     .then(($) => {
       let cover = $("div.movie-detail > div > div > div > img");
       let buttons = $("div.download-btn > div");
+      //   Sous-Catégories
       let categories = $("ul > li:contains('Sous-Catégories')");
       let summ = $("div.movie-information > p");
-      torrent9Infos.movies[
-        i
-      ].categories = categories[0].parent.children[5].children[0].attribs.href
-        .replace("/torrents/", "")
-        .split("-");
-      if (torrent9Infos.movies[i].categories.length) {
+      if (categories) {
+        torrent9Infos.movies[
+          i
+        ].categories = categories[0].parent.children[5].children[0].attribs.href
+          .replace("/torrents/", "")
+          .split("-");
+      }
+      if (
+        torrent9Infos.movies[i].categories &&
+        torrent9Infos.movies[i].categories.length
+      ) {
         torrent9Infos.movies[i].categories = torrent9Infos.movies[
           i
         ].categories.map((el) => getCategoriesTranslated(el.toLowerCase()));
@@ -341,6 +347,7 @@ const getTotalPages = async (url) => {
         total.substring(total.indexOf("-") + 1).slice(0, -1),
         10
       );
+      //   Suivant ►
       if ($(".pagination li").eq(-1).text() === "Suivant ►")
         console.log(
           "There's more than",
@@ -410,7 +417,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 45 === 0) {
+    if (i && i % 60 === 0) {
       console.log(
         i,
         "movies done on",

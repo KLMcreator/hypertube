@@ -2,6 +2,7 @@
 const mime = require("mime");
 const multer = require("multer");
 const crypto = require("crypto");
+const cron = require("node-cron");
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
@@ -21,6 +22,8 @@ const confirm = require("./api/confirm");
 const settings = require("./api/settings");
 const comments = require("./api/comments");
 const torrents = require("./api/torrents");
+const scrap_machine = require("./scripts/search");
+
 // const
 const app = express();
 const port = process.env.PORT || 5000;
@@ -110,8 +113,23 @@ const sendMail = (receiver, type, random) => {
   });
 };
 
+// everyday at 1am check if there's new movies
+// for test purposes, every minutes is: * * * * * | every day at 1am is: 0 1 * * *
+// cron.schedule("0 1 * * *", async () => {
+//   console.log("Starting maintenance... checking for new movies!");
+//   const status = await scrap_machine.doMaintenance();
+//   if (status) {
+//     torrents = scrap_machine.torrents;
+//     console.log(torrents);
+//     console.log("now save to db");
+//     // setupDatabase()
+//     //   .then((res) => process.exit(res))
+//     //   .catch((err) => console.log(err));
+//   }
+// });
+
 // Check if the token is valid, needed for react router
-app.get("/api/checkToken", function (req, res) {
+app.get("/api/checkToken", (req, res) => {
   const token = req.cookies._hypertubeAuth;
   if (!token) {
     res.send({ status: false });
