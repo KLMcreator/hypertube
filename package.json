@@ -11,6 +11,7 @@
   "author": "eozimek-cvannica",
   "license": "ISC",
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
     "body-parser": "^1.19.0",
@@ -37,6 +38,7 @@
     "pump": "^3.0.0",
     "react-window": "^1.8.5",
     "request": "^2.88.2",
+    "srt2vtt": "^1.3.1",
     "torrent-stream": "^1.2.0"
   }
 }

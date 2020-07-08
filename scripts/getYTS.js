@@ -65,7 +65,6 @@ const getSubs = async (url) => {
         .map((i, el) => {
           const $el = $(el);
           if ($el.find(".rating-cell").text() >= 0) {
-            let rating = $el.find(".rating-cell").text();
             let language =
               $el
                 .find(".flag-cell .sub-lang")
@@ -74,24 +73,33 @@ const getSubs = async (url) => {
                 .charAt(0)
                 .toUpperCase() +
               $el.find(".flag-cell .sub-lang").text().slice(1);
-            let url =
-              $el
-                .find(".download-cell a")
-                .attr("href")
-                .replace("subtitles/", "subtitle/") + ".zip";
-            let isDuplicate = subs.findIndex(
-              (dupli) => dupli.language === language
-            );
-            if (isDuplicate >= 0) {
-              if (rating > subs[isDuplicate]) {
-                subs[isDuplicate].url = url;
+            if (
+              language === "Chinese" ||
+              language === "French" ||
+              language === "English" ||
+              language === "Japanese" ||
+              language === "Spanish"
+            ) {
+              let rating = $el.find(".rating-cell").text();
+              let url =
+                $el
+                  .find(".download-cell a")
+                  .attr("href")
+                  .replace("subtitles/", "subtitle/") + ".zip";
+              let isDuplicate = subs.findIndex(
+                (dupli) => dupli.language === language
+              );
+              if (isDuplicate >= 0) {
+                if (rating > subs[isDuplicate]) {
+                  subs[isDuplicate].url = url;
+                }
+              } else {
+                subs.push({
+                  rating: rating,
+                  language: language,
+                  url: url,
+                });
               }
-            } else {
-              subs.push({
-                rating: rating,
-                language: language,
-                url: url,
-              });
             }
           }
         })
@@ -135,12 +143,22 @@ const getMovieList = async (page, url) => {
               res.data.movies[i].torrents.map((ele) => {
                 if (ele.seeds > 0) {
                   ytsInfos.movies[isDuplicate].torrents.push({
+                    id: "yts_" + ytsInfos.movies[isDuplicate].torrents.length,
                     source: "yts",
+                    downloaded: false,
+                    path: null,
+                    downloaded_at: null,
+                    lastviewed_at: null,
+                    delete_at: null,
                     duration: res.data.movies[i].runtime
                       ? res.data.movies[i].runtime
                       : null,
                     language: res.data.movies[i].language,
-                    subtitles: [],
+                    subtitles:
+                      ytsInfos.movies[isDuplicate].subtitles &&
+                      ytsInfos.movies[isDuplicate].subtitles.length
+                        ? ytsInfos.movies[isDuplicate].subtitles
+                        : [],
                     quality: ele.quality,
                     seeds: ele.seeds,
                     peers: ele.peers,
@@ -210,16 +228,22 @@ const getMovieList = async (page, url) => {
               torrents: [],
             };
             if (res.data.movies[i].torrents) {
-              res.data.movies[i].torrents.map((ele) => {
+              res.data.movies[i].torrents.map((ele, i) => {
                 if (ele.seeds > 0) {
                   infos.torrents.push({
+                    id: "yts_" + i,
                     source: "yts",
+                    downloaded: false,
+                    path: null,
+                    downloaded_at: null,
+                    lastviewed_at: null,
+                    delete_at: null,
                     hash: ele.hash,
                     duration: res.data.movies[i].runtime
                       ? res.data.movies[i].runtime
                       : null,
                     language: res.data.movies[i].language,
-                    subtitles: [],
+                    subtitles: subs && subs.length ? subs : [],
                     quality: ele.quality,
                     seeds: ele.seeds,
                     peers: ele.peers,

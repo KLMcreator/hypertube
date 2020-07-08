@@ -99,24 +99,6 @@ const getLanguage = (title) => {
   return type;
 };
 
-const getCategories = (title) => {
-  const language = [
-    "french",
-    "english",
-    "german",
-    "japanese",
-    "spanish",
-    "russian",
-  ];
-  let type = "English";
-
-  language.map((el) => {
-    if (title.toLowerCase().indexOf(el) > -1)
-      type = el.charAt(0).toUpperCase() + el.slice(1);
-  });
-  return type;
-};
-
 const getCategoriesTranslated = (categories) => {
   if (categories === "action") return "Action";
   if (categories === "animation") return "Animation";
@@ -204,7 +186,7 @@ const getMoreInfos = async (url, i, j) => {
         buttons[1].children[0].attribs.href;
       torrent9Infos.movies[i].torrents[
         j
-      ].hash = buttons[1].children[0].attribs.href
+      ].hash = buttons[0].children[0].attribs.href
         .split("urn:btih:")
         .pop()
         .split(";tr=")[0];
@@ -255,7 +237,13 @@ const getMovieList = async (url) => {
             ) > 0
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
+              id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
               source: "torrent9",
+              downloaded: false,
+              path: null,
+              downloaded_at: null,
+              lastviewed_at: null,
+              delete_at: null,
               hash: null,
               duration: null,
               languages: language,
@@ -306,7 +294,13 @@ const getMovieList = async (url) => {
               subtitles: subtitles ? [subtitles] : [],
               torrents: [
                 {
+                  id: "t9_0",
                   source: "torrent9",
+                  downloaded: false,
+                  path: null,
+                  downloaded_at: null,
+                  lastviewed_at: null,
+                  delete_at: null,
                   hash: null,
                   duration: null,
                   languages: language,

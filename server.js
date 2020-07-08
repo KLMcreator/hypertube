@@ -309,7 +309,7 @@ app.post("/api/torrents/query", (req, res) => {
 // Read torrent
 app.post("/api/torrents/read", (req, res) => {
   torrents
-    .handleReadTorrent({ req: req.body })
+    .handleGetTorrent({ req: req.body })
     .then((response) => {
       res.status(200).send({ torrents: response });
     })

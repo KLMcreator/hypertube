@@ -489,11 +489,12 @@ const Torrent = (props) => {
     return <></>;
   };
 
-  const handleReadTorrent = (torrent) => {
+  const handleGetTorrent = (child) => {
     fetch("/api/torrents/read", {
       method: "POST",
       body: JSON.stringify({
-        torrent: torrent,
+        id: torrent.id,
+        torrent: child,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -502,6 +503,7 @@ const Torrent = (props) => {
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
+        if (res.torrents.msg) props.auth.successMessage(res.torrents.msg);
         //   if (ref.current) {
         //     if (res.comments.comments) {
         //       if (loadMore) {
@@ -721,6 +723,9 @@ const Torrent = (props) => {
                     <div className={classes.torrentElDetail}>{el.language}</div>
                     <div className={classes.torrentElDetail}>{el.quality}</div>
                     <div className={classes.torrentElDetail}>{el.size}</div>
+                    <div className={classes.torrentElDetail}>
+                      {el.downloaded ? "Downloaded" : "Not downloaded"}
+                    </div>
                   </div>
                   <div className={classes.torrentSeedsContainer}>
                     <div className={classes.torrentSeedPeers}>
@@ -762,7 +767,7 @@ const Torrent = (props) => {
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
                         <div className={classes.titleSectionCenter}>
-                          <Button onClick={() => handleReadTorrent(el)}>
+                          <Button onClick={() => handleGetTorrent(el)}>
                             Watch
                           </Button>
                         </div>
@@ -794,6 +799,9 @@ const Torrent = (props) => {
                     </div>
                     <div className={classes.torrentElDetail}>{el.quality}</div>
                     <div className={classes.torrentElDetail}>{el.size}</div>
+                    <div className={classes.torrentElDetail}>
+                      {el.downloaded ? "Downloaded" : "Not downloaded"}
+                    </div>
                   </div>
                   <div className={classes.torrentSeedsContainer}>
                     <div className={classes.torrentSeedPeers}>
@@ -835,7 +843,7 @@ const Torrent = (props) => {
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
                         <div className={classes.titleSectionCenter}>
-                          <Button onClick={() => handleReadTorrent(el)}>
+                          <Button onClick={() => handleGetTorrent(el)}>
                             Watch
                           </Button>
                         </div>
