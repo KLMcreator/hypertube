@@ -189,7 +189,7 @@ const RenderTorrent = (props) => {
       onClick={() =>
         history.push({
           pathname: "/Torrent",
-          state: { torrent: torrent },
+          state: { id: torrent.id },
         })
       }
     >

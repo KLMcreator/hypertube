@@ -219,8 +219,7 @@ const getMovieList = async (page, url) => {
                 ? res.data.movies[i].imdb_code
                 : null,
               yt_trailer: res.data.movies[i].yt_trailer_code
-                ? "https://www.youtube.com/watch?v=" +
-                  res.data.movies[i].yt_trailer_code
+                ? res.data.movies[i].yt_trailer_code
                 : null,
               categories: res.data.movies[i].genres,
               languages: [res.data.movies[i].language],

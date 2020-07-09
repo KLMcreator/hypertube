@@ -318,6 +318,18 @@ app.post("/api/torrents/read", (req, res) => {
     });
 });
 
+// Get torrent infos
+app.post("/api/torrents/info", (req, res) => {
+  torrents
+    .getTorrentInfos({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Get torrents for search engine
 app.post("/api/torrents/get/settings", (req, res) => {
   torrents

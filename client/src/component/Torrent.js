@@ -352,26 +352,16 @@ const RenderCommentHeader = (props) => {
 
 const Torrent = (props) => {
   const ref = useRef(false);
-  const [limit, setLimit] = useState(10);
-  const [isLoading, setIsLoading] = useState(true);
-  const [comments, setComments] = useState([]);
-  const [loggedId, setLoggedId] = useState(false);
   const { classes, auth } = props;
-  const { torrent } = props.props.location.state;
-  const yt_code = torrent.yt_trailer
-    ? torrent.yt_trailer.split("https://www.youtube.com/watch?v=")
-    : null;
-  const summary = JSON.parse(torrent.summary);
-  const languages = torrent.languages ? JSON.parse(torrent.languages) : [];
-  const categories = torrent.categories ? JSON.parse(torrent.categories) : [];
-  const subtitles = torrent.subtitles ? JSON.parse(torrent.subtitles) : [];
-  const t9_torrents = JSON.parse(torrent.torrents).filter(
-    (el) => el.source === "torrent9"
-  );
-  const yts_torrents = JSON.parse(torrent.torrents).filter(
-    (el) => el.source === "yts"
-  );
-  const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
+  const { id } = props.props.location.state;
+  const [limit, setLimit] = useState(10);
+  const [torrent, setTorrent] = useState({});
+  const [comments, setComments] = useState([]);
+  const [t9_torrents, setT9_torrents] = useState([]);
+  const [yts_torrents, setYts_torrents] = useState([]);
+  const [qualities, setQualities] = useState([]);
+  const [loggedId, setLoggedId] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const Comment = withStyles(CommentStyles)(RenderComment);
   const Youtube = withStyles(YoutubeStyles)(RenderYoutube);
   const CommentHeader = withStyles(CommentHeaderStyles)(RenderCommentHeader);
@@ -387,11 +377,72 @@ const Torrent = (props) => {
       });
   };
 
+  const getTorrentInfos = () => {
+    fetch("/api/torrents/info", {
+      method: "POST",
+      body: JSON.stringify({
+        id: id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (ref.current) {
+          if (
+            res.torrents &&
+            res.torrents.torrents &&
+            res.torrents.torrents[0]
+          ) {
+            res = res.torrents.torrents[0];
+            setTorrent({
+              id: res.id ? res.id : null,
+              yts_id: res.yts_id ? res.yts_id : null,
+              torrent9_id: res.torrent9_id ? res.torrent9_id : null,
+              title: res.title ? res.title : null,
+              production_year: res.production_year ? res.production_year : null,
+              rating: res.rating ? res.rating : null,
+              yts_url: res.yts_url ? res.yts_url : null,
+              torrent9_url: res.torrent9_url ? res.torrent9_url : null,
+              cover_url: res.cover_url ? res.cover_url : null,
+              large_image: res.large_image ? res.large_image : null,
+              summary: res.summary ? JSON.parse(res.summary) : [],
+              duration: res.duration ? res.duration : null,
+              imdb_code: res.imdb_code ? res.imdb_code : null,
+              yt_trailer: res.yt_trailer ? res.yt_trailer : null,
+              categories: res.categories ? JSON.parse(res.categories) : [],
+              languages: res.languages ? JSON.parse(res.languages) : [],
+              subtitles: res.subtitles ? JSON.parse(res.subtitles) : [],
+              torrents: res.torrents ? JSON.parse(res.torrents) : [],
+            });
+            if (res.torrents) {
+              setT9_torrents(
+                JSON.parse(res.torrents).filter(
+                  (el) => el.source === "torrent9"
+                )
+              );
+              setYts_torrents(
+                JSON.parse(res.torrents).filter((el) => el.source === "yts")
+              );
+              setQualities(JSON.parse(res.torrents).map((el) => el.quality));
+            }
+            getComments();
+          } else if (res.torrents.msg) {
+            props.auth.errorMessage(res.torrents.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   const getComments = (loadMore) => {
     fetch("/api/comments/torrent", {
       method: "POST",
       body: JSON.stringify({
-        id: torrent.id,
+        id: id,
         limit: loadMore ? loadMore : limit,
       }),
       headers: {
@@ -503,7 +554,14 @@ const Torrent = (props) => {
       .then((res) => res.json())
       .then((res) => {
         console.log(res);
-        if (res.torrents.msg) props.auth.successMessage(res.torrents.msg);
+        if (res.torrents.isSuccess) {
+          props.auth.successMessage(res.torrents.msg);
+        } else {
+          props.auth.errorMessage(res.torrents.msg);
+        }
+        if (res.torrents.downloaded) {
+          getTorrentInfos();
+        }
         //   if (ref.current) {
         //     if (res.comments.comments) {
         //       if (loadMore) {
@@ -523,7 +581,7 @@ const Torrent = (props) => {
 
   useEffect(() => {
     ref.current = true;
-    getComments();
+    getTorrentInfos();
     return () => {
       ref.current = false;
       setIsLoading(true);
@@ -627,11 +685,11 @@ const Torrent = (props) => {
               ) : undefined}
             </div>
           </div>
-          {summary.length ? (
+          {torrent.summary.length ? (
             <div className={classes.divMargin}>
               <div className={classes.titleSection}>Synopsis</div>
-              {summary.length
-                ? summary.map((el, i) => (
+              {torrent.summary.length
+                ? torrent.summary.map((el, i) => (
                     <div key={"summary" + i} className={classes.summaryText}>
                       {el}
                     </div>
@@ -642,9 +700,9 @@ const Torrent = (props) => {
           <div className={classes.divMargin}>
             <span className={classes.titleSection}>Categories: </span>
             <span className={classes.textSection}>
-              {categories.length
-                ? categories.map((el, i) =>
-                    i < categories.length - 1 ? el + " / " : el
+              {torrent.categories.length
+                ? torrent.categories.map((el, i) =>
+                    i < torrent.categories.length - 1 ? el + " / " : el
                   )
                 : "No informations"}
             </span>
@@ -652,22 +710,22 @@ const Torrent = (props) => {
           <div className={classes.divMargin}>
             <span className={classes.titleSection}>Available languages: </span>
             <span className={classes.textSection}>
-              {languages.length
-                ? languages.map((el, i) =>
-                    i < languages.length - 1 ? el + ", " : el
+              {torrent.languages.length
+                ? torrent.languages.map((el, i) =>
+                    i < torrent.languages.length - 1 ? el + ", " : el
                   )
                 : "No informations"}
             </span>
           </div>
-          {subtitles && subtitles.length ? (
+          {torrent.subtitles && torrent.subtitles.length ? (
             <div className={classes.divMargin}>
               <span className={classes.titleSection}>
                 Available subtitles:{" "}
               </span>
               <span className={classes.textSection}>
-                {subtitles.length
-                  ? subtitles.map((el, i) =>
-                      i < subtitles.length - 1
+                {torrent.subtitles.length
+                  ? torrent.subtitles.map((el, i) =>
+                      i < torrent.subtitles.length - 1
                         ? el.language + ", "
                         : el.language
                     )
@@ -705,7 +763,10 @@ const Torrent = (props) => {
           </div>
         </div>
       </div>
-      <Youtube ytCode={yt_code} isTrailer={torrent.yt_trailer ? true : false} />
+      <Youtube
+        ytCode={torrent.yt_trailer}
+        isTrailer={torrent.yt_trailer ? true : false}
+      />
       {yts_torrents.length ? (
         <div className={classes.torrentContainer}>
           <span className={classes.titleSection}>YTS</span>{" "}

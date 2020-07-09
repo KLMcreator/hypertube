@@ -16,7 +16,7 @@ const getQueryTorrents = (request, response) => {
   return new Promise(function (resolve, reject) {
     let likeQuery = req.query ? "%" + req.query + "%" : "%%";
     pool.pool.query(
-      "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, production_year FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query WHERE rating BETWEEN $3 AND $4 AND production_year BETWEEN $5 AND $6 GROUP BY id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration",
+      "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, production_year FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query WHERE rating BETWEEN $3 AND $4 AND production_year BETWEEN $5 AND $6 GROUP BY id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration",
       [
         req.query,
         likeQuery,
@@ -95,7 +95,7 @@ const getRandomTorrents = (request, response) => {
       }
       if (results.rowCount) {
         pool.pool.query(
-          "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, downloaded_at, lastviewed_at, delete_at, large_cover_url, summary, imdb_code, yt_trailer, duration, subtitles FROM torrents OFFSET (SELECT floor(random() * (SELECT count(id) FROM torrents) + 1)::int) LIMIT 15;",
+          "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, duration, subtitles FROM torrents OFFSET (SELECT floor(random() * (SELECT count(id) FROM torrents) + 1)::int) LIMIT 15;",
           (error, results) => {
             if (error) {
               reject(error);
@@ -132,11 +132,12 @@ const getTorrentSettings = (request, response) => {
   });
 };
 
-const getTorrentInfos = (id) => {
+const getTorrentInfos = (request, response) => {
+  const { req } = request;
   return new Promise(function (resolve, reject) {
     pool.pool.query(
       "SELECT * FROM torrents where id = $1;",
-      [id],
+      [req.id],
       (error, results) => {
         if (error) {
           reject(error);
@@ -144,7 +145,7 @@ const getTorrentInfos = (id) => {
         if (results.rowCount) {
           resolve({ torrents: results.rows });
         } else {
-          resolve(false);
+          resolve({ msg: "Unable to get torrent infos" });
         }
       }
     );
@@ -154,26 +155,27 @@ const getTorrentInfos = (id) => {
 const handleGetTorrent = (request, response) => {
   const { req } = request;
   return new Promise(async function (resolve, reject) {
-    console.log("Handle get torrent start");
     if (!req.torrent.downloaded) {
-      console.log("Torrent not downloaded yet");
+      console.log("Torrent not downloaded");
       const status = await tdl.startDownload(req.id, req.torrent);
-      console.log("after await", status);
-      const infos = getTorrentInfos(req.id);
-      if (!infos) {
-        resolve({ msg: "Error while fetching torrent" });
-      }
-      resolve({ msg: status.msg, returnedTorrent: infos.torrents });
+      resolve({
+        downloaded: false,
+        isSuccess: status.isSuccess,
+        msg: status.msg,
+      });
     } else {
       console.log("Torrent already downloaded");
-      resolve({ msg: "Torrent is already downloaded, it will start asap" });
+      resolve({
+        downloaded: true,
+        msg: "Torrent is already downloaded, it will start asap",
+      });
     }
-    // return res.json(util.formatResponse(true, null, torrentInfos));
   });
 };
 
 module.exports = {
   getQueryTorrents,
+  getTorrentInfos,
   getRandomTorrents,
   getTorrentSettings,
   handleGetTorrent,
