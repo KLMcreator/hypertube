@@ -35,7 +35,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating NUMERIC DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating NUMERIC DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -187,7 +187,7 @@ const insertIntoUsers = (user) => {
 const insertIntoTorrents = (torrent) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)",
+      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)",
       [
         torrent.title ? torrent.title : null,
         torrent.yts_id ? torrent.yts_id : null,
