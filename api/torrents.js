@@ -156,15 +156,13 @@ const handleGetTorrent = (request, response) => {
   const { req } = request;
   return new Promise(async function (resolve, reject) {
     if (!req.torrent.downloaded) {
-      console.log("Torrent not downloaded");
-      const status = await tdl.startDownload(req.id, req.torrent);
+      const status = await tdl.startDownload(req.id, req.torrent, req.parent);
       resolve({
         downloaded: false,
         isSuccess: status.isSuccess,
         msg: status.msg,
       });
     } else {
-      console.log("Torrent already downloaded");
       resolve({
         downloaded: true,
         msg: "Torrent is already downloaded, it will start asap",

@@ -9,6 +9,7 @@ import {
   Redirect,
   withRouter,
 } from "react-router-dom";
+import socketIOClient from "socket.io-client";
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 // framework
@@ -18,7 +19,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import MenuItem from "@material-ui/core/MenuItem";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 // icons
 import HelpIcon from "@material-ui/icons/Help";
@@ -468,6 +469,41 @@ const App = (props) => {
       .then((resLogged) => resLogged.json())
       .then((resLogged) => {
         auth.isLogged = resLogged.status === false ? false : true;
+        if (resLogged.status) {
+          const socket = socketIOClient("http://127.0.0.1:5000");
+          socket.on("torrentDownloader", (data) => {
+            if (data) {
+              Object.keys(data).forEach((key) => {
+                if (data[key].progress) {
+                  // need to find a way to set up a download section where it will be all of the downloads listed
+                  console.log(
+                    data[key].title +
+                      ": on " +
+                      data[key].type +
+                      " " +
+                      data[key].msg
+                  );
+                } else if (data[key].success) {
+                  auth.successMessage(
+                    data[key].title +
+                      ": on " +
+                      data[key].type +
+                      " " +
+                      data[key].msg
+                  );
+                } else if (data[key].failure) {
+                  auth.errorMessage(
+                    data[key].title +
+                      ": on " +
+                      data[key].type +
+                      " " +
+                      data[key].msg
+                  );
+                }
+              });
+            }
+          });
+        }
         setIsLoading(false);
       });
     return () => {

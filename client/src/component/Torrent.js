@@ -546,6 +546,7 @@ const Torrent = (props) => {
       body: JSON.stringify({
         id: torrent.id,
         torrent: child,
+        parent: torrent,
       }),
       headers: {
         "Content-Type": "application/json",

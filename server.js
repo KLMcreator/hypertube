@@ -50,19 +50,30 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "none",
+    sameSite: "lax",
   },
 };
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+// socket server to track download
+const server = require("http").createServer(app);
+const io = require("./api/sockets").listen(server);
+
+server.listen(port, () =>
+  console.log(`Hypertube server + socket listening on port ${port}`)
+);
+
 // allow to use static path for files
 app.use(express.static("client"));
+
 // config
 app.use(session(sessionConfig));
+
 // avoid xss
 app.disable("x-powered-by");
+
 // parsing cookie
 app.use(cookieParser());
+
 // needed to read and parse some responses
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
