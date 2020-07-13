@@ -26,6 +26,7 @@ import HelpIcon from "@material-ui/icons/Help";
 import HomeIcon from "@material-ui/icons/Home";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import PersonIcon from "@material-ui/icons/Person";
+import GetAppIcon from "@material-ui/icons/GetApp";
 import PersonAddIcon from "@material-ui/icons/PersonAdd";
 import ExitToAppIcon from "@material-ui/icons/ExitToApp";
 import MovieFilterIcon from "@material-ui/icons/MovieFilter";
@@ -39,6 +40,10 @@ import Torrent from "./component/Torrent";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
+
+import Dropdown from "rc-dropdown";
+import DropdownMenu, { Item as DropdownMenuItem, Divider } from "rc-menu";
+import "rc-dropdown/assets/index.css";
 
 const appBarStyles = (theme) => ({
   loadMoreButton: {
@@ -154,6 +159,14 @@ const appBarStyles = (theme) => ({
       display: "none",
     },
   },
+  popOverRoot: {
+    height: "100%",
+  },
+  popOverPaper: {
+    width: 400,
+    boxShadow: "none",
+    border: "1px solid rgba(41, 41, 41, .2)",
+  },
 });
 
 const auth = {
@@ -231,11 +244,8 @@ const PublicRoute = ({ component: Component, ...rest }) => (
   />
 );
 
-const HomeRoute = ({ component: Component, ...rest }) => (
-  <Route {...rest} render={(props) => <Component {...props} />} />
-);
-
 const AuthButton = (props) => {
+  const [downloads, setDownloads] = useState(0);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const { classes, pathname } = props;
 
@@ -370,6 +380,28 @@ const AuthButton = (props) => {
     );
   };
 
+  const DownloadMenu = () => {
+    let menuItems = [];
+
+    if (downloads && downloads.length) {
+      // find a cool way to display every running downloads
+      for (const [key, value] of Object.entries(downloads)) {
+        console.log(key, value);
+        // menuItems.push(<DropdownMenuItem disabled>You have no downloads</DropdownMenuItem>);
+      }
+    }
+
+    return (
+      <DropdownMenu onSelect={(e) => console.log(e)}>
+        {downloads ? (
+          <div>downloads</div>
+        ) : (
+          <DropdownMenuItem disabled>You have no downloads</DropdownMenuItem>
+        )}
+      </DropdownMenu>
+    );
+  };
+
   const RenderLink = () => {
     return (
       <div className={classes.sectionDesktop}>
@@ -382,6 +414,18 @@ const AuthButton = (props) => {
                 }
               />
             </Link>
+            {auth.isLogged ? (
+              <Dropdown
+                trigger={["click"]}
+                overlay={DownloadMenu}
+                animation="slide-up"
+                // onVisibleChange={onVisibleChange}
+              >
+                <IconButton style={{ color: "#fff" }}>
+                  <GetAppIcon />
+                </IconButton>
+              </Dropdown>
+            ) : undefined}
             <Link onClick={checkIfLogged} to={"/Profile"}>
               <PersonIcon
                 className={
@@ -427,6 +471,36 @@ const AuthButton = (props) => {
     );
   };
 
+  useEffect(() => {
+    if (auth.isLogged) {
+      const socket = socketIOClient("http://127.0.0.1:5000");
+      socket.on("torrentDownloader", (data) => {
+        if (data) {
+          setDownloads(data);
+          Object.keys(data).forEach((key) => {
+            if (data[key].progress) {
+              // need to find a way to set up a download section where it will be all of the downloads listed
+              console.log(
+                data[key].title + ": on " + data[key].type + " " + data[key].msg
+              );
+            } else if (data[key].success) {
+              auth.successMessage(
+                data[key].title + ": on " + data[key].type + " " + data[key].msg
+              );
+            } else if (data[key].failure) {
+              auth.errorMessage(
+                data[key].title + ": on " + data[key].type + " " + data[key].msg
+              );
+            }
+          });
+        }
+      });
+    }
+    return () => {
+      console.log("unmount");
+    };
+  }, []);
+
   return (
     <div id={"headerMatcha"} className={classes.grow}>
       <AppBar position="static" className={classes.appbar}>
@@ -469,41 +543,6 @@ const App = (props) => {
       .then((resLogged) => resLogged.json())
       .then((resLogged) => {
         auth.isLogged = resLogged.status === false ? false : true;
-        if (resLogged.status) {
-          const socket = socketIOClient("http://127.0.0.1:5000");
-          socket.on("torrentDownloader", (data) => {
-            if (data) {
-              Object.keys(data).forEach((key) => {
-                if (data[key].progress) {
-                  // need to find a way to set up a download section where it will be all of the downloads listed
-                  console.log(
-                    data[key].title +
-                      ": on " +
-                      data[key].type +
-                      " " +
-                      data[key].msg
-                  );
-                } else if (data[key].success) {
-                  auth.successMessage(
-                    data[key].title +
-                      ": on " +
-                      data[key].type +
-                      " " +
-                      data[key].msg
-                  );
-                } else if (data[key].failure) {
-                  auth.errorMessage(
-                    data[key].title +
-                      ": on " +
-                      data[key].type +
-                      " " +
-                      data[key].msg
-                  );
-                }
-              });
-            }
-          });
-        }
         setIsLoading(false);
       });
     return () => {
@@ -536,7 +575,7 @@ const App = (props) => {
             path="/User"
             component={(props) => <User props={props} auth={auth} />}
           />
-          <HomeRoute
+          <PrivateRoute
             exact
             path="/Torrent"
             component={(props) => <Torrent props={props} auth={auth} />}
