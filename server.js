@@ -18,6 +18,7 @@ const users = require("./api/users");
 const login = require("./api/login");
 const signUp = require("./api/signUp");
 const views = require("./api/views");
+const stream = require("./api/stream");
 const confirm = require("./api/confirm");
 const settings = require("./api/settings");
 const comments = require("./api/comments");
@@ -80,6 +81,9 @@ app.use(bodyParser.raw());
 app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+// stream
+app.use("/stream", stream);
+
 const sendMail = (receiver, type, random) => {
   return new Promise(function (resolve, reject) {
     if (type && (type === 1 || type === 2) && receiver && random) {
@@ -123,21 +127,6 @@ const sendMail = (receiver, type, random) => {
     }
   });
 };
-
-// everyday at 1am check if there's new movies
-// for test purposes, every minutes is: * * * * * | every day at 1am is: 0 1 * * *
-// cron.schedule("0 1 * * *", async () => {
-//   console.log("Starting maintenance... checking for new movies!");
-//   const status = await scrap_machine.doMaintenance();
-//   if (status) {
-//     torrents = scrap_machine.torrents;
-//     console.log(torrents);
-//     console.log("now save to db");
-//     // setupDatabase()
-//     //   .then((res) => process.exit(res))
-//     //   .catch((err) => console.log(err));
-//   }
-// });
 
 // Check if the token is valid, needed for react router
 app.get("/api/checkToken", (req, res) => {
@@ -309,18 +298,6 @@ app.post("/api/confirm/account", (req, res) => {
 app.post("/api/torrents/query", (req, res) => {
   torrents
     .getQueryTorrents({ req: req.body })
-    .then((response) => {
-      res.status(200).send({ torrents: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Read torrent
-app.post("/api/torrents/read", (req, res) => {
-  torrents
-    .handleGetTorrent({ req: req.body })
     .then((response) => {
       res.status(200).send({ torrents: response });
     })

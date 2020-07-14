@@ -542,7 +542,7 @@ const Torrent = (props) => {
   };
 
   const handleGetTorrent = (child) => {
-    fetch("/api/torrents/read", {
+    fetch(`/api/torrents/read?id=${torrent.id}`, {
       method: "POST",
       body: JSON.stringify({
         id: torrent.id,
@@ -579,6 +579,12 @@ const Torrent = (props) => {
         //   }
       })
       .catch((err) => props.auth.errorMessage(err));
+  };
+
+  const watchTorrent = (child) => {
+    setSource(
+      `http://localhost:3000/stream?movie=${torrent.id}&torrent=${child.id}&magnet=${child.magnet}`
+    );
   };
 
   useEffect(() => {
@@ -851,7 +857,8 @@ const Torrent = (props) => {
                     <div className={classes.soloFlex}>
                       {auth.isLogged ? (
                         <div className={classes.titleSectionCenter}>
-                          <Button onClick={() => handleGetTorrent(el)}>
+                          {/* <Button onClick={() => handleGetTorrent(el)}> */}
+                          <Button onClick={() => watchTorrent(el)}>
                             Watch
                           </Button>
                         </div>

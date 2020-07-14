@@ -1,5 +1,4 @@
 const pool = require("./../pool.js");
-const tdl = require("./torrents/torrentDownloader");
 
 const buildFilter = (filter) => {
   let query = {};
@@ -152,29 +151,9 @@ const getTorrentInfos = (request, response) => {
   });
 };
 
-const handleGetTorrent = (request, response) => {
-  const { req } = request;
-  return new Promise(async function (resolve, reject) {
-    if (!req.torrent.downloaded) {
-      const status = await tdl.startDownload(req.id, req.torrent, req.parent);
-      resolve({
-        downloaded: false,
-        isSuccess: status.isSuccess,
-        msg: status.msg,
-      });
-    } else {
-      resolve({
-        downloaded: true,
-        msg: "Torrent is already downloaded, it will start asap",
-      });
-    }
-  });
-};
-
 module.exports = {
   getQueryTorrents,
   getTorrentInfos,
   getRandomTorrents,
   getTorrentSettings,
-  handleGetTorrent,
 };
