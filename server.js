@@ -27,7 +27,6 @@ const scrap_machine = require("./scripts/search");
 // const
 const app = express();
 const port = process.env.PORT || 5000;
-// const secret = "mysecretsshhh";
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "./client/src/assets/photos/");
@@ -317,16 +316,130 @@ app.post("/api/torrents/query", (req, res) => {
     });
 });
 
+// const router = require("express").Router();
+const ffmpeg = require("fluent-ffmpeg");
+const pump = require("pump");
+// const srt2vtt = require("srt-to-vtt");
+// const path = require("path");
+// const fs = require("fs");
+const torrentStream = require("torrent-stream");
+
+const getDownloadPercent = (el) => {
+  const sortedEl = [...el].sort((a, b) => a - b);
+  let last = 0;
+
+  for (let i = 0; i < sortedEl.length; i += 1) {
+    const chunk = sortedEl[i];
+    last = chunk;
+
+    if (!sortedEl.includes(chunk + 1)) return last;
+  }
+  return last;
+};
+
 // Read torrent
 app.post("/api/torrents/read", (req, res) => {
-  torrents
-    .handleGetTorrent({ req: req.body })
-    .then((response) => {
-      res.status(200).send({ torrents: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
+  try {
+    let { magnet } = req.body.torrent;
+    magnet = magnet.includes("btih")
+      ? magnet.split("btih:")[1].split("&dn")[0]
+      : magnet;
+    let extension;
+    let nbPieces;
+    let dlFile = null;
+    const loadedChunks = new Map();
+    const allowedExts = [".mp4", ".mkv", ".webm", ".avi"];
+    const engine = torrentStream(magnet, {
+      connections: 100,
+      uploads: 10,
+      tmp: "./torrents/tmp/",
+      path: "./torrents/downloads/",
+      verify: true,
     });
+    engine.on("ready", async () => {
+      const file = engine.files.find(({ name }) =>
+        allowedExts.some((ext) => name.endsWith(ext))
+      );
+
+      if (!file) {
+        res.status(200).json("file not supported");
+      }
+
+      if (!dlFile) {
+        dlFile = { file };
+      }
+
+      console.log(`-----file selected for streaming: ${file.name}-----`);
+      dlFile.file.select();
+      extension = file.name.split(".").pop();
+      const stream = file.createReadStream();
+
+      if (extension === "mp4" || extension === "webm") {
+        console.log("pump");
+        pump(stream, res);
+      } else {
+        console.log("convert");
+        ffmpeg()
+          .input(stream)
+          .outputOptions("-movflags frag_keyframe+empty_moov")
+          .outputFormat("mp4")
+          .on("start", () => {
+            console.log("start");
+          })
+          .on("progress", (progress) => {
+            console.log(`progress: ${progress.timemark}`);
+          })
+          .on("end", () => {
+            console.log("Finished processing");
+          })
+          .on("error", (err) => {
+            console.log(`ERROR: ${err.message}`);
+          })
+          .inputFormat(extension)
+          .audioCodec("aac")
+          .videoCodec("libx264")
+          .pipe(res);
+        res.on("close", () => {
+          console.log("close");
+          stream.destroy();
+        });
+      }
+    });
+
+    engine.on("torrent", ({ pieces }) => {
+      nbPieces = pieces.length;
+    });
+
+    engine.on("download", (index, buffer) => {
+      loadedChunks.set(index, buffer.length);
+
+      const lastEl = getDownloadPercent([...loadedChunks.keys()]);
+      const loadedBytes = [...loadedChunks.entries()]
+        .sort(([a], [b]) => a - b)
+        .reduce((bytesCount, [i, bytesLength]) => {
+          if (i > lastEl) return bytesCount;
+
+          return bytesCount + bytesLength;
+        }, 0);
+
+      const percent = (100 * lastEl) / nbPieces;
+
+      const MIN_FILE_BYTES_DOWNLOADED_PERCENT = 2;
+
+      if (
+        loadedBytes >=
+          (dlFile.file.size / 100) * MIN_FILE_BYTES_DOWNLOADED_PERCENT &&
+        !canDownload
+      ) {
+        console.log("finished");
+      } else {
+        console.log(percent.toFixed(2));
+      }
+    });
+  } catch (e) {
+    console.log("error streaming: ", e.message);
+    res.status(200).json("error streaming: ", e.message);
+  }
 });
 
 // Get torrent infos
