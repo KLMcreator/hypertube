@@ -42,7 +42,7 @@ import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
 
 import Dropdown from "rc-dropdown";
-import DropdownMenu, { Item as DropdownMenuItem, Divider } from "rc-menu";
+import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
 import "rc-dropdown/assets/index.css";
 
 const appBarStyles = (theme) => ({
@@ -381,7 +381,7 @@ const AuthButton = (props) => {
   };
 
   const DownloadMenu = () => {
-    let menuItems = [];
+    // let menuItems = [];
 
     if (downloads && downloads.length) {
       // find a cool way to display every running downloads

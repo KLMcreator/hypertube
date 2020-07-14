@@ -362,6 +362,7 @@ const Torrent = (props) => {
   const [qualities, setQualities] = useState([]);
   const [loggedId, setLoggedId] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [source, setSource] = useState(false);
   const Comment = withStyles(CommentStyles)(RenderComment);
   const Youtube = withStyles(YoutubeStyles)(RenderYoutube);
   const CommentHeader = withStyles(CommentHeaderStyles)(RenderCommentHeader);
@@ -764,6 +765,27 @@ const Torrent = (props) => {
           </div>
         </div>
       </div>
+      {source && source.length ? (
+        <video
+          id="videoPlayer"
+          crossOrigin="anonymous"
+          controls
+          muted
+          preload="auto"
+          autoPlay
+        >
+          <source type="video/mp4" src={source} />
+          {/* {track !== "" && (
+            <track
+              label="subtitles"
+              kind="subtitles"
+              srcLang="en"
+              src={track}
+            />
+          )} */}
+          <track kind="captions" default />
+        </video>
+      ) : undefined}
       <Youtube
         ytCode={torrent.yt_trailer}
         isTrailer={torrent.yt_trailer ? true : false}
