@@ -475,8 +475,9 @@ const AuthButton = (props) => {
     if (auth.isLogged) {
       const socket = socketIOClient("http://127.0.0.1:5000");
       socket.on("torrentDownloader", (data) => {
-        console.log(data);
         if (data) {
+          console.log(data);
+          setDownloads(data);
           if (data.msg) {
             if (data.success === "progress") {
               console.log(data.msg + "%");
@@ -487,25 +488,6 @@ const AuthButton = (props) => {
             }
           }
         }
-        // if (data) {
-        //   setDownloads(data);
-        //   Object.keys(data).forEach((key) => {
-        //     if (data[key].progress) {
-        //       // need to find a way to set up a download section where it will be all of the downloads listed
-        //       console.log(
-        //         data[key].title + ": on " + data[key].type + " " + data[key].msg
-        //       );
-        //     } else if (data[key].success) {
-        //       auth.successMessage(
-        //         data[key].title + ": on " + data[key].type + " " + data[key].msg
-        //       );
-        //     } else if (data[key].failure) {
-        //       auth.errorMessage(
-        //         data[key].title + ": on " + data[key].type + " " + data[key].msg
-        //       );
-        //     }
-        //   });
-        // }
       });
     }
     return () => {

@@ -51,7 +51,6 @@ const getDownloadPercent = (el) => {
 router.get("/", (req, res) => {
   const { movie, torrent } = req.query;
   const hash = movie + "_" + torrent;
-  console.log(hash);
   try {
     let magnet =
       req.query.magnet + "&dn=" + req.query.dn + "&tr=" + req.query.tr;

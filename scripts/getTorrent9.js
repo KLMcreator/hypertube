@@ -378,7 +378,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4500"
+    "https://www.torrent9.ac/torrents/films/4600"
   );
   console.log(
     torrent9Infos.number_of_pages,
