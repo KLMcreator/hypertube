@@ -2,6 +2,7 @@
 import "rc-slider/assets/index.css";
 // react
 import Range from "rc-slider/lib/Range";
+import { useHistory } from "react-router-dom";
 import Select, { createFilter } from "react-select";
 import React, { useState, useEffect, useRef } from "react";
 // framework
@@ -235,12 +236,26 @@ const TorrentSlider = React.memo((props) => {
     centerMode: true,
     infinite: torrents.length < 4 ? false : true,
     centerPadding: "60px",
-    slidesToShow: 4,
+    slidesToShow: 6,
     speed: 500,
     swipeToSlide: true,
     focusOnSelect: true,
     initialSlide: 0,
     responsive: [
+      {
+        breakpoint: 1400,
+        settings: {
+          infinite: torrents.length < 3 ? false : true,
+          slidesToShow: 5,
+        },
+      },
+      {
+        breakpoint: 1200,
+        settings: {
+          infinite: torrents.length < 3 ? false : true,
+          slidesToShow: 4,
+        },
+      },
       {
         breakpoint: 1024,
         settings: {
@@ -373,6 +388,7 @@ const RenderShowMore = (props) => {
 
   if (!props.showMore) return <></>;
 
+  const { history } = props;
   const { torrent, subtitles, languages, categories } = props.showMore;
   const t9_torrents = JSON.parse(torrent.torrents).filter(
     (el) => el.source === "torrent9"
@@ -434,7 +450,7 @@ const RenderShowMore = (props) => {
           </div>
           <div style={{ display: "flex", textAlign: "left" }}>
             {summaries ? (
-              <div style={{ flex: 1, color: "#D0D0D0", marginRight: 10 }}>
+              <div style={{ flex: 2, color: "#D0D0D0", marginRight: 10 }}>
                 {summaries}
               </div>
             ) : undefined}
@@ -607,9 +623,10 @@ const RenderShowMore = (props) => {
                             border: "1px solid #FBBA72",
                           }}
                           onClick={() =>
-                            console.log(
-                              "need to redirect to stream torrent page"
-                            )
+                            history.push({
+                              pathname: `/Watch`,
+                              state: { movie: torrent, torrent: el },
+                            })
                           }
                         >
                           WATCH
@@ -699,9 +716,10 @@ const RenderShowMore = (props) => {
                             border: "1px solid #FBBA72",
                           }}
                           onClick={() =>
-                            console.log(
-                              "need to redirect to stream torrent page"
-                            )
+                            history.push({
+                              pathname: `/Watch?movie=${torrent.id}&torrent=${el.id}&magnet=${el.magnet}`,
+                              state: { id: torrent.id },
+                            })
                           }
                         >
                           WATCH
@@ -746,14 +764,18 @@ const RenderTorrents = (props) => {
 
   let { torrents } = props;
   const { classes } = props;
-
+  const history = useHistory();
   const ShowMore = RenderShowMore;
 
   return (
     <div>
       <div className={classes.torrentContainer}>
         <TorrentSlider torrents={torrents} setShowMore={setShowMore} />
-        <ShowMore setShowMore={setShowMore} showMore={showMore} />
+        <ShowMore
+          history={history}
+          setShowMore={setShowMore}
+          showMore={showMore}
+        />
       </div>
     </div>
   );

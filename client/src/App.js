@@ -36,7 +36,7 @@ import User from "./component/User";
 import Home from "./component/Home";
 import SignUp from "./component/SignUp";
 import SignIn from "./component/SignIn";
-import Torrent from "./component/Torrent";
+import Watch from "./component/Watch";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
@@ -571,8 +571,8 @@ const App = (props) => {
           />
           <PrivateRoute
             exact
-            path="/Torrent"
-            component={(props) => <Torrent props={props} auth={auth} />}
+            path="/Watch"
+            component={(props) => <Watch props={props} auth={auth} />}
           />
           <PublicRoute
             exact
@@ -594,6 +594,7 @@ const App = (props) => {
             path="/Confirm"
             component={(props) => <Confirm props={props} auth={auth} />}
           />
+          {/* <PublicRoute component={NotFound} /> */}
         </Switch>
       </div>
     </BrowserRouter>
