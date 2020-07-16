@@ -223,6 +223,7 @@ const RenderTorrent = (props) => {
 };
 
 const TorrentSlider = React.memo((props) => {
+  const { torrents } = props;
   const [sortBy, setSortBy] = useState({
     label: "ASC. NAME",
     value: "ascname",
@@ -232,7 +233,7 @@ const TorrentSlider = React.memo((props) => {
     arrows: false,
     className: "center",
     centerMode: true,
-    infinite: true,
+    infinite: torrents.length < 4 ? false : true,
     centerPadding: "60px",
     slidesToShow: 4,
     speed: 500,
@@ -243,18 +244,21 @@ const TorrentSlider = React.memo((props) => {
       {
         breakpoint: 1024,
         settings: {
+          infinite: torrents.length < 3 ? false : true,
           slidesToShow: 3,
         },
       },
       {
         breakpoint: 600,
         settings: {
+          infinite: torrents.length < 2 ? false : true,
           slidesToShow: 2,
         },
       },
       {
         breakpoint: 480,
         settings: {
+          infinite: torrents.length < 1 ? false : true,
           slidesToShow: 1,
         },
       },
@@ -319,7 +323,6 @@ const TorrentSlider = React.memo((props) => {
     }
   };
 
-  const { torrents } = props;
   const Torrent = withStyles(TorrentStyles)(RenderTorrent);
 
   return (
@@ -402,11 +405,16 @@ const RenderShowMore = (props) => {
       {selectedTab === 0 ? (
         <div style={{ padding: 10 }}>
           <div style={{ display: "flex", textAlign: "left" }}>
-            <div style={{ flex: 3, alignSelf: "center" }}>
-              ({torrent.production_year}) {torrent.title} - {torrent.rating}{" "}
+            <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
+              <span style={{ fontSize: 20, color: "#D0D0D0" }}>
+                ({torrent.production_year})
+              </span>{" "}
+              <span style={{ fontSize: 20, color: "#EFF1F3" }}>
+                {torrent.title} - {torrent.rating}
+              </span>{" "}
               <StarRateIcon
                 style={{
-                  fontSize: 25,
+                  fontSize: 30,
                   color: "#FBBA72",
                   verticalAlign: "middle",
                 }}
@@ -425,134 +433,284 @@ const RenderShowMore = (props) => {
             </div>
           </div>
           <div style={{ display: "flex", textAlign: "left" }}>
-            {summaries ? <div style={{ flex: 1 }}>{summaries}</div> : undefined}
-            <div style={{ flex: 1 }}>
+            {summaries ? (
+              <div style={{ flex: 1, color: "#D0D0D0", marginRight: 10 }}>
+                {summaries}
+              </div>
+            ) : undefined}
+            <div style={{ flex: 1, marginLeft: 10 }}>
               <div>
-                Categories:{" "}
-                {categories.length
-                  ? categories.map((el, i) =>
-                      i < categories.length - 1 ? el + " / " : el
-                    )
-                  : "No informations"}
+                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                  Categories:
+                </span>{" "}
+                <span style={{ color: "#D0D0D0" }}>
+                  {categories.length
+                    ? categories.map((el, i) =>
+                        i < categories.length - 1 ? el + " / " : el
+                      )
+                    : "No informations"}
+                </span>
               </div>
               <div>
-                Languages:{" "}
-                {languages.length
-                  ? languages.map((el, i) =>
-                      i < languages.length - 1 ? el + ", " : el
-                    )
-                  : "No informations"}
+                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                  Languages:
+                </span>{" "}
+                <span style={{ color: "#D0D0D0" }}>
+                  {languages.length
+                    ? languages.map((el, i) =>
+                        i < languages.length - 1 ? el + " / " : el
+                      )
+                    : "No informations"}
+                </span>
               </div>
               {subtitles && subtitles.length ? (
                 <div>
-                  Subtitles:{" "}
-                  {subtitles.length
-                    ? subtitles.map((el, i) =>
-                        i < subtitles.length - 1
-                          ? el.language + ", "
-                          : el.language
-                      )
-                    : "No informations"}
+                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                    Subtitles:
+                  </span>{" "}
+                  <span style={{ color: "#D0D0D0" }}>
+                    {subtitles.length
+                      ? subtitles.map((el, i) =>
+                          i < subtitles.length - 1
+                            ? el.language + " / "
+                            : el.language
+                        )
+                      : "No informations"}
+                  </span>
                 </div>
               ) : undefined}
               <div>
-                Qualities:{" "}
-                {qualities.length
-                  ? qualities.map((el, i) =>
-                      i < qualities.length - 1 ? el + ", " : el
-                    )
-                  : "No informations"}
+                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                  Qualities:
+                </span>{" "}
+                <span style={{ color: "#D0D0D0" }}>
+                  {qualities.length
+                    ? qualities.map((el, i) =>
+                        i < qualities.length - 1 ? el + " / " : el
+                      )
+                    : "No informations"}
+                </span>
               </div>
               {torrent.duration ? (
-                <div>Duration: {torrent.duration}mn</div>
+                <div>
+                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                    Duration:
+                  </span>{" "}
+                  <span style={{ color: "#D0D0D0" }}>{torrent.duration}mn</span>
+                </div>
               ) : undefined}
               {torrent.lastviewed_at ? (
-                <div>Last viewed:{torrent.lastviewed_at}</div>
+                <div>
+                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                    Last viewed:
+                  </span>{" "}
+                  <span style={{ color: "#D0D0D0" }}>
+                    {torrent.lastviewed_at}
+                  </span>
+                </div>
               ) : undefined}
               {torrent.downloaded_at ? (
-                <div>Last download:{torrent.downloaded_at}</div>
+                <div>
+                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                    Last download:
+                  </span>{" "}
+                  <span style={{ color: "#D0D0D0" }}>
+                    {torrent.downloaded_at}
+                  </span>
+                </div>
               ) : undefined}
             </div>
           </div>
         </div>
       ) : (
-        <div style={{ padding: 10 }}>
+        <div
+          style={{
+            paddingTop: 20,
+            paddingBottom: 20,
+            paddingRight: 10,
+            paddingLeft: 10,
+          }}
+        >
           {yts_torrents.length ? (
             <div>
-              YTS
-              <FiberManualRecordIcon
-                style={{
-                  color: torrent.yts_url ? "#0CCA4A" : "#E63946",
-                  verticalAlign: "middle",
-                }}
-              ></FiberManualRecordIcon>
-              {torrent.yts_url ? (
-                <div>
-                  {yts_torrents.map((el, i) => (
-                    <div key={el.magnet + i}>
-                      {el.language}
-                      {el.quality}
-                      {el.size}
-                      {el.downloaded ? "Downloaded" : "Not downloaded"}
-                      Seeds:{el.seeds}
-                      Peers:{el.peers}
-                      <a
-                        href={el.torrent}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Download
-                      </a>
-                      <Button
-                        onClick={() =>
-                          console.log("need to redirect to stream torrent page")
-                        }
-                      >
-                        Watch
-                      </Button>
+              <div>
+                <span style={{ fontWeight: "bold", fontSize: 20 }}>YTS</span>
+                <FiberManualRecordIcon
+                  style={{
+                    color: torrent.yts_url ? "#0CCA4A" : "#E63946",
+                    verticalAlign: "middle",
+                  }}
+                ></FiberManualRecordIcon>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap" }}>
+                {yts_torrents.map((el, i) => (
+                  <div
+                    key={el.magnet + i}
+                    style={{ flex: "1 0 30%", padding: 5 }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>{el.language}</div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Quality:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.quality}</span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Size:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.size}</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ) : undefined}
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Downloaded:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>
+                          {el.downloaded ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Seeds:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.seeds}</span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Peers:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.peers}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() =>
+                            console.log(
+                              "need to redirect to go to link to download it (el.torrent)"
+                            )
+                          }
+                        >
+                          DOWNLOAD .TORRENT
+                        </Button>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <Button
+                          variant="outlined"
+                          style={{
+                            color: "#FBBA72",
+                            border: "1px solid #FBBA72",
+                          }}
+                          onClick={() =>
+                            console.log(
+                              "need to redirect to stream torrent page"
+                            )
+                          }
+                        >
+                          WATCH
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : undefined}
           {t9_torrents.length ? (
             <div>
-              Torrent9
-              <FiberManualRecordIcon
-                style={{
-                  color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
-                  verticalAlign: "middle",
-                }}
-              ></FiberManualRecordIcon>
-              {torrent.torrent9_url ? (
-                <div>
-                  {t9_torrents.map((el, i) => (
-                    <div key={el.magnet + i}>
-                      {el.languages}
-                      {el.quality}
-                      {el.size}
-                      {el.downloaded ? "Downloaded" : "Not downloaded"}
-                      Seeds:{el.seeds}
-                      Peers:{el.peers}
-                      <a
-                        href={el.torrent}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Download
-                      </a>
-                      <Button
-                        onClick={() =>
-                          console.log("need to redirect to stream torrent page")
-                        }
-                      >
-                        Watch
-                      </Button>
+              <div>
+                <span style={{ fontWeight: "bold", fontSize: 20 }}>
+                  Torrent9
+                </span>
+                <FiberManualRecordIcon
+                  style={{
+                    color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
+                    verticalAlign: "middle",
+                  }}
+                ></FiberManualRecordIcon>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap" }}>
+                {t9_torrents.map((el, i) => (
+                  <div
+                    key={el.magnet + i}
+                    style={{ flex: "1 0 30%", padding: 5 }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>{el.languages}</div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Quality:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.quality}</span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Size:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.size}</span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ) : undefined}
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Downloaded:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>
+                          {el.downloaded ? "Yes" : "No"}
+                        </span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Seeds:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.seeds}</span>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
+                          Peers:
+                        </span>{" "}
+                        <span style={{ color: "#D0D0D0" }}>{el.peers}</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <div style={{ padding: 3 }}>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() =>
+                            console.log(
+                              "need to redirect to go to link to download it (el.torrent)"
+                            )
+                          }
+                        >
+                          DOWNLOAD .TORRENT
+                        </Button>
+                      </div>
+                      <div style={{ padding: 3 }}>
+                        <Button
+                          variant="outlined"
+                          style={{
+                            color: "#FBBA72",
+                            border: "1px solid #FBBA72",
+                          }}
+                          onClick={() =>
+                            console.log(
+                              "need to redirect to stream torrent page"
+                            )
+                          }
+                        >
+                          WATCH
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : undefined}
         </div>
@@ -792,7 +950,10 @@ const RenderSearchBar = (props) => {
           <Button
             className={classes.fullWidth}
             variant="outlined"
-            color="secondary"
+            style={{
+              color: "#FBBA72",
+              border: "1px solid #FBBA72",
+            }}
             type="submit"
             onClick={handleSearchTorrent}
           >
