@@ -9,7 +9,6 @@ const srt2vtt = require("srt-to-vtt");
 const ffmpeg = require("fluent-ffmpeg");
 const torrentStream = require("torrent-stream");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
-const { getVideoDurationInSeconds } = require("get-video-duration");
 
 const router = express.Router();
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -21,8 +20,8 @@ let currentConvert = {};
 const config = {
   connections: 100,
   uploads: 10,
-  tmp: "./torrents/tmp/",
-  path: "./torrents/downloads/",
+  tmp: "./client/src/assets/torrents/tmp/",
+  path: "./client/src/assets/torrents/downloads/",
   verify: true,
 };
 
@@ -32,6 +31,69 @@ const emmitToFront = (success, msg) => {
     msg: msg,
     downloads: currentDownloads,
     converts: currentConvert,
+  });
+};
+
+const updateTorrent = (torrent) => {
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT torrents FROM torrents where id = $1;",
+      [torrent.movie],
+      (error, resultSelect) => {
+        if (error) {
+          reject(error);
+        }
+        if (resultSelect.rowCount) {
+          let torrents = JSON.parse(resultSelect.rows[0].torrents);
+          let i = 0;
+          let found = false;
+          while (i < torrents.length) {
+            if (torrents[i].id === torrent.torrent) {
+              torrents[i].downloaded = true;
+              torrents[i].path = torrent.path;
+              torrents[i].downloaded_at = torrent.downloaded_at;
+              torrents[i].lastviewed_at = torrent.lastviewed_at;
+              torrents[i].delete_at = torrent.delete_at;
+              found = true;
+              break;
+            }
+            i++;
+          }
+          if (!found) {
+            emmitToFront(
+              false,
+              `Error while saving, torrent not found: ${torrent.name}`
+            );
+            resolve(false);
+          } else {
+            pool.pool.query(
+              "UPDATE torrents SET torrents = $1 WHERE id = $2;",
+              [JSON.stringify(torrents), torrent.movie],
+              (error, results) => {
+                if (error) {
+                  reject(error);
+                }
+                if (results.rowCount) {
+                  resolve(true);
+                } else {
+                  emmitToFront(
+                    false,
+                    `Error while saving, movie not found: ${torrent.name}`
+                  );
+                  resolve(false);
+                }
+              }
+            );
+          }
+        } else {
+          emmitToFront(
+            false,
+            `Error while saving, movie not found: ${torrent.name}`
+          );
+          resolve(false);
+        }
+      }
+    );
   });
 };
 
@@ -75,39 +137,53 @@ router.get("/", (req, res) => {
 
       if (!dlFile) {
         dlFile = { file };
-
-        currentDownloads[hash] = {
-          name: file.name,
-          identifier: hash,
-          ext: ext,
-        };
       }
-
-      emmitToFront(true, `Download started: ${file.name}`);
 
       dlFile.file.select();
       ext = file.name.split(".").pop();
       const stream = file.createReadStream();
 
+      currentDownloads[hash] = {
+        movie: movie,
+        torrent: torrent,
+        name: stream._engine.torrent.name,
+        identifier: hash,
+        ext: ext,
+        path:
+          "/src/assets/torrents/downloads/" +
+          stream._engine.torrent.name +
+          "/" +
+          file.name,
+        downloaded_at: moment().toString(),
+        lastviewed_at: moment().toString(),
+        delete_at: moment(moment()).add(1, "M").toString(),
+      };
+
       if (ext === "mp4" || ext === "mkv") {
-        emmitToFront(true, `Your stream will start shortly: ${file.name}`);
+        emmitToFront(
+          true,
+          `Download started, your stream will start shortly: ${currentDownloads[hash].name}`
+        );
         pump(stream, res);
       } else {
         emmitToFront(
           true,
-          `Your file need to be converted first, the stream will start shortly: ${file.name}`
+          `Downloading and converting the file as you watch it, the stream will start shortly: ${currentDownloads[hash].name}`
         );
         ffmpeg()
           .input(stream)
           .outputOptions("-movflags frag_keyframe+empty_moov")
           .outputFormat("mp4")
           .on("end", () => {
-            emmitToFront(true, `Your file has been converted: ${file.name}`);
+            emmitToFront(
+              true,
+              `Your file has been converted: ${currentDownloads[hash].name}`
+            );
           })
           .on("error", (err) => {
             emmitToFront(
               false,
-              `Error while converting file: ${file.name} - ${err.message}`
+              `Error while converting file: ${currentDownloads[hash].name} - ${err.message}`
             );
           })
           .inputFormat(ext)
@@ -141,13 +217,16 @@ router.get("/", (req, res) => {
       const MIN_FILE_BYTES_DOWNLOADED_PERCENT = 2;
 
       if (
-        loadedBytes >=
+        loadedBytes <=
         (dlFile.file.size / 100) * MIN_FILE_BYTES_DOWNLOADED_PERCENT
       ) {
-        currentDownloads[hash] = null;
-      } else {
         emmitToFront("progress", percent.toFixed(2));
       }
+    });
+
+    engine.on("idle", () => {
+      emmitToFront(true, `Download finished: ${currentDownloads[hash].name}`);
+      if (updateTorrent(currentDownloads[hash])) currentDownloads[hash] = null;
     });
   } catch (e) {
     emmitToFront(false, `Error while streaming: ${e.message}`);

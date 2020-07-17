@@ -40,6 +40,7 @@ import Watch from "./component/Watch";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
+import FourOFour from "./component/FourOFour";
 
 import Dropdown from "rc-dropdown";
 import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
@@ -594,7 +595,7 @@ const App = (props) => {
             path="/Confirm"
             component={(props) => <Confirm props={props} auth={auth} />}
           />
-          {/* <PublicRoute component={NotFound} /> */}
+          <PublicRoute component={FourOFour} />
         </Switch>
       </div>
     </BrowserRouter>

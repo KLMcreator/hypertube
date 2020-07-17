@@ -13,7 +13,7 @@ import SendIcon from "@material-ui/icons/Send";
 import StarRateIcon from "@material-ui/icons/StarRate";
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 
-const TorrentStyles = (theme) => ({
+const WatchStyles = (theme) => ({
   root: {
     flex: 1,
     height: "100%",
@@ -69,7 +69,7 @@ const RenderComment = (props) => {
   );
 };
 
-const Torrent = (props) => {
+const Watch = (props) => {
   const ref = useRef(false);
   const { classes } = props;
   const history = useHistory();
@@ -110,9 +110,15 @@ const Torrent = (props) => {
             if (loadMore) {
               setLimit(limit + 10);
             } else {
-              setSource(
-                `http://localhost:3000/stream?movie=${movie.id}&torrent=${torrent.id}&magnet=${torrent.magnet}`
-              );
+              if (props.props.location.state.torrent.downloaded) {
+                setSource(
+                  `http://localhost:3000${props.props.location.state.torrent.path}`
+                );
+              } else {
+                setSource(
+                  `http://localhost:3000/stream?movie=${movie.id}&torrent=${torrent.id}&magnet=${torrent.magnet}`
+                );
+              }
             }
             setComments(res.comments.comments);
             checkIfLogged();
@@ -302,4 +308,4 @@ const Torrent = (props) => {
   );
 };
 
-export default withStyles(TorrentStyles)(Torrent);
+export default withStyles(WatchStyles)(Watch);
