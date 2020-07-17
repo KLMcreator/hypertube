@@ -605,19 +605,6 @@ const RenderShowMore = (props) => {
                       <div style={{ padding: 3 }}>
                         <Button
                           variant="outlined"
-                          color="secondary"
-                          onClick={() =>
-                            console.log(
-                              "need to redirect to go to link to download it (el.torrent)"
-                            )
-                          }
-                        >
-                          DOWNLOAD .TORRENT
-                        </Button>
-                      </div>
-                      <div style={{ padding: 3 }}>
-                        <Button
-                          variant="outlined"
                           style={{
                             color: "#FBBA72",
                             border: "1px solid #FBBA72",
@@ -695,19 +682,6 @@ const RenderShowMore = (props) => {
                       </div>
                     </div>
                     <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>
-                        <Button
-                          variant="outlined"
-                          color="secondary"
-                          onClick={() =>
-                            console.log(
-                              "need to redirect to go to link to download it (el.torrent)"
-                            )
-                          }
-                        >
-                          DOWNLOAD .TORRENT
-                        </Button>
-                      </div>
                       <div style={{ padding: 3 }}>
                         <Button
                           variant="outlined"

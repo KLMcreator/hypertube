@@ -2,6 +2,9 @@ const fs = require("fs");
 const pump = require("pump");
 const path = require("path");
 const moment = require("moment");
+// const AdmZip = require("adm-zip");
+const request = require("request");
+const yauzl = require("yauzl");
 const express = require("express");
 const socket = require("./sockets");
 const pool = require("./../pool.js");
@@ -90,6 +93,27 @@ const updateTorrent = (torrent) => {
             false,
             `Error while saving, movie not found: ${torrent.name}`
           );
+          resolve(false);
+        }
+      }
+    );
+  });
+};
+
+const getMovieInfos = (movie) => {
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT * FROM torrents where id = $1;",
+      [movie],
+      (error, resultSelect) => {
+        if (error) {
+          emmitToFront(false, `Error while getting movie`);
+          resolve(false);
+        }
+        if (resultSelect.rowCount) {
+          resolve({ movie: resultSelect.rows[0] });
+        } else {
+          emmitToFront(false, `Error while getting movie`);
           resolve(false);
         }
       }
@@ -217,9 +241,10 @@ router.get("/", (req, res) => {
       const MIN_FILE_BYTES_DOWNLOADED_PERCENT = 2;
 
       if (
-        loadedBytes <=
+        loadedBytes >=
         (dlFile.file.size / 100) * MIN_FILE_BYTES_DOWNLOADED_PERCENT
       ) {
+      } else {
         emmitToFront("progress", percent.toFixed(2));
       }
     });
@@ -230,6 +255,85 @@ router.get("/", (req, res) => {
     });
   } catch (e) {
     emmitToFront(false, `Error while streaming: ${e.message}`);
+    res.status(200);
+  }
+});
+
+router.get("/subs", async (req, res) => {
+  try {
+    const { movie, torrent, url } = req.query;
+    const infos = await getMovieInfos(movie);
+    // check if this torrent is downloaded
+    // check if this track is downloaded
+    // get downloaded path or actual new path
+    // do the job
+    // console.log(infos);
+
+    //     request(url)
+    //   .pipe(fs.createWriteStream(''))
+    //   .on('close', function () {
+    //     console.log('File written!');
+    //   });
+
+    //     request.get({ url: url, encoding: null }, (err, res, body) => {
+    //       yauzl.open(body, { lazyEntries: true }, (err, zipfile) => {
+    //         if (err) throw err;
+    //         zipfile.readEntry();
+    //         zipfile.on("entry", (entry) => {
+    //           const file = entry.find((el) =>
+    //             allowedExts.some((ext) => el.entryName.endsWith(ext))
+    //           );
+    //           console.log(file);
+
+    //           // if (/\/$/.test(entry.fileName)) {
+    //           //   // Directory file names end with '/'.
+    //           //   // Note that entires for directories themselves are optional.
+    //           //   // An entry's fileName implicitly requires its parent directories to exist.
+    //           //   zipfile.readEntry();
+    //           // } else {
+    //           //   // file entry
+    //           //   zipfile.openReadStream(entry, (err, readStream) => {
+    //           //     if (err) throw err;
+    //           //     readStream.on("end", () => {
+    //           //       zipfile.readEntry();
+    //           //     });
+    //           //     readStream.pipe(somewhere);
+    //           //   });
+    //           // }
+    //         });
+    //       });
+    //     });
+
+    // request.get({ url: url, encoding: null }, (err, res, body) => {
+    //   const zip = new AdmZip(body);
+    //   const zipEntries = zip.getEntries();
+    //   const allowedExts = [".vtt", ".srt"];
+
+    //   const file = zipEntries.find((el) =>
+    //     allowedExts.some((ext) => el.entryName.endsWith(ext))
+    //   );
+
+    //   if (!file) {
+    //     emmitToFront(false, `This subtitle file is corrupted`);
+    //     res.status(200);
+    //   }
+
+    //       zipEntries.forEach((entry) => {
+    //         if (entry.entryName.endsWith(ext))
+    //           console.log(zip.readAsText(entry));
+    //       }
+    //     const { subfile } = req.query
+    //     const files = status.torrents[0].name
+    //     const { downloadDir } = status.torrents[0]
+    //     const pathfile = path.join(downloadDir, files, subfile)
+    //     await fileExist(pathfile)
+    //     res.contentType('text/vtt')
+    //     return fs.createReadStream(pathfile)
+    //       .pipe(srt2vtt())
+    //       .pipe(res)
+    // });
+  } catch (e) {
+    emmitToFront(false, `Error while getting subs: ${e.message}`);
     res.status(200);
   }
 });

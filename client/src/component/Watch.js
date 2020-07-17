@@ -73,6 +73,7 @@ const Watch = (props) => {
   const ref = useRef(false);
   const { classes } = props;
   const history = useHistory();
+  const [sub, setSub] = useState(false);
   const [limit, setLimit] = useState(10);
   const [source, setSource] = useState(false);
   const [comments, setComments] = useState([]);
@@ -80,6 +81,7 @@ const Watch = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const { movie, torrent } = props.props.location.state;
+  const subs = movie.subtitles ? JSON.parse(movie.subtitles) : [];
 
   const checkIfLogged = () => {
     fetch("/api/checkToken")
@@ -189,6 +191,10 @@ const Watch = (props) => {
   };
 
   useEffect(() => {
+    console.log(
+      props.props.location.state.movie,
+      props.props.location.state.torrent
+    );
     ref.current = true;
     if (
       !props.props.location.state.movie ||
@@ -228,15 +234,17 @@ const Watch = (props) => {
           autoPlay
         >
           <source type="video/mp4" src={source} />
-          {/* {track !== "" && (
-            <track
-              label="subtitles"
-              kind="subtitles"
-              srcLang="en"
-              src={track}
-            />
-          )} */}
-          <track kind="captions" default />
+          {subs && subs.length
+            ? subs.map((e) => (
+                <track
+                  key={e.language}
+                  label={e.language}
+                  kind="subtitles"
+                  src={`http://localhost:3000/stream/subs?movie=${movie.id}&torrent=${torrent.id}&url=${e.url}`}
+                />
+              ))
+            : undefined}
+          <track kind="off" default />
         </video>
       ) : undefined}
       <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
