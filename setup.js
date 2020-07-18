@@ -1,9 +1,9 @@
+const fs = require("fs");
 const Pool = require("pg").Pool;
+const chalk = require("chalk");
 const faker = require("faker");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
-const chalk = require("chalk");
-const fs = require("fs");
 const path = "./scripts/finalTorrents.json";
 const scrap_machine = require("./scripts/search");
 
@@ -275,6 +275,7 @@ const populateSettings = () => {
     console.log(
       "Getting min/max production year, available languages/subtitles and every categories"
     );
+    let totalSubsMovies = 0;
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
@@ -290,6 +291,7 @@ const populateSettings = () => {
         settings.minProductionYear = e.production_year;
       }
       if (e.subtitles && e.subtitles.length) {
+        totalSubsMovies++;
         e.subtitles.map((subtitle) => {
           let pos = settings.subtitles
             .map((e) => {
@@ -354,7 +356,9 @@ const populateSettings = () => {
             settings.languages.length,
             "languages and",
             settings.subtitles.length,
-            "subtitles"
+            "subtitles languages for",
+            totalSubsMovies,
+            "movies"
           );
           resolve(0);
         }

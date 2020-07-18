@@ -1,14 +1,15 @@
-const moment = require("moment");
+const fs = require("fs");
 const chalk = require("chalk");
 const crypto = require("crypto");
+const moment = require("moment");
 const Crawler = require("crawler");
-const fs = require("fs");
-const getTorrent9 = require("./getTorrent9");
 const getYTS = require("./getYTS");
-let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
-let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
-let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
+const getTorrent9 = require("./getTorrent9");
+
 let searched = [];
+let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
+let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
+let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 
 const searchInTorrent = async (q) => {
   try {

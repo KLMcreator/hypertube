@@ -312,7 +312,6 @@ router.get("/subs", async (req, res) => {
     }
 
     if (infos.movie.subtitles[s].downloaded) {
-      console.log("downloaded", infos.movie.subtitles[s].path);
       if (infos.movie.subtitles[s].path) {
         res.contentType("text/vtt");
         return fs

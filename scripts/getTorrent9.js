@@ -1,7 +1,7 @@
-const cheerio = require("cheerio");
 const got = require("got");
-const moment = require("moment");
 const chalk = require("chalk");
+const moment = require("moment");
+const cheerio = require("cheerio");
 
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
@@ -402,7 +402,7 @@ const fetchAllTorrents = async () => {
     await getMovieList(
       "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
     );
-    if (i && i % 25 === 0) {
+    if (i && i % 50 === 0) {
       console.log(
         i,
         "pages done on",
@@ -428,14 +428,14 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 80 === 0) {
+    if (i && i % 60 === 0) {
       console.log(
         i,
         "movies done on",
         chalk.green("Torrent9,"),
-        "waiting for 1.5s to avoid being blacklisted"
+        "waiting for .5s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 750));
     }
   }
   console.timeEnd("torrent9Scraping");

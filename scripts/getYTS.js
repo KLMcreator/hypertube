@@ -1,7 +1,7 @@
-const moment = require("moment");
-const chalk = require("chalk");
-const cheerio = require("cheerio");
 const got = require("got");
+const chalk = require("chalk");
+const moment = require("moment");
+const cheerio = require("cheerio");
 
 let ytsInfos = {
   fetched_at: 0,
@@ -177,19 +177,16 @@ const getMovieList = async (page, url) => {
               });
             }
           } else if (
-            (res.data.movies[i].year > 1990 ||
-              (res.data.movies[i].year > 1950 &&
-                parseInt(res.data.movies[i].rating) > 7)) &&
             res.data.movies[i].torrents &&
             res.data.movies[i].torrents.length
           ) {
             let subs = [];
             if (
               res.data.movies[i].imdb_code &&
-              ((res.data.movies[i].year > 2005 &&
-                parseInt(res.data.movies[i].rating, 10) > 5) ||
-                (res.data.movies[i].year > 1980 &&
-                  parseInt(res.data.movies[i].rating, 10) > 8))
+              ((res.data.movies[i].year > 1970 &&
+                parseInt(res.data.movies[i].rating, 10) > 7) ||
+                (res.data.movies[i].year > 2000 &&
+                  parseInt(res.data.movies[i].rating, 10) > 5))
             ) {
               subs = await getSubs(
                 "https://www.yifysubtitles.com/movie-imdb/" +
@@ -294,10 +291,10 @@ const fetchAllTorrents = async () => {
         i,
         "pages done on",
         chalk.green("YTS,"),
-        "waiting for 1.5s to avoid being blacklisted. Total movies:",
+        "waiting for 1s to avoid being blacklisted. Total movies:",
         ytsInfos.movies.length
       );
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
   console.log(
