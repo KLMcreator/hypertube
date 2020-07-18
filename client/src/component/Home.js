@@ -234,7 +234,7 @@ const TorrentSlider = React.memo((props) => {
     arrows: false,
     className: "center",
     centerMode: true,
-    infinite: torrents.length < 4 ? false : true,
+    infinite: torrents.length < 6 ? false : true,
     centerPadding: "60px",
     slidesToShow: 6,
     speed: 500,
@@ -245,14 +245,14 @@ const TorrentSlider = React.memo((props) => {
       {
         breakpoint: 1400,
         settings: {
-          infinite: torrents.length < 3 ? false : true,
+          infinite: torrents.length < 5 ? false : true,
           slidesToShow: 5,
         },
       },
       {
         breakpoint: 1200,
         settings: {
-          infinite: torrents.length < 3 ? false : true,
+          infinite: torrents.length < 4 ? false : true,
           slidesToShow: 4,
         },
       },
@@ -645,7 +645,7 @@ const RenderShowMore = (props) => {
                     style={{ flex: "1 0 30%", padding: 5 }}
                   >
                     <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>{el.languages}</div>
+                      <div style={{ padding: 3 }}>{el.language}</div>
                       <div style={{ padding: 3 }}>
                         <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
                           Quality:
@@ -707,28 +707,6 @@ const RenderShowMore = (props) => {
           ) : undefined}
         </div>
       )}
-
-      {/* {source && source.length ? (
-        <video
-          id="videoPlayer"
-          crossOrigin="anonymous"
-          controls
-          muted
-          preload="auto"
-          autoPlay
-        >
-          <source type="video/mp4" src={source} />
-          {track !== "" && (
-          <track
-            label="subtitles"
-            kind="subtitles"
-            srcLang="en"
-            src={track}
-          />
-        )}
-          <track kind="captions" default />
-        </video>
-      ) : undefined} */}
     </div>
   );
 };

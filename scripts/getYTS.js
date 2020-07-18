@@ -74,10 +74,8 @@ const getSubs = async (url) => {
                 .toUpperCase() +
               $el.find(".flag-cell .sub-lang").text().slice(1);
             if (
-              language === "Chinese" ||
               language === "French" ||
               language === "English" ||
-              language === "Japanese" ||
               language === "Spanish"
             ) {
               let rating = $el.find(".rating-cell").text();
@@ -109,6 +107,8 @@ const getSubs = async (url) => {
           finals.push({
             language: el.language,
             url: " https://www.yifysubtitles.com" + el.url,
+            downloaded: false,
+            path: null,
           });
         });
       }
@@ -137,8 +137,7 @@ const getMovieList = async (page, url) => {
           if (isDuplicate >= 0) {
             if (
               res.data.movies[i].torrents &&
-              res.data.movies[i].torrents.length &&
-              res.data.movies[i].torrents[0].seeds > 0
+              res.data.movies[i].torrents.length
             ) {
               res.data.movies[i].torrents.map((ele) => {
                 if (ele.seeds > 0) {
@@ -178,13 +177,11 @@ const getMovieList = async (page, url) => {
               });
             }
           } else if (
-            (res.data.movies[i].year > 1980 ||
+            (res.data.movies[i].year > 1990 ||
               (res.data.movies[i].year > 1950 &&
-                parseInt(res.data.movies[i].rating) > 8 &&
-                ytsInfos.movies.length < 5000)) &&
+                parseInt(res.data.movies[i].rating) > 7)) &&
             res.data.movies[i].torrents &&
-            res.data.movies[i].torrents.length &&
-            res.data.movies[i].torrents[0].seeds > 0
+            res.data.movies[i].torrents.length
           ) {
             let subs = [];
             if (
@@ -226,41 +223,39 @@ const getMovieList = async (page, url) => {
               subtitles: subs && subs.length ? subs : [],
               torrents: [],
             };
-            if (res.data.movies[i].torrents) {
-              res.data.movies[i].torrents.map((ele, i) => {
-                if (ele.seeds > 0) {
-                  infos.torrents.push({
-                    id: "yts_" + i,
-                    source: "yts",
-                    downloaded: false,
-                    path: null,
-                    downloaded_at: null,
-                    lastviewed_at: null,
-                    delete_at: null,
-                    hash: ele.hash,
-                    duration: res.data.movies[i].runtime
-                      ? res.data.movies[i].runtime
-                      : null,
-                    language: res.data.movies[i].language,
-                    subtitles: subs && subs.length ? subs : [],
-                    quality: ele.quality,
-                    seeds: ele.seeds,
-                    peers: ele.peers,
-                    url: res.data.movies[i].url,
-                    magnet:
-                      "magnet:?xt=urn:btih:" +
-                      ele.hash +
-                      "&dn=" +
-                      res.data.movies[i].title_long +
-                      "&tr=" +
-                      trackers.join("&tr="),
-                    torrent: ele.url,
-                    size: ele.size,
-                    format: getFormat(ele.type),
-                  });
-                }
-              });
-            }
+            res.data.movies[i].torrents.map((ele, i) => {
+              if (ele.seeds > 0) {
+                infos.torrents.push({
+                  id: "yts_" + i,
+                  source: "yts",
+                  downloaded: false,
+                  path: null,
+                  downloaded_at: null,
+                  lastviewed_at: null,
+                  delete_at: null,
+                  hash: ele.hash,
+                  duration: res.data.movies[i].runtime
+                    ? res.data.movies[i].runtime
+                    : null,
+                  language: res.data.movies[i].language,
+                  subtitles: subs && subs.length ? subs : [],
+                  quality: ele.quality,
+                  seeds: ele.seeds,
+                  peers: ele.peers,
+                  url: res.data.movies[i].url,
+                  magnet:
+                    "magnet:?xt=urn:btih:" +
+                    ele.hash +
+                    "&dn=" +
+                    res.data.movies[i].title_long +
+                    "&tr=" +
+                    trackers.join("&tr="),
+                  torrent: ele.url,
+                  size: ele.size,
+                  format: getFormat(ele.type),
+                });
+              }
+            });
             if (infos.torrents.length) {
               ytsInfos.movies.push(infos);
             }

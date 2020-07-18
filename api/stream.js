@@ -1,15 +1,13 @@
 const fs = require("fs");
 const pump = require("pump");
-const path = require("path");
+const https = require("https");
 const moment = require("moment");
-// const AdmZip = require("adm-zip");
-const request = require("request");
-const yauzl = require("yauzl");
 const express = require("express");
 const socket = require("./sockets");
 const pool = require("./../pool.js");
 const srt2vtt = require("srt-to-vtt");
 const ffmpeg = require("fluent-ffmpeg");
+const StreamZip = require("node-stream-zip");
 const torrentStream = require("torrent-stream");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
 
@@ -100,6 +98,43 @@ const updateTorrent = (torrent) => {
   });
 };
 
+const updateTorrentSubtitle = (movie, lang, path) => {
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT subtitles FROM torrents where id = $1;",
+      [movie],
+      (error, resultSelect) => {
+        if (error) {
+          reject(error);
+        }
+        if (resultSelect.rowCount) {
+          let subtitles = JSON.parse(resultSelect.rows[0].subtitles);
+          subtitles[lang].downloaded = true;
+          subtitles[lang].path = path;
+          pool.pool.query(
+            "UPDATE torrents SET subtitles = $1 WHERE id = $2;",
+            [JSON.stringify(subtitles), movie],
+            (error, results) => {
+              if (error) {
+                reject(error);
+              }
+              if (results.rowCount) {
+                resolve(true);
+              } else {
+                emmitToFront(false, `Error while saving subs, movie not found`);
+                resolve(false);
+              }
+            }
+          );
+        } else {
+          emmitToFront(false, `Error while saving subs, movie not found`);
+          resolve(false);
+        }
+      }
+    );
+  });
+};
+
 const getMovieInfos = (movie) => {
   return new Promise(function (resolve, reject) {
     pool.pool.query(
@@ -156,7 +191,7 @@ router.get("/", (req, res) => {
 
       if (!file) {
         emmitToFront(false, "This file format is not supported yet");
-        res.status(200);
+        res.sendStatus(200);
       }
 
       if (!dlFile) {
@@ -173,6 +208,8 @@ router.get("/", (req, res) => {
         name: stream._engine.torrent.name,
         identifier: hash,
         ext: ext,
+        parent_path:
+          "/src/assets/torrents/downloads/" + stream._engine.torrent.name + "/",
         path:
           "/src/assets/torrents/downloads/" +
           stream._engine.torrent.name +
@@ -255,86 +292,128 @@ router.get("/", (req, res) => {
     });
   } catch (e) {
     emmitToFront(false, `Error while streaming: ${e.message}`);
-    res.status(200);
+    res.sendStatus(200);
   }
 });
 
 router.get("/subs", async (req, res) => {
   try {
-    const { movie, torrent, url } = req.query;
-    const infos = await getMovieInfos(movie);
-    // check if this torrent is downloaded
-    // check if this track is downloaded
-    // get downloaded path or actual new path
-    // do the job
-    // console.log(infos);
+    const { movie, torrent, lang } = req.query;
+    let infos = await getMovieInfos(movie);
+    infos.movie.torrents = JSON.parse(infos.movie.torrents);
+    infos.movie.subtitles = JSON.parse(infos.movie.subtitles);
 
-    //     request(url)
-    //   .pipe(fs.createWriteStream(''))
-    //   .on('close', function () {
-    //     console.log('File written!');
-    //   });
+    const t = infos.movie.torrents.findIndex((e) => e.id === torrent);
+    const s = infos.movie.subtitles.findIndex((e) => e.language === lang);
 
-    //     request.get({ url: url, encoding: null }, (err, res, body) => {
-    //       yauzl.open(body, { lazyEntries: true }, (err, zipfile) => {
-    //         if (err) throw err;
-    //         zipfile.readEntry();
-    //         zipfile.on("entry", (entry) => {
-    //           const file = entry.find((el) =>
-    //             allowedExts.some((ext) => el.entryName.endsWith(ext))
-    //           );
-    //           console.log(file);
+    if (t === -1 || s === -1) {
+      emmitToFront(false, `Error while getting subs:`);
+      res.sendStatus(200);
+    }
 
-    //           // if (/\/$/.test(entry.fileName)) {
-    //           //   // Directory file names end with '/'.
-    //           //   // Note that entires for directories themselves are optional.
-    //           //   // An entry's fileName implicitly requires its parent directories to exist.
-    //           //   zipfile.readEntry();
-    //           // } else {
-    //           //   // file entry
-    //           //   zipfile.openReadStream(entry, (err, readStream) => {
-    //           //     if (err) throw err;
-    //           //     readStream.on("end", () => {
-    //           //       zipfile.readEntry();
-    //           //     });
-    //           //     readStream.pipe(somewhere);
-    //           //   });
-    //           // }
-    //         });
-    //       });
-    //     });
+    if (infos.movie.subtitles[s].downloaded) {
+      console.log("downloaded", infos.movie.subtitles[s].path);
+      if (infos.movie.subtitles[s].path) {
+        res.contentType("text/vtt");
+        return fs
+          .createReadStream(infos.movie.subtitles[s].path)
+          .pipe(srt2vtt())
+          .pipe(res);
+      } else {
+        emmitToFront(false, `${lang} subtitles not found`);
+        res.sendStatus(200);
+      }
+    } else {
+      let path;
+      if (infos.movie.torrents[t].downloaded) {
+        path =
+          "./client" +
+          infos.movie.torrents[t].path.substring(
+            0,
+            infos.movie.torrents[t].path.lastIndexOf("/")
+          ) +
+          "/";
+      } else {
+        path = "./client" + currentDownloads[movie + "_" + torrent].parent_path;
+      }
 
-    // request.get({ url: url, encoding: null }, (err, res, body) => {
-    //   const zip = new AdmZip(body);
-    //   const zipEntries = zip.getEntries();
-    //   const allowedExts = [".vtt", ".srt"];
+      let file_sub = null;
 
-    //   const file = zipEntries.find((el) =>
-    //     allowedExts.some((ext) => el.entryName.endsWith(ext))
-    //   );
+      let rq_subs = new Promise((resolve) => {
+        https.get(infos.movie.subtitles[s].url, (response) => {
+          const file = fs.createWriteStream(
+            path + movie + "_" + torrent + "_" + lang + ".zip"
+          );
+          response.pipe(file);
+          file.on("finish", () => {
+            file.close();
 
-    //   if (!file) {
-    //     emmitToFront(false, `This subtitle file is corrupted`);
-    //     res.status(200);
-    //   }
+            const zip = new StreamZip({
+              file: path + movie + "_" + torrent + "_" + lang + ".zip",
+              storeEntries: true,
+            });
 
-    //       zipEntries.forEach((entry) => {
-    //         if (entry.entryName.endsWith(ext))
-    //           console.log(zip.readAsText(entry));
-    //       }
-    //     const { subfile } = req.query
-    //     const files = status.torrents[0].name
-    //     const { downloadDir } = status.torrents[0]
-    //     const pathfile = path.join(downloadDir, files, subfile)
-    //     await fileExist(pathfile)
-    //     res.contentType('text/vtt')
-    //     return fs.createReadStream(pathfile)
-    //       .pipe(srt2vtt())
-    //       .pipe(res)
-    // });
+            zip.on("error", (err) => {
+              emmitToFront(false, `Error while unzipping subs: ${err}`);
+              res.sendStatus(200);
+            });
+
+            zip.on("ready", () => {
+              if (file_sub) {
+                zip.extract(file_sub.name, path + file_sub.name, (err) => {
+                  if (err) {
+                    emmitToFront(false, `Error while extracting subs: ${err}`);
+                    res.sendStatus(200);
+                  }
+                  zip.close();
+                  resolve(true);
+                });
+              } else {
+                emmitToFront(false, `Subs format not working, sorry`);
+                res.sendStatus(200);
+              }
+            });
+
+            zip.on("entry", (entry) => {
+              if (entry.name.endsWith(".srt")) {
+                file_sub = entry;
+              }
+            });
+          });
+
+          response.on("error", (err) => {
+            fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+            emmitToFront(false, `Error while saving subs archive: ${err}`);
+            res.sendStatus(200);
+          });
+        });
+      });
+
+      rq_subs
+        .then((response) => {
+          if (response) {
+            fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+
+            if (updateTorrentSubtitle(movie, s, path + file_sub.name)) {
+              emmitToFront(true, `${lang} subtitles downloaded`);
+              res.contentType("text/vtt");
+              return fs
+                .createReadStream(path + file_sub.name)
+                .pipe(srt2vtt())
+                .pipe(res);
+            } else {
+              emmitToFront(false, `Error while saving subs state`);
+            }
+          }
+        })
+        .catch((err) => {
+          emmitToFront(false, `Error while unlinking archive: ${err}`);
+          res.sendStatus(200);
+        });
+    }
   } catch (e) {
     emmitToFront(false, `Error while getting subs: ${e.message}`);
-    res.status(200);
+    res.sendStatus(200);
   }
 });
 

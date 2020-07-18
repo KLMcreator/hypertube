@@ -73,7 +73,6 @@ const Watch = (props) => {
   const ref = useRef(false);
   const { classes } = props;
   const history = useHistory();
-  const [sub, setSub] = useState(false);
   const [limit, setLimit] = useState(10);
   const [source, setSource] = useState(false);
   const [comments, setComments] = useState([]);
@@ -191,10 +190,6 @@ const Watch = (props) => {
   };
 
   useEffect(() => {
-    console.log(
-      props.props.location.state.movie,
-      props.props.location.state.torrent
-    );
     ref.current = true;
     if (
       !props.props.location.state.movie ||
@@ -234,17 +229,17 @@ const Watch = (props) => {
           autoPlay
         >
           <source type="video/mp4" src={source} />
+          <track kind="off" default />
           {subs && subs.length
             ? subs.map((e) => (
                 <track
                   key={e.language}
                   label={e.language}
                   kind="subtitles"
-                  src={`http://localhost:3000/stream/subs?movie=${movie.id}&torrent=${torrent.id}&url=${e.url}`}
+                  src={`http://localhost:3000/stream/subs?movie=${movie.id}&torrent=${torrent.id}&lang=${e.language}`}
                 />
               ))
             : undefined}
-          <track kind="off" default />
         </video>
       ) : undefined}
       <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
@@ -252,7 +247,8 @@ const Watch = (props) => {
           ({movie.production_year})
         </span>{" "}
         <span style={{ fontSize: 20, color: "#EFF1F3" }}>
-          {movie.title} - {movie.rating}
+          {movie.title} - {torrent.quality} - {torrent.language} -{" "}
+          {movie.rating}
         </span>{" "}
         <StarRateIcon
           style={{

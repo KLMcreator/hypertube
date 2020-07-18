@@ -234,7 +234,13 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 0
+            ) > 0 &&
+            movies[el].children[0].next.children[1].next.children[0].data
+              .toLowerCase()
+              .indexOf("(trilogie)") === -1 &&
+            movies[el].children[0].next.children[1].next.children[0].data
+              .toLowerCase()
+              .indexOf("(integrale)") === -1
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
@@ -246,7 +252,7 @@ const getMovieList = async (url) => {
               delete_at: null,
               hash: null,
               duration: null,
-              languages: language,
+              language: language,
               subtitles: subtitles ? [subtitles] : [],
               quality: quality,
               seeds: parseInt(
@@ -271,7 +277,13 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 0
+            ) > 0 &&
+            movies[el].children[0].next.children[1].next.children[0].data
+              .toLowerCase()
+              .indexOf("(trilogie)") === -1 &&
+            movies[el].children[0].next.children[1].next.children[0].data
+              .toLowerCase()
+              .indexOf("(integrale)") === -1
           ) {
             torrent9Infos.movies.push({
               yts_id: null,
@@ -303,7 +315,7 @@ const getMovieList = async (url) => {
                   delete_at: null,
                   hash: null,
                   duration: null,
-                  languages: language,
+                  language: language,
                   subtitles: subtitles ? [subtitles] : [],
                   quality: quality,
                   seeds: parseInt(
@@ -416,7 +428,7 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 60 === 0) {
+    if (i && i % 80 === 0) {
       console.log(
         i,
         "movies done on",
