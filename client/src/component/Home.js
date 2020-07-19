@@ -224,7 +224,7 @@ const RenderTorrent = (props) => {
 };
 
 const TorrentSlider = React.memo((props) => {
-  const { torrents } = props;
+  const { torrents, isRandom, category } = props;
   const [sortBy, setSortBy] = useState({
     label: "ASC. NAME",
     value: "ascname",
@@ -234,9 +234,9 @@ const TorrentSlider = React.memo((props) => {
     arrows: false,
     className: "center",
     centerMode: true,
-    infinite: torrents.length < 6 ? false : true,
+    infinite: torrents.length < 7 ? false : true,
     centerPadding: "60px",
-    slidesToShow: 6,
+    slidesToShow: 7,
     speed: 500,
     swipeToSlide: true,
     focusOnSelect: true,
@@ -265,13 +265,6 @@ const TorrentSlider = React.memo((props) => {
       },
       {
         breakpoint: 600,
-        settings: {
-          infinite: torrents.length < 2 ? false : true,
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 480,
         settings: {
           infinite: torrents.length < 1 ? false : true,
           slidesToShow: 1,
@@ -342,38 +335,61 @@ const TorrentSlider = React.memo((props) => {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          marginLeft: 70,
-          marginRight: 70,
-          marginBottom: 10,
-        }}
-      >
+      {!isRandom ? (
         <div
           style={{
-            flex: 3,
-            textAlign: "left",
-            alignSelf: "center",
-            fontWeight: "bold",
+            display: "flex",
+            marginLeft: 70,
+            marginRight: 70,
+            marginBottom: 10,
           }}
         >
-          AVAILABLE TORRENTS
+          <div
+            style={{
+              flex: 3,
+              textAlign: "left",
+              alignSelf: "center",
+              fontWeight: "bold",
+            }}
+          >
+            AVAILABLE TORRENTS
+          </div>
+          <div style={{ flex: 1, textAlign: "right" }}>
+            <Select
+              value={sortBy}
+              styles={selectStyles}
+              filterOption={createFilter({
+                ignoreAccents: false,
+              })}
+              options={sortOptions}
+              key={"sortList"}
+              onChange={handleSortList}
+              placeholder={"SORT BY: " + sortBy.label}
+            />
+          </div>
         </div>
-        <div style={{ flex: 1, textAlign: "right" }}>
-          <Select
-            value={sortBy}
-            styles={selectStyles}
-            filterOption={createFilter({
-              ignoreAccents: false,
-            })}
-            options={sortOptions}
-            key={"sortList"}
-            onChange={handleSortList}
-            placeholder={"SORT BY: " + sortBy.label}
-          />
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            marginLeft: 70,
+            marginRight: 70,
+            marginTop: 20,
+          }}
+        >
+          <div
+            style={{
+              flex: 3,
+              textAlign: "left",
+              alignSelf: "center",
+              fontWeight: "bold",
+              fontSize: 20,
+            }}
+          >
+            {category.toUpperCase()}
+          </div>
         </div>
-      </div>
+      )}
       <Slider {...sliderSettings}>
         {torrents.map((el) => (
           <Torrent key={el.id} torrent={el} setShowMore={props.setShowMore} />
@@ -418,36 +434,36 @@ const RenderShowMore = (props) => {
         <Tab label="INFORMATIONS" id="INFO_TAB" />
         <Tab label="TORRENTS" id="TORRENT_TAB" />
       </Tabs>
+      <div style={{ display: "flex", textAlign: "left" }}>
+        <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
+          <span style={{ fontSize: 20, color: "#D0D0D0" }}>
+            ({torrent.production_year})
+          </span>{" "}
+          <span style={{ fontSize: 20, color: "#EFF1F3" }}>
+            {torrent.title} - {torrent.rating}
+          </span>{" "}
+          <StarRateIcon
+            style={{
+              fontSize: 30,
+              color: "#FBBA72",
+              verticalAlign: "middle",
+            }}
+          ></StarRateIcon>
+        </div>
+        <div style={{ flex: 1, textAlign: "right" }}>
+          <IconButton onClick={() => props.setShowMore(false)}>
+            <CloseIcon
+              style={{
+                fontSize: 25,
+                color: "#fff",
+                verticalAlign: "middle",
+              }}
+            />
+          </IconButton>
+        </div>
+      </div>
       {selectedTab === 0 ? (
         <div style={{ padding: 10 }}>
-          <div style={{ display: "flex", textAlign: "left" }}>
-            <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
-              <span style={{ fontSize: 20, color: "#D0D0D0" }}>
-                ({torrent.production_year})
-              </span>{" "}
-              <span style={{ fontSize: 20, color: "#EFF1F3" }}>
-                {torrent.title} - {torrent.rating}
-              </span>{" "}
-              <StarRateIcon
-                style={{
-                  fontSize: 30,
-                  color: "#FBBA72",
-                  verticalAlign: "middle",
-                }}
-              ></StarRateIcon>
-            </div>
-            <div style={{ flex: 1, textAlign: "right" }}>
-              <IconButton onClick={() => props.setShowMore(false)}>
-                <CloseIcon
-                  style={{
-                    fontSize: 25,
-                    color: "#fff",
-                    verticalAlign: "middle",
-                  }}
-                />
-              </IconButton>
-            </div>
-          </div>
           <div style={{ display: "flex", textAlign: "left" }}>
             {summaries ? (
               <div style={{ flex: 2, color: "#D0D0D0", marginRight: 10 }}>
@@ -713,21 +729,60 @@ const RenderShowMore = (props) => {
 
 const RenderTorrents = (props) => {
   const [showMore, setShowMore] = useState(false);
+  const [showMoreBis, setShowMoreBis] = useState(false);
 
-  let { torrents } = props;
-  const { classes } = props;
+  const {
+    classes,
+    isRandom,
+    torrents,
+    randomTorrents,
+    randomCategories,
+  } = props;
   const history = useHistory();
   const ShowMore = RenderShowMore;
 
   return (
     <div>
       <div className={classes.torrentContainer}>
-        <TorrentSlider torrents={torrents} setShowMore={setShowMore} />
-        <ShowMore
-          history={history}
-          setShowMore={setShowMore}
-          showMore={showMore}
-        />
+        {isRandom ? (
+          <div>
+            <TorrentSlider
+              torrents={torrents}
+              isRandom={isRandom}
+              setShowMore={setShowMore}
+              category={randomCategories[0]}
+            />
+            <ShowMore
+              history={history}
+              showMore={showMore}
+              setShowMore={setShowMore}
+            />
+            <TorrentSlider
+              isRandom={isRandom}
+              torrents={randomTorrents}
+              setShowMore={setShowMoreBis}
+              category={randomCategories[1]}
+            />
+            <ShowMore
+              history={history}
+              showMore={showMoreBis}
+              setShowMore={setShowMoreBis}
+            />
+          </div>
+        ) : (
+          <div>
+            <TorrentSlider
+              torrents={torrents}
+              isRandom={isRandom}
+              setShowMore={setShowMore}
+            />
+            <ShowMore
+              history={history}
+              setShowMore={setShowMore}
+              showMore={showMore}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -947,8 +1002,10 @@ const Home = (props) => {
   const [filters, setFilters] = useState({});
   const [torrents, setTorrents] = useState([]);
   const [settings, setSettings] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
   const [isRandom, setIsRandom] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [randomCategories, setRandomCategories] = useState([]);
+  const [randomTorrents, setRandomTorrents] = useState([]);
   const Torrents = withStyles(TorrentContainerStyles)(RenderTorrents);
   const SearchBar = withStyles(SearchBarStyles)(RenderSearchBar);
 
@@ -1034,8 +1091,10 @@ const Home = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (ref.current) {
-          if (res.torrents.torrents) {
+          if (res.torrents.torrents && res.torrents.randomTorrents) {
             setTorrents(res.torrents);
+            setRandomTorrents(res.torrents.randomTorrents);
+            setRandomCategories(res.torrents.categories);
             if (!reset) {
               getTorrentSettings();
             }
@@ -1167,10 +1226,20 @@ const Home = (props) => {
         handleResetSearch={handleResetSearch}
         handleSearchTorrent={handleSearchTorrent}
       />
-      {torrents.torrents.length ? (
-        <div>
-          <Torrents torrents={torrents.torrents} />
-        </div>
+      {isRandom && randomTorrents.length && torrents.torrents.length ? (
+        <Torrents
+          torrents={torrents.torrents}
+          randomTorrents={randomTorrents}
+          randomCategories={randomCategories}
+          isRandom={isRandom}
+        />
+      ) : torrents.torrents.length ? (
+        <Torrents
+          torrents={torrents.torrents}
+          randomTorrents={randomTorrents}
+          randomCategories={randomCategories}
+          isRandom={isRandom}
+        />
       ) : (
         <div className={classes.loading}>
           <div style={{ color: "#9A1300", fontSize: 30 }}>:(</div>

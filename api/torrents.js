@@ -88,29 +88,95 @@ const getQueryTorrents = (request, response) => {
 
 const getRandomTorrents = (request, response) => {
   return new Promise(function (resolve, reject) {
-    pool.pool.query("SELECT COUNT (id) FROM torrents;", (error, results) => {
-      if (error) {
-        reject(error);
-      }
-      if (results.rowCount) {
-        pool.pool.query(
-          "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, duration, subtitles FROM torrents OFFSET (SELECT floor(random() * (SELECT count(id) FROM torrents) + 1)::int) LIMIT 15;",
-          (error, results) => {
-            if (error) {
-              reject(error);
+    pool.pool.query(
+      "SELECT * FROM (SELECT json_array_elements(categories::json)->>'label' as category FROM settings) as parseCategories ORDER BY random() LIMIT 2;",
+      (error, resRandomCategories) => {
+        if (error) {
+          resolve({
+            msg: error,
+          });
+        }
+        if (resRandomCategories.rowCount === 2) {
+          let query = `%${resRandomCategories.rows[0].category}%`;
+          pool.pool.query(
+            "SELECT * FROM torrents WHERE categories::text ILIKE $1 ORDER BY random() LIMIT 15;",
+            [query],
+            (error, resultsFirstList) => {
+              if (error) {
+                resolve({
+                  msg: error,
+                });
+              }
+              if (resultsFirstList.rowCount) {
+                query = `%${resRandomCategories.rows[1].category}%`;
+                pool.pool.query(
+                  "SELECT * FROM torrents WHERE categories::text ILIKE $1 ORDER BY random() LIMIT 15;",
+                  [query],
+                  (error, resultsSecondList) => {
+                    if (error) {
+                      resolve({
+                        msg: error,
+                      });
+                    }
+                    if (resultsSecondList.rowCount) {
+                      resolve({
+                        torrents: resultsFirstList.rows,
+                        randomTorrents: resultsSecondList.rows,
+                        categories: [
+                          resRandomCategories.rows[0].category,
+                          resRandomCategories.rows[1].category,
+                        ],
+                      });
+                    } else {
+                      resolve({
+                        msg:
+                          "Error while fetching torrents from second random category",
+                      });
+                    }
+                  }
+                );
+              } else {
+                resolve({
+                  msg:
+                    "Error while fetching torrents from first random category",
+                });
+              }
             }
-            if (results.rowCount) {
-              resolve({ torrents: results.rows });
-            } else {
-              resolve({ msg: "Error while fetching total torrents" });
-            }
-          }
-        );
-      } else {
-        resolve({ msg: "Error while fetching total torrents" });
+          );
+        } else {
+          resolve({ msg: "Error while fetching random categories" });
+        }
       }
-    });
+    );
   });
+
+  //   return new Promise(function (resolve, reject) {
+  //     pool.pool.query("SELECT COUNT (id) FROM torrents;", (error, results) => {
+  //       if (error) {
+  //         reject(error);
+  //       }
+  //       if (results.rowCount) {
+  //         pool.pool.query(
+  //           "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, duration, subtitles FROM torrents OFFSET (SELECT floor(random() * (SELECT count(id) FROM torrents) + 1)::int) LIMIT 15;",
+  //           (error, results) => {
+  //             if (error) {
+  //               reject(error);
+  //             }
+  //             if (results.rowCount) {
+  //               resolve({
+  //                 torrents: results.rows,
+  //                 randomTorrents: results.rows,
+  //               });
+  //             } else {
+  //               resolve({ msg: "Error while fetching total torrents" });
+  //             }
+  //           }
+  //         );
+  //       } else {
+  //         resolve({ msg: "Error while fetching total torrents" });
+  //       }
+  //     });
+  //   });
 };
 
 const getTorrentSettings = (request, response) => {
