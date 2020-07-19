@@ -212,9 +212,9 @@ router.get("/", (req, res) => {
           "/src/assets/torrents/downloads/" + stream._engine.torrent.name + "/",
         path:
           "/src/assets/torrents/downloads/" +
-          stream._engine.torrent.name +
-          "/" +
-          file.name,
+          (stream._engine.torrent.name === file.name
+            ? file.name
+            : stream._engine.torrent.name + "/" + file.name),
         downloaded_at: moment().toString(),
         lastviewed_at: moment().toString(),
         delete_at: moment(moment()).add(1, "M").toString(),
@@ -287,9 +287,42 @@ router.get("/", (req, res) => {
     });
 
     engine.on("idle", () => {
-      emmitToFront(true, `Download finished: ${currentDownloads[hash].name}`);
-      if (updateTorrent(currentDownloads[hash])) currentDownloads[hash] = null;
+      if (currentDownloads[hash] && currentDownloads[hash].name) {
+        emmitToFront(true, `Download finished: ${currentDownloads[hash].name}`);
+        if (updateTorrent(currentDownloads[hash]))
+          delete currentDownloads[hash];
+      }
     });
+  } catch (e) {
+    emmitToFront(false, `Error while streaming: ${e.message}`);
+    res.sendStatus(200);
+  }
+});
+
+router.get("/pump", (req, res) => {
+  const { path } = req.query;
+  try {
+    const ext = path.substring(path.lastIndexOf(".") + 1, path.length);
+    const stream = fs.createReadStream("./client" + path);
+
+    if (ext === "mp4" || ext === "mkv") {
+      pump(stream, res);
+    } else {
+      ffmpeg()
+        .input(stream)
+        .outputOptions("-movflags frag_keyframe+empty_moov")
+        .outputFormat("mp4")
+        .on("error", (err) => {
+          emmitToFront(false, `Error while converting file: ${err.message}`);
+        })
+        .inputFormat(ext)
+        .audioCodec("aac")
+        .videoCodec("libx264")
+        .pipe(res);
+      res.on("close", () => {
+        stream.destroy();
+      });
+    }
   } catch (e) {
     emmitToFront(false, `Error while streaming: ${e.message}`);
     res.sendStatus(200);

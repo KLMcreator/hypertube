@@ -164,7 +164,7 @@ const TorrentStyles = (theme) => ({
 
 const RenderTorrent = (props) => {
   const [hover, setHover] = useState(false);
-  const { torrent, classes } = props;
+  const { torrent, classes, isRandom } = props;
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
   const subtitles =
@@ -184,6 +184,7 @@ const RenderTorrent = (props) => {
           categories: categories,
           subtitles: subtitles,
         });
+        if (isRandom) props.setShowMoreBis(false);
       }}
     >
       <img
@@ -392,7 +393,13 @@ const TorrentSlider = React.memo((props) => {
       )}
       <Slider {...sliderSettings}>
         {torrents.map((el) => (
-          <Torrent key={el.id} torrent={el} setShowMore={props.setShowMore} />
+          <Torrent
+            key={el.id}
+            torrent={el}
+            isRandom={isRandom}
+            setShowMore={props.setShowMore}
+            setShowMoreBis={props.setShowMoreBis}
+          />
         ))}
       </Slider>
     </div>
@@ -436,15 +443,15 @@ const RenderShowMore = (props) => {
       </Tabs>
       <div style={{ display: "flex", textAlign: "left" }}>
         <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
-          <span style={{ fontSize: 20, color: "#D0D0D0" }}>
+          <span style={{ fontSize: 18, color: "#D0D0D0" }}>
             ({torrent.production_year})
           </span>{" "}
-          <span style={{ fontSize: 20, color: "#EFF1F3" }}>
+          <span style={{ fontSize: 18, color: "#EFF1F3" }}>
             {torrent.title} - {torrent.rating}
           </span>{" "}
           <StarRateIcon
             style={{
-              fontSize: 30,
+              fontSize: 28,
               color: "#FBBA72",
               verticalAlign: "middle",
             }}
@@ -566,7 +573,7 @@ const RenderShowMore = (props) => {
           {yts_torrents.length ? (
             <div>
               <div>
-                <span style={{ fontWeight: "bold", fontSize: 20 }}>YTS</span>
+                <span style={{ fontWeight: "bold", fontSize: 16 }}>YTS</span>
                 <FiberManualRecordIcon
                   style={{
                     color: torrent.yts_url ? "#0CCA4A" : "#E63946",
@@ -644,7 +651,7 @@ const RenderShowMore = (props) => {
           {t9_torrents.length ? (
             <div>
               <div>
-                <span style={{ fontWeight: "bold", fontSize: 20 }}>
+                <span style={{ fontWeight: "bold", fontSize: 16 }}>
                   Torrent9
                 </span>
                 <FiberManualRecordIcon
@@ -707,8 +714,8 @@ const RenderShowMore = (props) => {
                           }}
                           onClick={() =>
                             history.push({
-                              pathname: `/Watch?movie=${torrent.id}&torrent=${el.id}&magnet=${el.magnet}`,
-                              state: { id: torrent.id },
+                              pathname: `/Watch`,
+                              state: { movie: torrent, torrent: el },
                             })
                           }
                         >
@@ -750,6 +757,7 @@ const RenderTorrents = (props) => {
               torrents={torrents}
               isRandom={isRandom}
               setShowMore={setShowMore}
+              setShowMoreBis={setShowMoreBis}
               category={randomCategories[0]}
             />
             <ShowMore
@@ -761,6 +769,7 @@ const RenderTorrents = (props) => {
               isRandom={isRandom}
               torrents={randomTorrents}
               setShowMore={setShowMoreBis}
+              setShowMoreBis={setShowMore}
               category={randomCategories[1]}
             />
             <ShowMore

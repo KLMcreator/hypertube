@@ -73,14 +73,15 @@ const Watch = (props) => {
   const ref = useRef(false);
   const { classes } = props;
   const history = useHistory();
+  const [subs, setSubs] = useState([]);
   const [limit, setLimit] = useState(10);
+  const [movie, setMovie] = useState([]);
   const [source, setSource] = useState(false);
   const [comments, setComments] = useState([]);
+  const [torrent, setTorrent] = useState([]);
   const [loggedId, setLoggedId] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
-  const { movie, torrent } = props.props.location.state;
-  const subs = movie.subtitles ? JSON.parse(movie.subtitles) : [];
 
   const checkIfLogged = () => {
     fetch("/api/checkToken")
@@ -91,46 +92,6 @@ const Watch = (props) => {
         }
         setIsLoading(false);
       });
-  };
-
-  const getComments = (loadMore) => {
-    fetch("/api/comments/torrent", {
-      method: "POST",
-      body: JSON.stringify({
-        id: movie.id,
-        limit: loadMore ? loadMore : limit,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (ref.current) {
-          if (res.comments.comments) {
-            if (loadMore) {
-              setLimit(limit + 10);
-            } else {
-              if (props.props.location.state.torrent.downloaded) {
-                setSource(
-                  `http://localhost:3000${props.props.location.state.torrent.path}`
-                );
-              } else {
-                setSource(
-                  `http://localhost:3000/stream?movie=${movie.id}&torrent=${torrent.id}&magnet=${torrent.magnet}`
-                );
-              }
-            }
-            setComments(res.comments.comments);
-            checkIfLogged();
-          } else if (res.comments.msg) {
-            props.auth.errorMessage(res.comments.msg);
-          } else {
-            props.auth.errorMessage("Error while fetching database.");
-          }
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
   };
 
   const handleSendComment = (e) => {
@@ -189,6 +150,93 @@ const Watch = (props) => {
     }
   };
 
+  const getComments = (loadMore, mv, tr) => {
+    fetch("/api/comments/torrent", {
+      method: "POST",
+      body: JSON.stringify({
+        id: mv.id,
+        limit: loadMore ? loadMore : limit,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (ref.current) {
+          if (res.comments.comments) {
+            if (loadMore) {
+              setLimit(limit + 10);
+            } else {
+              if (tr.downloaded) {
+                if (tr.path.endsWith(".mp4") || tr.path.endsWith(".webm")) {
+                  setSource(`http://localhost:3000${tr.path}`);
+                } else {
+                  setSource(
+                    `http://localhost:3000/stream/pump?path=${tr.path}`
+                  );
+                }
+              } else {
+                setSource(
+                  `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}`
+                );
+              }
+            }
+            setComments(res.comments.comments);
+            checkIfLogged();
+          } else if (res.comments.msg) {
+            props.auth.errorMessage(res.comments.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
+  const getTorrentsInfos = () => {
+    fetch("/api/torrents/info", {
+      method: "POST",
+      body: JSON.stringify({
+        id: props.props.location.state.movie.id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (ref.current) {
+          if (
+            res.torrents.torrents &&
+            res.torrents.torrents.length &&
+            res.torrents.torrents[0]
+          ) {
+            if (
+              res.torrents.torrents[0].subtitles &&
+              res.torrents.torrents[0].subtitles.length
+            )
+              setSubs(JSON.parse(res.torrents.torrents[0].subtitles));
+            setMovie(res.torrents.torrents[0]);
+            let selectedTorrent = JSON.parse(res.torrents.torrents[0].torrents);
+            selectedTorrent =
+              selectedTorrent[
+                selectedTorrent.findIndex(
+                  (e) => e.id === props.props.location.state.torrent.id
+                )
+              ];
+            setTorrent(selectedTorrent);
+            getComments(false, res.torrents.torrents[0], selectedTorrent);
+          } else if (res.comments.msg) {
+            props.auth.errorMessage(res.comments.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   useEffect(() => {
     ref.current = true;
     if (
@@ -200,7 +248,7 @@ const Watch = (props) => {
         pathname: "/",
       });
     }
-    getComments();
+    getTorrentsInfos();
     return () => {
       ref.current = false;
       setIsLoading(true);
