@@ -329,10 +329,10 @@ router.get("/pump", (req, res) => {
   }
 });
 
-router.get("/subs", async (req, res) => {
+router.get("/subs", (req, res) => {
   try {
     const { movie, torrent, lang } = req.query;
-    let infos = await getMovieInfos(movie);
+    let infos = getMovieInfos(movie);
     infos.movie.torrents = JSON.parse(infos.movie.torrents);
     infos.movie.subtitles = JSON.parse(infos.movie.subtitles);
 
