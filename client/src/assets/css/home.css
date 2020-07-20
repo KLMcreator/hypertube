@@ -1,0 +1,11 @@
+.react-select__menu-list {
+  border: 1px solid #373737;
+}
+
+.react-select__option {
+  border-bottom: 1px solid #373737;
+}
+
+.react-select__option:hover {
+  cursor: pointer;
+}

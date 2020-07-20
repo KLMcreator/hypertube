@@ -22,6 +22,7 @@ import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import Slider from "react-slick";
 import "../../node_modules/slick-carousel/slick/slick.css";
 import "../../node_modules/slick-carousel/slick/slick-theme.css";
+import "./../assets/css/home.css";
 
 const HomeStyles = (theme) => ({
   root: {
@@ -162,6 +163,97 @@ const TorrentStyles = (theme) => ({
   },
 });
 
+const showMoreStyles = (theme) => ({
+  container: {
+    backgroundColor: "#1a1a1a",
+    boxShadow: "none",
+    border: "0.5px solid rgba(41, 41, 41, .5)",
+    marginLeft: 30,
+    marginRight: 30,
+    marginBottom: 30,
+  },
+  titleAndLeftInfo: {
+    display: "flex",
+    textAlign: "left",
+  },
+  title: {
+    paddingLeft: 5,
+    flex: 3,
+    alignSelf: "center",
+    fontWeight: "bold",
+  },
+  titleText: {
+    fontSize: 18,
+    color: "#D0D0D0",
+  },
+  titleYear: {
+    fontSize: 18,
+    color: "#EFF1F3",
+  },
+  titleStar: {
+    fontSize: 28,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
+  closeButton: {
+    flex: 1,
+    textAlign: "right",
+  },
+  titleClose: {
+    fontSize: 25,
+    color: "#fff",
+    verticalAlign: "middle",
+  },
+  torrentInfos: {
+    padding: 10,
+  },
+  torrentSummary: {
+    flex: 2,
+    color: "#D0D0D0",
+    marginRight: 10,
+  },
+  rightInfo: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  boldInfo: {
+    color: "#EFF1F3",
+    fontWeight: "bold",
+  },
+  contentInfo: {
+    color: "#D0D0D0",
+  },
+  torrentTab: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingRight: 10,
+    paddingLeft: 10,
+  },
+  torrentTabTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  sourceContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
+  source: {
+    flex: "1 0 30%",
+    padding: 5,
+  },
+  sourceSection: {
+    display: "flex",
+    justifyContent: "center",
+  },
+  sourceContent: {
+    padding: 3,
+  },
+  sourceWatch: {
+    color: "#FBBA72",
+    border: "1px solid #FBBA72",
+  },
+});
+
 const RenderTorrent = (props) => {
   const [hover, setHover] = useState(false);
   const { torrent, classes, isRandom } = props;
@@ -235,7 +327,7 @@ const TorrentSlider = React.memo((props) => {
     arrows: false,
     className: "center",
     centerMode: true,
-    infinite: torrents.length < 7 ? false : true,
+    infinite: torrents.length < 7 || !isRandom ? false : true,
     centerPadding: "60px",
     slidesToShow: 7,
     speed: 500,
@@ -246,44 +338,32 @@ const TorrentSlider = React.memo((props) => {
       {
         breakpoint: 1400,
         settings: {
-          infinite: torrents.length < 5 ? false : true,
+          infinite: torrents.length < 5 || !isRandom ? false : true,
           slidesToShow: 5,
         },
       },
       {
         breakpoint: 1200,
         settings: {
-          infinite: torrents.length < 4 ? false : true,
+          infinite: torrents.length < 4 || !isRandom ? false : true,
           slidesToShow: 4,
         },
       },
       {
         breakpoint: 1024,
         settings: {
-          infinite: torrents.length < 3 ? false : true,
+          infinite: torrents.length < 3 || !isRandom ? false : true,
           slidesToShow: 3,
         },
       },
       {
         breakpoint: 600,
         settings: {
-          infinite: torrents.length < 1 ? false : true,
+          infinite: torrents.length < 1 || !isRandom ? false : true,
           slidesToShow: 1,
         },
       },
     ],
-  };
-
-  const selectStyles = {
-    option: (provided) => ({
-      ...provided,
-      borderBottom: "1px solid #EFF1F3",
-      color: "#111",
-      padding: 10,
-      "&:hover": {
-        cursor: "pointer",
-      },
-    }),
   };
 
   const sortOptions = [
@@ -358,7 +438,31 @@ const TorrentSlider = React.memo((props) => {
           <div style={{ flex: 1, textAlign: "right" }}>
             <Select
               value={sortBy}
-              styles={selectStyles}
+              className="react-select-container"
+              classNamePrefix="react-select"
+              theme={(theme) => ({
+                ...theme,
+                colors: {
+                  ...theme.colors,
+                  primary: "#EFF1F3",
+                  primary75: "red",
+                  primary50: "#FBBA72",
+                  primary25: "#9A1300",
+                  danger: "yellow",
+                  dangerLight: "#FBBA72",
+                  neutral0: "#1A1A1A",
+                  neutral5: "pink",
+                  neutral10: "#9A1300",
+                  neutral20: "#373737",
+                  neutral30: "#9A1300",
+                  neutral40: "#FBBA72",
+                  neutral50: "#EFF1F3",
+                  neutral60: "#FBBA72",
+                  neutral70: "yellow",
+                  neutral80: "#EFF1F3",
+                  neutral90: "#EFF1F3",
+                },
+              })}
               filterOption={createFilter({
                 ignoreAccents: false,
               })}
@@ -411,7 +515,7 @@ const RenderShowMore = (props) => {
 
   if (!props.showMore) return <></>;
 
-  const { history } = props;
+  const { history, classes } = props;
   const { torrent, subtitles, languages, categories } = props.showMore;
   const t9_torrents = JSON.parse(torrent.torrents).filter(
     (el) => el.source === "torrent9"
@@ -423,16 +527,7 @@ const RenderShowMore = (props) => {
   const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
 
   return (
-    <div
-      style={{
-        backgroundColor: "#1a1a1a",
-        boxShadow: "none",
-        border: "0.5px solid rgba(41, 41, 41, .5)",
-        marginLeft: 30,
-        marginRight: 30,
-        marginBottom: 30,
-      }}
-    >
+    <div className={classes.container}>
       <Tabs
         value={selectedTab}
         onChange={(e, v) => setSelectedTab(v)}
@@ -441,48 +536,30 @@ const RenderShowMore = (props) => {
         <Tab label="INFORMATIONS" id="INFO_TAB" />
         <Tab label="TORRENTS" id="TORRENT_TAB" />
       </Tabs>
-      <div style={{ display: "flex", textAlign: "left" }}>
-        <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
-          <span style={{ fontSize: 18, color: "#D0D0D0" }}>
-            ({torrent.production_year})
-          </span>{" "}
-          <span style={{ fontSize: 18, color: "#EFF1F3" }}>
+      <div className={classes.titleAndLeftInfo}>
+        <div className={classes.title}>
+          <span className={classes.titleText}>({torrent.production_year})</span>{" "}
+          <span className={classes.titleYear}>
             {torrent.title} - {torrent.rating}
-          </span>{" "}
-          <StarRateIcon
-            style={{
-              fontSize: 28,
-              color: "#FBBA72",
-              verticalAlign: "middle",
-            }}
-          ></StarRateIcon>
+          </span>
+          <StarRateIcon className={classes.titleStar}></StarRateIcon>
         </div>
-        <div style={{ flex: 1, textAlign: "right" }}>
+        <div className={classes.closeButton}>
           <IconButton onClick={() => props.setShowMore(false)}>
-            <CloseIcon
-              style={{
-                fontSize: 25,
-                color: "#fff",
-                verticalAlign: "middle",
-              }}
-            />
+            <CloseIcon className={classes.titleClose} />
           </IconButton>
         </div>
       </div>
       {selectedTab === 0 ? (
-        <div style={{ padding: 10 }}>
-          <div style={{ display: "flex", textAlign: "left" }}>
+        <div className={classes.torrentInfos}>
+          <div className={classes.titleAndLeftInfo}>
             {summaries ? (
-              <div style={{ flex: 2, color: "#D0D0D0", marginRight: 10 }}>
-                {summaries}
-              </div>
+              <div className={classes.torrentSummary}>{summaries}</div>
             ) : undefined}
-            <div style={{ flex: 1, marginLeft: 10 }}>
+            <div className={classes.rightInfo}>
               <div>
-                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                  Categories:
-                </span>{" "}
-                <span style={{ color: "#D0D0D0" }}>
+                <span className={classes.boldInfo}>Categories:</span>{" "}
+                <span className={classes.contentInfo}>
                   {categories.length
                     ? categories.map((el, i) =>
                         i < categories.length - 1 ? el + " / " : el
@@ -491,10 +568,8 @@ const RenderShowMore = (props) => {
                 </span>
               </div>
               <div>
-                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                  Languages:
-                </span>{" "}
-                <span style={{ color: "#D0D0D0" }}>
+                <span className={classes.boldInfo}>Languages:</span>{" "}
+                <span className={classes.contentInfo}>
                   {languages.length
                     ? languages.map((el, i) =>
                         i < languages.length - 1 ? el + " / " : el
@@ -504,10 +579,8 @@ const RenderShowMore = (props) => {
               </div>
               {subtitles && subtitles.length ? (
                 <div>
-                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                    Subtitles:
-                  </span>{" "}
-                  <span style={{ color: "#D0D0D0" }}>
+                  <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                  <span className={classes.contentInfo}>
                     {subtitles.length
                       ? subtitles.map((el, i) =>
                           i < subtitles.length - 1
@@ -519,10 +592,8 @@ const RenderShowMore = (props) => {
                 </div>
               ) : undefined}
               <div>
-                <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                  Qualities:
-                </span>{" "}
-                <span style={{ color: "#D0D0D0" }}>
+                <span className={classes.boldInfo}>Qualities:</span>{" "}
+                <span className={classes.contentInfo}>
                   {qualities.length
                     ? qualities.map((el, i) =>
                         i < qualities.length - 1 ? el + " / " : el
@@ -532,28 +603,24 @@ const RenderShowMore = (props) => {
               </div>
               {torrent.duration ? (
                 <div>
-                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                    Duration:
-                  </span>{" "}
-                  <span style={{ color: "#D0D0D0" }}>{torrent.duration}mn</span>
+                  <span className={classes.boldInfo}>Duration:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {torrent.duration}mn
+                  </span>
                 </div>
               ) : undefined}
               {torrent.lastviewed_at ? (
                 <div>
-                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                    Last viewed:
-                  </span>{" "}
-                  <span style={{ color: "#D0D0D0" }}>
+                  <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                  <span className={classes.contentInfo}>
                     {torrent.lastviewed_at}
                   </span>
                 </div>
               ) : undefined}
               {torrent.downloaded_at ? (
                 <div>
-                  <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                    Last download:
-                  </span>{" "}
-                  <span style={{ color: "#D0D0D0" }}>
+                  <span className={classes.boldInfo}>Last download:</span>{" "}
+                  <span className={classes.contentInfo}>
                     {torrent.downloaded_at}
                   </span>
                 </div>
@@ -562,18 +629,11 @@ const RenderShowMore = (props) => {
           </div>
         </div>
       ) : (
-        <div
-          style={{
-            paddingTop: 20,
-            paddingBottom: 20,
-            paddingRight: 10,
-            paddingLeft: 10,
-          }}
-        >
+        <div className={classes.torrentTab}>
           {yts_torrents.length ? (
             <div>
               <div>
-                <span style={{ fontWeight: "bold", fontSize: 16 }}>YTS</span>
+                <span className={classes.torrentTabTitle}>YTS</span>
                 <FiberManualRecordIcon
                   style={{
                     color: torrent.yts_url ? "#0CCA4A" : "#E63946",
@@ -581,57 +641,43 @@ const RenderShowMore = (props) => {
                   }}
                 ></FiberManualRecordIcon>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
+              <div className={classes.sourceContainer}>
                 {yts_torrents.map((el, i) => (
-                  <div
-                    key={el.magnet + i}
-                    style={{ flex: "1 0 30%", padding: 5 }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>{el.language}</div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Quality:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.quality}</span>
+                  <div key={el.magnet + i} className={classes.source}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>{el.language}</div>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Quality:</span>{" "}
+                        <span className={classes.contentInfo}>
+                          {el.quality}
+                        </span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Size:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.size}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Size:</span>{" "}
+                        <span className={classes.contentInfo}>{el.size}</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Downloaded:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Downloaded:</span>{" "}
+                        <span className={classes.contentInfo}>
                           {el.downloaded ? "Yes" : "No"}
                         </span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Seeds:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.seeds}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Seeds:</span>{" "}
+                        <span className={classes.contentInfo}>{el.seeds}</span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Peers:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.peers}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Peers:</span>{" "}
+                        <span className={classes.contentInfo}>{el.peers}</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>
                         <Button
                           variant="outlined"
-                          style={{
-                            color: "#FBBA72",
-                            border: "1px solid #FBBA72",
-                          }}
+                          className={classes.sourceWatch}
                           onClick={() =>
                             history.push({
                               pathname: `/Watch`,
@@ -651,9 +697,7 @@ const RenderShowMore = (props) => {
           {t9_torrents.length ? (
             <div>
               <div>
-                <span style={{ fontWeight: "bold", fontSize: 16 }}>
-                  Torrent9
-                </span>
+                <span className={classes.torrentTabTitle}>Torrent9</span>
                 <FiberManualRecordIcon
                   style={{
                     color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
@@ -661,57 +705,43 @@ const RenderShowMore = (props) => {
                   }}
                 ></FiberManualRecordIcon>
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap" }}>
+              <div className={classes.sourceContainer}>
                 {t9_torrents.map((el, i) => (
-                  <div
-                    key={el.magnet + i}
-                    style={{ flex: "1 0 30%", padding: 5 }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>{el.language}</div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Quality:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.quality}</span>
+                  <div key={el.magnet + i} className={classes.source}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>{el.language}</div>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Quality:</span>{" "}
+                        <span className={classes.contentInfo}>
+                          {el.quality}
+                        </span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Size:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.size}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Size:</span>{" "}
+                        <span className={classes.contentInfo}>{el.size}</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Downloaded:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Downloaded:</span>{" "}
+                        <span className={classes.contentInfo}>
                           {el.downloaded ? "Yes" : "No"}
                         </span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Seeds:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.seeds}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Seeds:</span>{" "}
+                        <span className={classes.contentInfo}>{el.seeds}</span>
                       </div>
-                      <div style={{ padding: 3 }}>
-                        <span style={{ color: "#EFF1F3", fontWeight: "bold" }}>
-                          Peers:
-                        </span>{" "}
-                        <span style={{ color: "#D0D0D0" }}>{el.peers}</span>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>Peers:</span>{" "}
+                        <span className={classes.contentInfo}>{el.peers}</span>
                       </div>
                     </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <div style={{ padding: 3 }}>
+                    <div className={classes.sourceSection}>
+                      <div className={classes.sourceContent}>
                         <Button
                           variant="outlined"
-                          style={{
-                            color: "#FBBA72",
-                            border: "1px solid #FBBA72",
-                          }}
+                          className={classes.sourceWatch}
                           onClick={() =>
                             history.push({
                               pathname: `/Watch`,
@@ -746,7 +776,7 @@ const RenderTorrents = (props) => {
     randomCategories,
   } = props;
   const history = useHistory();
-  const ShowMore = RenderShowMore;
+  const ShowMore = withStyles(showMoreStyles)(RenderShowMore);
 
   return (
     <div>
@@ -787,8 +817,8 @@ const RenderTorrents = (props) => {
             />
             <ShowMore
               history={history}
-              setShowMore={setShowMore}
               showMore={showMore}
+              setShowMore={setShowMore}
             />
           </div>
         )}
@@ -814,17 +844,6 @@ const RenderSearchBar = (props) => {
   const categories = props.settings.categories;
   const languages = props.settings.languages;
   const subtitles = props.settings.subtitles;
-  const selectStyles = {
-    option: (provided) => ({
-      ...provided,
-      borderBottom: "1px solid #EFF1F3",
-      color: "#111",
-      padding: 10,
-      "&:hover": {
-        cursor: "pointer",
-      },
-    }),
-  };
 
   const handleSearchTorrent = (e) => {
     e.preventDefault();
@@ -843,8 +862,8 @@ const RenderSearchBar = (props) => {
     props.handleResetSearch();
   };
 
-  const handleAppendTags = (tagToAdd) => {
-    setSelectedCategories(tagToAdd);
+  const handleAppendCategories = (categoriesToAdd) => {
+    setSelectedCategories(categoriesToAdd);
   };
 
   const handleAppendLanguage = (languageToAdd) => {
@@ -882,7 +901,31 @@ const RenderSearchBar = (props) => {
         <div className={classes.selectDivider}>
           <Select
             value={selectedCategories}
-            styles={selectStyles}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            theme={(theme) => ({
+              ...theme,
+              colors: {
+                ...theme.colors,
+                primary: "#373737",
+                primary75: "red",
+                primary50: "#FBBA72",
+                primary25: "#9A1300",
+                danger: "yellow",
+                dangerLight: "#FBBA72",
+                neutral0: "#1A1A1A",
+                neutral5: "pink",
+                neutral10: "#9A1300",
+                neutral20: "#373737",
+                neutral30: "#9A1300",
+                neutral40: "#FBBA72",
+                neutral50: "#EFF1F3",
+                neutral60: "#FBBA72",
+                neutral70: "yellow",
+                neutral80: "#EFF1F3",
+                neutral90: "#EFF1F3",
+              },
+            })}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -891,14 +934,38 @@ const RenderSearchBar = (props) => {
             isSearchable={true}
             options={categories}
             key={"changeCategories"}
-            onChange={handleAppendTags}
-            placeholder={"Movie categories: ALL"}
+            onChange={handleAppendCategories}
+            placeholder={"CATEGORIES: ALL"}
           />
         </div>
         <div className={classes.selectDivider}>
           <Select
             value={selectedLanguage}
-            styles={selectStyles}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            theme={(theme) => ({
+              ...theme,
+              colors: {
+                ...theme.colors,
+                primary: "#373737",
+                primary75: "red",
+                primary50: "#FBBA72",
+                primary25: "#9A1300",
+                danger: "yellow",
+                dangerLight: "#FBBA72",
+                neutral0: "#1A1A1A",
+                neutral5: "pink",
+                neutral10: "#9A1300",
+                neutral20: "#373737",
+                neutral30: "#9A1300",
+                neutral40: "#FBBA72",
+                neutral50: "#EFF1F3",
+                neutral60: "#FBBA72",
+                neutral70: "yellow",
+                neutral80: "#EFF1F3",
+                neutral90: "#EFF1F3",
+              },
+            })}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -908,13 +975,37 @@ const RenderSearchBar = (props) => {
             options={languages}
             key={"changeLanguage"}
             onChange={handleAppendLanguage}
-            placeholder={"Language: ALL"}
+            placeholder={"LANGUAGES: ALL"}
           />
         </div>
         <div className={classes.selectDivider}>
           <Select
             value={selectedSubs}
-            styles={selectStyles}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            theme={(theme) => ({
+              ...theme,
+              colors: {
+                ...theme.colors,
+                primary: "#373737",
+                primary75: "red",
+                primary50: "#FBBA72",
+                primary25: "#9A1300",
+                danger: "yellow",
+                dangerLight: "#FBBA72",
+                neutral0: "#1A1A1A",
+                neutral5: "pink",
+                neutral10: "#9A1300",
+                neutral20: "#373737",
+                neutral30: "#9A1300",
+                neutral40: "#FBBA72",
+                neutral50: "#EFF1F3",
+                neutral60: "#FBBA72",
+                neutral70: "yellow",
+                neutral80: "#EFF1F3",
+                neutral90: "#EFF1F3",
+              },
+            })}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -924,7 +1015,7 @@ const RenderSearchBar = (props) => {
             options={subtitles}
             key={"changeSubs"}
             onChange={handleAppendSubs}
-            placeholder={"Subtitles: ALL"}
+            placeholder={"SUBTITLES: ALL"}
           />
         </div>
       </div>
@@ -934,14 +1025,15 @@ const RenderSearchBar = (props) => {
           <Range
             className={classes.fullWidth}
             trackStyle={[{ backgroundColor: "#9A1300" }]}
+            railStyle={{ backgroundColor: "#373737" }}
             handleStyle={[
               {
-                borderColor: "#FBBA72",
-                backgroundColor: "#9A1300",
+                backgroundColor: "#FBBA72",
+                border: 0,
               },
               {
-                borderColor: "#FBBA72",
-                backgroundColor: "#9A1300",
+                backgroundColor: "#FBBA72",
+                border: 0,
               },
             ]}
             min={settings.minProductionYear}
@@ -955,14 +1047,15 @@ const RenderSearchBar = (props) => {
           <Range
             className={classes.fullWidth}
             trackStyle={[{ backgroundColor: "#9A1300" }]}
+            railStyle={{ backgroundColor: "#373737" }}
             handleStyle={[
               {
-                borderColor: "#FBBA72",
-                backgroundColor: "#9A1300",
+                backgroundColor: "#FBBA72",
+                border: 0,
               },
               {
-                borderColor: "#FBBA72",
-                backgroundColor: "#9A1300",
+                backgroundColor: "#FBBA72",
+                border: 0,
               },
             ]}
             min={0}

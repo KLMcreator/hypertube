@@ -108,7 +108,7 @@ const Watch = (props) => {
         .then((res) => res.json())
         .then((res) => {
           if (res.comments.comments) {
-            getComments();
+            getComments(false, movie, torrent);
             setNewComment("");
             props.auth.successMessage("Thanks for your comment!");
           } else {
@@ -137,7 +137,7 @@ const Watch = (props) => {
           .then((res) => res.json())
           .then((res) => {
             if (res.comments.comments) {
-              getComments();
+              getComments(false, movie, torrent);
               props.auth.successMessage("Your comment has been deleted");
             } else {
               props.auth.errorMessage(res.comments.msg);

@@ -5,10 +5,12 @@ module.exports.listen = (app) => {
   exports.sockets = io.sockets;
 
   io.sockets.on("connection", (socket) => {
-    // console.log("new socket connection:", socket.id);
-    socket.on("disconnect", () => {
-      //   console.log("socket", socket.id, "disconnected");
-    });
+    console.log("new socket connection:", socket.id, socket.connected);
+    if (socket.connected) {
+      socket.on("disconnect", () => {
+        //   console.log("socket", socket.id, "disconnected");
+      });
+    }
   });
 
   return io;
