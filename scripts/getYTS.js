@@ -186,7 +186,7 @@ const getMovieList = async (page, url) => {
               res.data.movies[i].torrents.length
             ) {
               res.data.movies[i].torrents.map((ele) => {
-                if (ele.seeds > 5) {
+                if (ele.seeds > 3) {
                   ytsInfos.movies[isDuplicate].torrents.push({
                     id: "yts_" + ytsInfos.movies[isDuplicate].torrents.length,
                     source: "yts",
@@ -254,7 +254,7 @@ const getMovieList = async (page, url) => {
               torrents: [],
             };
             res.data.movies[i].torrents.map((ele, i) => {
-              if (ele.seeds > 5) {
+              if (ele.seeds > 3) {
                 infos.torrents.push({
                   id: "yts_" + i,
                   source: "yts",
@@ -268,7 +268,7 @@ const getMovieList = async (page, url) => {
                     ? res.data.movies[i].runtime
                     : null,
                   language: res.data.movies[i].language,
-                  subtitles: subs && subs.length ? subs : [],
+                  subtitles: [],
                   quality: ele.quality,
                   seeds: ele.seeds,
                   peers: ele.peers,
@@ -286,21 +286,21 @@ const getMovieList = async (page, url) => {
                 });
               }
             });
-            if (infos.torrents.length) {
+            if (infos.torrents && infos.torrents.length) {
               let subs = [];
               if (
-                res.data.movies[i].imdb_code &&
-                ((res.data.movies[i].year > 1970 &&
-                  parseInt(res.data.movies[i].rating, 10) > 7) ||
-                  (res.data.movies[i].year > 2000 &&
-                    parseInt(res.data.movies[i].rating, 10) > 5))
+                infos.imdb_code &&
+                ((infos.production_year > 1970 &&
+                  parseInt(infos.rating, 10) > 7) ||
+                  (infos.production_year > 2000 &&
+                    parseInt(infos.rating, 10) > 5))
               ) {
                 subs = await getSubs(
-                  "https://www.yifysubtitles.com/movie-imdb/" +
-                    res.data.movies[i].imdb_code
+                  "https://www.yifysubtitles.com/movie-imdb/" + infos.imdb_code
                 );
+                infos.torrents.map((el) => (el.subtitles = subs));
               }
-              infos.torrents.subtitles = subs;
+              infos.subtitles = subs;
               ytsInfos.movies.push(infos);
             }
           }
