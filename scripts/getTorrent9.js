@@ -234,7 +234,7 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 0 &&
+            ) > 3 &&
             movies[el].children[0].next.children[1].next.children[0].data
               .toLowerCase()
               .indexOf("(trilogie)") === -1 &&
@@ -277,7 +277,7 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 0 &&
+            ) > 3 &&
             movies[el].children[0].next.children[1].next.children[0].data
               .toLowerCase()
               .indexOf("(trilogie)") === -1 &&

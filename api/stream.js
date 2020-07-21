@@ -27,12 +27,13 @@ const config = {
 };
 
 const emmitToFront = (success, msg) => {
-  socket.sockets.emit("torrentDownloader", {
-    success: success,
-    msg: msg,
-    downloads: currentDownloads,
-    converts: currentConvert,
-  });
+  if (socket.sockets.readyState === socket.OPEN)
+    socket.sockets.emit("torrentDownloader", {
+      success: success,
+      msg: msg,
+      downloads: currentDownloads,
+      converts: currentConvert,
+    });
 };
 
 const updateTorrent = (torrent) => {

@@ -88,8 +88,8 @@ const SignIn = (props) => {
     })
       .then((res) => res.json())
       .then((res) => {
-        if (res.login === true) {
-          props.auth.setLogged();
+        if (res.login) {
+          props.auth.setLogged(res);
           props.props.history.push("/");
         } else if (res.login === false) {
           props.auth.errorMessage("Invalid credentials");

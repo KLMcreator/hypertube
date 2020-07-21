@@ -183,7 +183,7 @@ app.post("/api/login", (req, res) => {
   login
     .logUser(req.body)
     .then((response) => {
-      if (response === true && res.statusCode === 200) {
+      if (response.logged && res.statusCode === 200) {
         const token = jwt.sign({ login }, sessionConfig.secret, {
           expiresIn: "24h",
         });
@@ -194,10 +194,11 @@ app.post("/api/login", (req, res) => {
             token: token,
           })
           .then((setLogged) => {
-            if (setLogged.login === true) {
+            if (setLogged.login) {
               res.cookie("_hypertubeAuth", token, { httpOnly: true });
               res.send({
                 login: true,
+                id: response.id,
               });
             } else {
               res.send(setLogged);

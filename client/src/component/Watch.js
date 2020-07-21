@@ -28,22 +28,79 @@ const WatchStyles = (theme) => ({
   loadingLogo: {
     color: "#9A1300",
   },
+  rootSend: {
+    width: "100%",
+    marginBottom: 5,
+  },
+  borderBottom: {
+    "&.MuiInput-underline:before": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:after": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:hover::before": {
+      borderBottom: "2px solid #9A1300",
+    },
+    "&.MuiInput-underline:hover::after": {
+      borderBottom: "1px solid #9A1300",
+    },
+  },
+  sendIcon: {
+    color: "#9A1300",
+  },
+  inputColor: {
+    color: "#fff",
+  },
+  titleContainer: {
+    flex: 3,
+    alignSelf: "center",
+    fontWeight: "bold",
+  },
+  titleYear: {
+    fontSize: 20,
+    color: "#D0D0D0",
+  },
+  titleName: {
+    fontSize: 20,
+    color: "#EFF1F3",
+  },
+  starIcon: {
+    fontSize: 30,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
+});
+
+const commentStyle = (theme) => ({
+  root: {
+    display: "flex",
+    border: "0.5px solid rgba(41, 41, 41, .5)",
+    padding: 5,
+  },
+  icons: {
+    flex: 1,
+    textAlign: "-webkit-center",
+    alignSelf: "center",
+  },
+  main: {
+    flex: 10,
+  },
+  content: {
+    padding: 5,
+  },
 });
 
 const RenderComment = (props) => {
-  const [isMouseIn, setIsMouseIn] = useState(false);
-  const { auth, loggedId, comment } = props;
+  const { auth, loggedId, comment, classes } = props;
 
   const handleDeleteComment = () => {
     props.handleDeleteComment(loggedId, comment.id, comment.video_id);
   };
 
   return (
-    <div
-      onMouseEnter={() => setIsMouseIn(true)}
-      onMouseLeave={() => setIsMouseIn(false)}
-    >
-      <div>
+    <div className={classes.root}>
+      <div className={classes.icons}>
         <Avatar
           alt={comment.username}
           src={
@@ -53,16 +110,16 @@ const RenderComment = (props) => {
           }
         />
       </div>
-      <div>
-        <div>
+      <div className={classes.main}>
+        <div className={classes.content}>
           From <b>{comment.username}</b>,{" "}
           {moment(comment.created_at).format("DD/MM/YYYY HH:mm:ss ")}
         </div>
-        <div>{comment.comment}</div>
+        <div className={classes.content}>{comment.comment}</div>
       </div>
-      {auth.isLogged && isMouseIn && loggedId === comment.user_id ? (
-        <IconButton onClick={handleDeleteComment}>
-          <DeleteForeverIcon></DeleteForeverIcon>
+      {auth.isLogged && loggedId === comment.user_id ? (
+        <IconButton className={classes.icons} onClick={handleDeleteComment}>
+          <DeleteForeverIcon style={{ color: "#9A1300" }}></DeleteForeverIcon>
         </IconButton>
       ) : undefined}
     </div>
@@ -71,7 +128,7 @@ const RenderComment = (props) => {
 
 const Watch = (props) => {
   const ref = useRef(false);
-  const { classes } = props;
+  const { classes, auth } = props;
   const history = useHistory();
   const [subs, setSubs] = useState([]);
   const [limit, setLimit] = useState(10);
@@ -79,76 +136,11 @@ const Watch = (props) => {
   const [source, setSource] = useState(false);
   const [comments, setComments] = useState([]);
   const [torrent, setTorrent] = useState([]);
-  const [loggedId, setLoggedId] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
+  const [canComment, setCanComment] = useState(true);
 
-  const checkIfLogged = () => {
-    fetch("/api/checkToken")
-      .then((resLogged) => resLogged.json())
-      .then((resLogged) => {
-        if (resLogged.status) {
-          setLoggedId(resLogged.id);
-        }
-        setIsLoading(false);
-      });
-  };
-
-  const handleSendComment = (e) => {
-    e.preventDefault();
-    if (newComment && newComment.length < 1000) {
-      fetch("/api/comments/send", {
-        method: "POST",
-        body: JSON.stringify({
-          video_id: movie.id,
-          comment: newComment,
-        }),
-        headers: { "Content-Type": "application/json" },
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          if (res.comments.comments) {
-            getComments(false, movie, torrent);
-            setNewComment("");
-            props.auth.successMessage("Thanks for your comment!");
-          } else {
-            props.auth.errorMessage(res.comments.msg);
-          }
-        })
-        .catch((err) => props.auth.errorMessage(err));
-    } else {
-      props.auth.errorMessage("Comment max length is 1000 char.");
-    }
-  };
-
-  const handleDeleteComment = (loggedId, id, video_id) => {
-    let confirmed = window.confirm("Would you like to delete your comment?");
-    if (confirmed) {
-      if (loggedId && id && video_id) {
-        fetch("/api/comments/delete", {
-          method: "POST",
-          body: JSON.stringify({
-            user_id: loggedId,
-            video_id: video_id,
-            comment_id: id,
-          }),
-          headers: { "Content-Type": "application/json" },
-        })
-          .then((res) => res.json())
-          .then((res) => {
-            if (res.comments.comments) {
-              getComments(false, movie, torrent);
-              props.auth.successMessage("Your comment has been deleted");
-            } else {
-              props.auth.errorMessage(res.comments.msg);
-            }
-          })
-          .catch((err) => props.auth.errorMessage(err));
-      } else {
-        props.auth.errorMessage("Invalid values.");
-      }
-    }
-  };
+  const Comments = withStyles(commentStyle)(RenderComment);
 
   const getComments = (loadMore, mv, tr) => {
     fetch("/api/comments/torrent", {
@@ -182,8 +174,14 @@ const Watch = (props) => {
                 );
               }
             }
+            for (let i = 0; i < res.comments.comments.length; i++) {
+              if (res.comments.comments[i].user_id === auth.loggedId) {
+                setCanComment(false);
+                break;
+              }
+            }
             setComments(res.comments.comments);
-            checkIfLogged();
+            setIsLoading(false);
           } else if (res.comments.msg) {
             props.auth.errorMessage(res.comments.msg);
           } else {
@@ -235,6 +233,63 @@ const Watch = (props) => {
         }
       })
       .catch((err) => props.auth.errorMessage(err));
+  };
+
+  const handleSendComment = (e) => {
+    e.preventDefault();
+    if (newComment && newComment.length < 1000) {
+      fetch("/api/comments/send", {
+        method: "POST",
+        body: JSON.stringify({
+          video_id: movie.id,
+          comment: newComment,
+        }),
+        headers: { "Content-Type": "application/json" },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.comments.comments) {
+            getComments(false, movie, torrent);
+            setNewComment("");
+            props.auth.successMessage("Thanks for your comment!");
+          } else {
+            props.auth.errorMessage(res.comments.msg);
+          }
+        })
+        .catch((err) => props.auth.errorMessage(err));
+    } else {
+      props.auth.errorMessage("Comment max length is 1000 char.");
+    }
+  };
+
+  const handleDeleteComment = (loggedId, id, video_id) => {
+    let confirmed = window.confirm("Would you like to delete your comment?");
+    if (confirmed) {
+      if (auth.loggedId && id && video_id) {
+        fetch("/api/comments/delete", {
+          method: "POST",
+          body: JSON.stringify({
+            user_id: auth.loggedId,
+            video_id: video_id,
+            comment_id: id,
+          }),
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((res) => res.json())
+          .then((res) => {
+            if (res.comments.comments) {
+              setCanComment(true);
+              getComments(false, movie, torrent);
+              props.auth.successMessage("Your comment has been deleted");
+            } else {
+              props.auth.errorMessage(res.comments.msg);
+            }
+          })
+          .catch((err) => props.auth.errorMessage(err));
+      } else {
+        props.auth.errorMessage("Invalid values.");
+      }
+    }
   };
 
   useEffect(() => {
@@ -290,66 +345,58 @@ const Watch = (props) => {
             : undefined}
         </video>
       ) : undefined}
-      <div style={{ flex: 3, alignSelf: "center", fontWeight: "bold" }}>
-        <span style={{ fontSize: 20, color: "#D0D0D0" }}>
-          ({movie.production_year})
-        </span>{" "}
-        <span style={{ fontSize: 20, color: "#EFF1F3" }}>
+      <div className={classes.titleContainer}>
+        <span className={classes.titleYear}>({movie.production_year})</span>{" "}
+        <span className={classes.titleName}>
           {movie.title} - {torrent.quality} - {torrent.language} -{" "}
           {movie.rating}
         </span>{" "}
-        <StarRateIcon
-          style={{
-            fontSize: 30,
-            color: "#FBBA72",
-            verticalAlign: "middle",
-          }}
-        ></StarRateIcon>
+        <StarRateIcon className={classes.starIcon}></StarRateIcon>
       </div>
       <div>
-        <div>
-          Comment section
-          {props.auth.isLogged ? (
-            <span>{newComment ? newComment.length + "/1000" : undefined}</span>
+        <div className={classes.titleContainer}>
+          <span className={classes.titleName}>Comment section</span>{" "}
+          {props.auth.isLogged && props.auth.loggedId ? (
+            <span className={classes.titleYear}>
+              {newComment ? newComment.length + "/1000" : undefined}
+            </span>
           ) : undefined}
         </div>
         <div>
-          {props.auth.isLogged ? (
+          {props.auth.isLogged && props.auth.loggedId && canComment ? (
             <form onSubmit={handleSendComment}>
               <Input
-                // classes={{
-                //   root: classes.rootSend,
-                //   input: classes.inputColor,
-                //   underline: classes.borderBottom,
-                // }}
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
                 type="text"
                 placeholder="Write a comment about the movie..."
                 value={newComment}
                 required
                 onChange={(e) => setNewComment(e.target.value)}
                 endAdornment={
-                  <IconButton type="submit">
-                    <SendIcon></SendIcon>
-                  </IconButton>
+                  <SendIcon className={classes.sendIcon}></SendIcon>
                 }
               />
             </form>
-          ) : (
+          ) : !props.auth.isLogged && !props.auth.loggedId && !canComment ? (
             <div>
               <div>You must be logged to post a new comment</div>
             </div>
-          )}
+          ) : undefined}
         </div>
         <div>
           {comments.length ? (
             comments.map((el) => (
-              <RenderComment
+              <Comments
                 key={el.id}
                 auth={props.auth}
-                loggedId={loggedId}
+                loggedId={auth.loggedId}
                 handleDeleteComment={handleDeleteComment}
                 comment={el}
-              ></RenderComment>
+              ></Comments>
             ))
           ) : (
             <div>No comments, be the first to post one</div>

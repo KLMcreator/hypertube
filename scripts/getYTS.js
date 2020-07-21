@@ -186,7 +186,7 @@ const getMovieList = async (page, url) => {
               res.data.movies[i].torrents.length
             ) {
               res.data.movies[i].torrents.map((ele) => {
-                if (ele.seeds > 0) {
+                if (ele.seeds > 5) {
                   ytsInfos.movies[isDuplicate].torrents.push({
                     id: "yts_" + ytsInfos.movies[isDuplicate].torrents.length,
                     source: "yts",
@@ -226,19 +226,6 @@ const getMovieList = async (page, url) => {
             res.data.movies[i].torrents &&
             res.data.movies[i].torrents.length
           ) {
-            let subs = [];
-            if (
-              res.data.movies[i].imdb_code &&
-              ((res.data.movies[i].year > 1970 &&
-                parseInt(res.data.movies[i].rating, 10) > 7) ||
-                (res.data.movies[i].year > 2000 &&
-                  parseInt(res.data.movies[i].rating, 10) > 5))
-            ) {
-              subs = await getSubs(
-                "https://www.yifysubtitles.com/movie-imdb/" +
-                  res.data.movies[i].imdb_code
-              );
-            }
             let infos = {
               yts_id: res.data.movies[i].id,
               torrent9_id: null,
@@ -263,11 +250,11 @@ const getMovieList = async (page, url) => {
                 : null,
               categories: res.data.movies[i].genres,
               languages: [res.data.movies[i].language],
-              subtitles: subs && subs.length ? subs : [],
+              subtitles: [],
               torrents: [],
             };
             res.data.movies[i].torrents.map((ele, i) => {
-              if (ele.seeds > 0) {
+              if (ele.seeds > 5) {
                 infos.torrents.push({
                   id: "yts_" + i,
                   source: "yts",
@@ -300,6 +287,20 @@ const getMovieList = async (page, url) => {
               }
             });
             if (infos.torrents.length) {
+              let subs = [];
+              if (
+                res.data.movies[i].imdb_code &&
+                ((res.data.movies[i].year > 1970 &&
+                  parseInt(res.data.movies[i].rating, 10) > 7) ||
+                  (res.data.movies[i].year > 2000 &&
+                    parseInt(res.data.movies[i].rating, 10) > 5))
+              ) {
+                subs = await getSubs(
+                  "https://www.yifysubtitles.com/movie-imdb/" +
+                    res.data.movies[i].imdb_code
+                );
+              }
+              infos.torrents.subtitles = subs;
               ytsInfos.movies.push(infos);
             }
           }

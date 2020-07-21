@@ -64,8 +64,8 @@ const logUser = (request, response) => {
     if (login && password) {
       pool.pool.query(
         type === 1
-          ? "SELECT password, verified FROM users WHERE username = $1"
-          : "SELECT password, verified FROM users WHERE email = $1",
+          ? "SELECT id, password, verified FROM users WHERE username = $1"
+          : "SELECT id, password, verified FROM users WHERE email = $1",
         [login],
         (error, results) => {
           if (error) {
@@ -80,12 +80,13 @@ const logUser = (request, response) => {
                   "You must confirm your account before logging in, check your emails.",
               });
             } else {
-              bcrypt.compare(password, results.rows[0].password, function (
-                err,
-                result
-              ) {
-                resolve(result);
-              });
+              bcrypt.compare(
+                password,
+                results.rows[0].password,
+                (err, result) => {
+                  resolve({ logged: result, id: results.rows[0].id });
+                }
+              );
             }
           }
         }

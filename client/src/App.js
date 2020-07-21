@@ -172,6 +172,7 @@ const appBarStyles = (theme) => ({
 
 const auth = {
   isLogged: false,
+  loggedId: false,
   errorMessage(msg) {
     toast.error(msg, {
       position: "bottom-right",
@@ -198,12 +199,14 @@ const auth = {
       },
     });
   },
-  setLogged() {
-    auth.isLogged = true;
+  setLogged(userId) {
+    auth.isLogged = userId.login;
+    auth.loggedId = userId.id;
     this.successMessage("You are now logged in!");
   },
   setLoggedOut(cb) {
     auth.isLogged = false;
+    auth.loggedId = false;
     this.successMessage("You are now logged out!");
     cb();
   },
@@ -475,25 +478,25 @@ const AuthButton = (props) => {
   useEffect(() => {
     if (auth.isLogged) {
       const socket = socketIOClient("http://127.0.0.1:5000");
-      socket.on("torrentDownloader", (data) => {
-        if (data) {
-          console.log(data);
-          setDownloads(data);
-          if (data.msg) {
-            if (data.success === "progress") {
-              console.log(data.msg + "%");
-            } else if (data.success) {
-              auth.successMessage(data.msg);
-            } else if (!data.success) {
-              auth.errorMessage(data.msg);
+      if (socket.connected) {
+        socket.on("torrentDownloader", (data) => {
+          if (data) {
+            console.log(data);
+            setDownloads(data);
+            if (data.msg) {
+              if (data.success === "progress") {
+                console.log(data.msg + "%");
+              } else if (data.success) {
+                auth.successMessage(data.msg);
+              } else if (!data.success) {
+                auth.errorMessage(data.msg);
+              }
             }
           }
-        }
-      });
+        });
+      }
     }
-    return () => {
-      console.log("unmount");
-    };
+    return () => {};
   }, []);
 
   return (
@@ -537,12 +540,11 @@ const App = (props) => {
     fetch("/api/checkToken")
       .then((resLogged) => resLogged.json())
       .then((resLogged) => {
-        auth.isLogged = resLogged.status === false ? false : true;
+        auth.isLogged = !resLogged.status ? false : true;
+        auth.loggedId = !resLogged.status ? false : resLogged.id;
         setIsLoading(false);
       });
-    return () => {
-      console.log("unmount");
-    };
+    return () => {};
   }, []);
 
   if (isLoading) {
