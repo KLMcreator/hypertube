@@ -327,7 +327,7 @@ const TorrentSlider = React.memo((props) => {
     arrows: false,
     className: "center",
     centerMode: true,
-    infinite: torrents.length < 7 || !isRandom ? false : true,
+    infinite: torrents.length < 7 ? false : true,
     centerPadding: "60px",
     slidesToShow: 7,
     speed: 500,
@@ -338,28 +338,28 @@ const TorrentSlider = React.memo((props) => {
       {
         breakpoint: 1400,
         settings: {
-          infinite: torrents.length < 5 || !isRandom ? false : true,
+          infinite: torrents.length < 5 ? false : true,
           slidesToShow: 5,
         },
       },
       {
         breakpoint: 1200,
         settings: {
-          infinite: torrents.length < 4 || !isRandom ? false : true,
+          infinite: torrents.length < 4 ? false : true,
           slidesToShow: 4,
         },
       },
       {
         breakpoint: 1024,
         settings: {
-          infinite: torrents.length < 3 || !isRandom ? false : true,
+          infinite: torrents.length < 3 ? false : true,
           slidesToShow: 3,
         },
       },
       {
         breakpoint: 600,
         settings: {
-          infinite: torrents.length < 1 || !isRandom ? false : true,
+          infinite: torrents.length < 1 ? false : true,
           slidesToShow: 1,
         },
       },

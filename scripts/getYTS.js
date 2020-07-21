@@ -19,6 +19,52 @@ let trackers = [
   "udp://tracker.internetwarriors.net:1337",
 ];
 
+const getTitle = (title) => {
+  const purify = [
+    "bluray",
+    "dvdrip",
+    "hdlight",
+    "webrip",
+    "720p",
+    "1080p",
+    "french",
+    "english",
+    "german",
+    "japanese",
+    "spanish",
+    "russian",
+    "vostfr",
+    "MULTi",
+    "4K",
+    "ULTRA HD",
+    "x265",
+    "dvdscr",
+    "(trilogie)",
+    "(integrale)",
+    "truefrench",
+    "1CD",
+    "2CD",
+    "3CD",
+    "4CD",
+    "5CD",
+    "true",
+    "hdts",
+    "md",
+  ];
+
+  purify.map((el) => {
+    if (title.toLowerCase().indexOf(el) > -1) {
+      title = title
+        .replace(new RegExp(el, "i"), "")
+        .replace(/\s+/g, " ")
+        .split(" ")
+        .slice(0, -1)
+        .join(" ");
+    }
+  });
+  return title;
+};
+
 const getTotalPages = async (url) => {
   return got(url, {
     retry: {
@@ -196,7 +242,7 @@ const getMovieList = async (page, url) => {
             let infos = {
               yts_id: res.data.movies[i].id,
               torrent9_id: null,
-              title: res.data.movies[i].title,
+              title: getTitle(res.data.movies[i].title),
               production_year: res.data.movies[i].year,
               rating: parseFloat(res.data.movies[i].rating),
               yts_url: res.data.movies[i].url,

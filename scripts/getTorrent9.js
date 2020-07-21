@@ -428,14 +428,14 @@ const fetchAllTorrents = async () => {
     for (let j = 0; j < torrent9Infos.movies[i].torrents.length; j++) {
       await getMoreInfos(torrent9Infos.movies[i].torrents[j].url, i, j);
     }
-    if (i && i % 60 === 0) {
+    if (i && i % 100 === 0) {
       console.log(
         i,
         "movies done on",
         chalk.green("Torrent9,"),
-        "waiting for .5s to avoid being blacklisted"
+        "waiting for 1s to avoid being blacklisted"
       );
-      await new Promise((resolve) => setTimeout(resolve, 750));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
   console.timeEnd("torrent9Scraping");
