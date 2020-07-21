@@ -33,6 +33,9 @@ const getTitle = (title) => {
     "3CD",
     "4CD",
     "5CD",
+    "true",
+    "hdts",
+    "md",
   ];
 
   purify.map((el) => {
