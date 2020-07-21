@@ -478,23 +478,21 @@ const AuthButton = (props) => {
   useEffect(() => {
     if (auth.isLogged) {
       const socket = socketIOClient("http://127.0.0.1:5000");
-      if (socket.connected) {
-        socket.on("torrentDownloader", (data) => {
-          if (data) {
-            console.log(data);
-            setDownloads(data);
-            if (data.msg) {
-              if (data.success === "progress") {
-                console.log(data.msg + "%");
-              } else if (data.success) {
-                auth.successMessage(data.msg);
-              } else if (!data.success) {
-                auth.errorMessage(data.msg);
-              }
+      socket.on("torrentDownloader", (data) => {
+        if (data) {
+          console.log(data);
+          setDownloads(data);
+          if (data.msg) {
+            if (data.success === "progress") {
+              console.log(data.msg + "%");
+            } else if (data.success) {
+              auth.successMessage(data.msg);
+            } else if (!data.success) {
+              auth.errorMessage(data.msg);
             }
           }
-        });
-      }
+        }
+      });
     }
     return () => {};
   }, []);

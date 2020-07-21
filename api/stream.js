@@ -27,7 +27,11 @@ const config = {
 };
 
 const emmitToFront = (success, msg) => {
-  if (socket.sockets.readyState === socket.OPEN)
+  if (
+    socket.id &&
+    socket.sockets.connected[socket.id] &&
+    socket.sockets.connected[socket.id].connected
+  )
     socket.sockets.emit("torrentDownloader", {
       success: success,
       msg: msg,
@@ -330,10 +334,10 @@ router.get("/pump", (req, res) => {
   }
 });
 
-router.get("/subs", (req, res) => {
+router.get("/subs", async (req, res) => {
   try {
     const { movie, torrent, lang } = req.query;
-    let infos = getMovieInfos(movie);
+    let infos = await getMovieInfos(movie);
     infos.movie.torrents = JSON.parse(infos.movie.torrents);
     infos.movie.subtitles = JSON.parse(infos.movie.subtitles);
 
