@@ -386,7 +386,7 @@ const fetchAllTorrents = async () => {
   console.time("torrent9Scraping");
   const fetchedAt = Date.now();
   console.log(
-    "Initializing ",
+    "Initializing",
     chalk.green("Torrent9"),
     "scrapping at:",
     chalk.yellow(moment(fetchedAt).format())
@@ -410,7 +410,7 @@ const fetchAllTorrents = async () => {
         i,
         "pages done on",
         chalk.green("Torrent9,"),
-        " waiting for 1.5s to avoid being blacklisted. Total movies:",
+        "waiting for 1.5s to avoid being blacklisted. Total movies:",
         torrent9Infos.movies.length
       );
       await new Promise((resolve) => setTimeout(resolve, 1500));

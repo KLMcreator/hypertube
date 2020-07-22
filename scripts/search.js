@@ -11,26 +11,68 @@ let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 
-const searchInTorrent = async (q) => {
-  try {
-    if (fs.existsSync("finalTorrents.json")) {
-      let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
-      torrents.movies.map((el) => {
-        if (el.title.toLowerCase().includes(q.toLowerCase())) {
-          console.log(el);
-          searched.push(el);
-        }
-      });
-      fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
-        if (err) throw err;
-        console.log(chalk.green("finalTorrents.json saved!"));
-      });
-    } else {
-      console.log("Search will be available after a full scrap");
+const hydrateImageBank = async () => {
+  let i = 0;
+  let missingImages = [];
+  const c = new Crawler({
+    rateLimit: 100,
+    encoding: null,
+    jQuery: false,
+    callback: function (err, res, done) {
+      if (err) {
+        console.error(err.stack);
+        missingImages.push({ index: i, filename: res.options.filename });
+      } else {
+        let newStream = fs.createWriteStream(res.options.filename);
+        newStream.write(res.body, () => {
+          newStream.close();
+        });
+      }
+      done();
+    },
+  });
+
+  console.log(
+    "delay set to",
+    chalk.green("100ms"),
+    "between images,",
+    chalk.green("3000ms"),
+    "every 15 images,",
+    chalk.green("10000ms"),
+    "every 1000 images"
+  );
+
+  while (i < torrents.number_of_movies) {
+    let filename = crypto.randomBytes(16).toString("hex") + Date.now() + ".png";
+    c.queue({
+      uri: torrents.movies[i].cover_url,
+      filename: "./../client/src/assets/torrents/" + filename,
+      retries: 0,
+    });
+    torrents.movies[i].cover_url = filename;
+    if (i && i % 15 === 0) {
+      console.log(
+        i,
+        "/",
+        torrents.number_of_movies,
+        "photos done",
+        "waiting for 3s to avoid being blacklisted or anything."
+      );
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
-  } catch (err) {
-    console.error(err);
+    if (i && i % 1000 === 0) {
+      console.log(
+        i,
+        "/",
+        torrents.number_of_movies,
+        "photos done",
+        "waiting for 5s to avoid being blacklisted or anything."
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
+    i++;
   }
+  return missingImages;
 };
 
 const getImages = async () => {
@@ -69,8 +111,8 @@ const purifyAllTorrents = async () => {
     finalTorrents.movies.push(ytsInfos.movies[i]);
     i++;
   }
-  torrent9Infos = null;
   ytsInfos = null;
+  torrent9Infos = null;
   i = 0;
   while (i < finalTorrents.movies.length) {
     let j = i + 1;
@@ -314,87 +356,6 @@ const purifyMaintenanceTorrents = async (differencies, oldTorrents) => {
   );
 };
 
-const hydrateImageBank = async () => {
-  let i = 0;
-  let missingImages = [];
-  const c = new Crawler({
-    rateLimit: 100,
-    encoding: null,
-    jQuery: false,
-    callback: function (err, res, done) {
-      if (err) {
-        console.error(err.stack);
-        missingImages.push({ index: i, filename: res.options.filename });
-      } else {
-        let newStream = fs.createWriteStream(res.options.filename);
-        newStream.write(res.body, () => {
-          newStream.close();
-        });
-      }
-      done();
-    },
-  });
-
-  console.log(
-    "delay set to",
-    chalk.green("100ms"),
-    "between images,",
-    chalk.green("3000ms"),
-    "every 15 images,",
-    chalk.green("10000ms"),
-    "every 1000 images"
-  );
-
-  while (i < torrents.number_of_movies) {
-    let filename = crypto.randomBytes(16).toString("hex") + Date.now() + ".png";
-    c.queue({
-      uri: torrents.movies[i].cover_url,
-      filename: "./../client/src/assets/torrents/" + filename,
-      retries: 0,
-    });
-    torrents.movies[i].cover_url = filename;
-    if (i && i % 15 === 0) {
-      console.log(
-        i,
-        "/",
-        torrents.number_of_movies,
-        "photos done",
-        "waiting for 3s to avoid being blacklisted or anything."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-    }
-    if (i && i % 1000 === 0) {
-      console.log(
-        i,
-        "/",
-        torrents.number_of_movies,
-        "photos done",
-        "waiting for 5s to avoid being blacklisted or anything."
-      );
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-    }
-    i++;
-  }
-  return missingImages;
-};
-
-const getMovies = async () => {
-  let movies = await Promise.all([
-    getYTS.fetchAllTorrents(),
-    getTorrent9.fetchAllTorrents(),
-  ]);
-  ytsInfos = movies[0];
-  torrent9Infos = movies[1];
-  console.log(
-    ytsInfos.movies.length,
-    "movies total found on",
-    chalk.green("YTS"),
-    torrent9Infos.movies.length,
-    "movies total found on",
-    chalk.green("Torrent9")
-  );
-};
-
 const groupAndCompare = async () => {
   console.log("Getting old file...", chalk.green("finalTorrents.json"));
   if (fs.existsSync("./scripts/finalTorrents.json")) {
@@ -405,7 +366,7 @@ const groupAndCompare = async () => {
       "Creating one big final list for every movies before checking if there's new movies"
     );
     console.log(
-      torrent9Infos.movies.length + ytsInfos.movies.length,
+      parseInt(torrent9Infos.movies.length + ytsInfos.movies.length, 10),
       "movies in total before purify!"
     );
     await purifyAllTorrents();
@@ -450,8 +411,9 @@ const groupAndSave = async () => {
     "Creating one big final list for every movies before storing it into the database"
   );
   console.log(
-    torrent9Infos.movies.length + ytsInfos.movies.length,
-    "movies in total before purify!"
+    torrent9Infos.movies.length +
+      ytsInfos.movies.length +
+      "movies in total before purify!"
   );
   await purifyAllTorrents();
   console.log(
@@ -470,6 +432,23 @@ const groupAndSave = async () => {
   );
 };
 
+const getMovies = async () => {
+  let movies = await Promise.all([
+    getYTS.fetchAllTorrents(),
+    getTorrent9.fetchAllTorrents(),
+  ]);
+  ytsInfos = movies[0];
+  torrent9Infos = movies[1];
+  console.log(
+    ytsInfos.movies.length,
+    "movies total found on",
+    chalk.green("YTS"),
+    torrent9Infos.movies.length,
+    "movies total found on",
+    chalk.green("Torrent9")
+  );
+};
+
 const doMaintenance = async () => {
   console.time("initScraping");
   console.log("Starting new scrap at", chalk.yellow(moment().format()));
@@ -485,6 +464,28 @@ const doMaintenance = async () => {
   }
   console.timeEnd("initScraping");
   return false;
+};
+
+const searchInTorrent = async (q) => {
+  try {
+    if (fs.existsSync("finalTorrents.json")) {
+      let torrents = JSON.parse(fs.readFileSync("finalTorrents.json"));
+      torrents.movies.map((el) => {
+        if (el.title.toLowerCase().includes(q.toLowerCase())) {
+          console.log(el);
+          searched.push(el);
+        }
+      });
+      fs.writeFile("searchResults.json", JSON.stringify(searched), (err) => {
+        if (err) throw err;
+        console.log(chalk.green("finalTorrents.json saved!"));
+      });
+    } else {
+      console.log("Search will be available after a full scrap");
+    }
+  } catch (err) {
+    console.error(err);
+  }
 };
 
 const initScraping = async (withImages) => {

@@ -116,6 +116,20 @@ const TorrentStyles = (theme) => ({
       flex: "0 0 90%",
     },
   },
+  torrentNotRandom: {
+    position: "relative",
+    flex: "0 0 16%",
+    width: "16%",
+    margin: 5,
+    [theme.breakpoints.down("md")]: {
+      flex: "0 0 31%",
+      width: "31%",
+    },
+    [theme.breakpoints.down("xs")]: {
+      flex: "0 0 90%",
+      width: "90%",
+    },
+  },
   torrentTitle: {
     fontWeight: "bold",
     textAlign: "left",
@@ -160,6 +174,76 @@ const TorrentStyles = (theme) => ({
   image: {
     borderRadius: 6,
     width: "100%",
+    cursor: "pointer",
+  },
+  container: {
+    backgroundColor: "#1a1a1a",
+    boxShadow: "none",
+    border: "0.5px solid rgba(41, 41, 41, .5)",
+  },
+  titleAndLeftInfo: {
+    textAlign: "left",
+    marginBottom: 10,
+  },
+  titleStar: {
+    fontSize: 28,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
+  closeButton: {
+    flex: 1,
+    textAlign: "right",
+  },
+  titleClose: {
+    fontSize: 25,
+    color: "#fff",
+    verticalAlign: "middle",
+  },
+  torrentInfos: {
+    padding: 10,
+  },
+  torrentSummary: {
+    flex: 2,
+    color: "#D0D0D0",
+  },
+  rightInfo: {
+    textAlign: "left",
+  },
+  boldInfo: {
+    color: "#EFF1F3",
+    fontWeight: "bold",
+  },
+  contentInfo: {
+    color: "#D0D0D0",
+  },
+  torrentTab: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingRight: 10,
+    paddingLeft: 10,
+  },
+  torrentTabTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  sourceContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
+  source: {
+    flex: "1 0 30%",
+    padding: 5,
+  },
+  sourceSection: {
+    display: "flex",
+    justifyContent: "center",
+  },
+  sourceContent: {
+    padding: 3,
+  },
+  sourceWatch: {
+    color: "#FBBA72",
+    border: "1px solid #FBBA72",
   },
 });
 
@@ -254,277 +338,22 @@ const showMoreStyles = (theme) => ({
   },
 });
 
-const RenderTorrent = (props) => {
-  const [hover, setHover] = useState(false);
-  const { torrent, classes, isRandom } = props;
-  const languages = JSON.parse(torrent.languages);
-  const categories = JSON.parse(torrent.categories);
-  const subtitles =
-    JSON.parse(torrent.subtitles).length > 5
-      ? JSON.parse(torrent.subtitles).slice(0, 5)
-      : JSON.parse(torrent.subtitles);
-
-  return (
-    <div
-      className={classes.torrent}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={() => {
-        props.setShowMore({
-          torrent: torrent,
-          languages: languages,
-          categories: categories,
-          subtitles: subtitles,
-        });
-        if (isRandom) props.setShowMoreBis(false);
-      }}
-    >
-      <img
-        className={classes.image}
-        src={torrent.cover_url}
-        alt={torrent.title}
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = "./src/assets/img/nophotos.png";
-        }}
-      ></img>
-      {hover ? (
-        <div className={classes.hover}>
-          <div className={classes.hoverContent}>
-            <div>
-              <span>
-                {torrent.rating}
-                <StarRateIcon
-                  style={{
-                    fontSize: 25,
-                    color: "#FBBA72",
-                    verticalAlign: "middle",
-                  }}
-                ></StarRateIcon>
-              </span>
-              <span className={classes.torrentYear}>
-                ({torrent.production_year})
-              </span>
-            </div>
-            <div>
-              <span className={classes.torrentTitle}>{torrent.title}</span>
-            </div>
-          </div>
-        </div>
-      ) : undefined}
-    </div>
-  );
-};
-
-const TorrentSlider = React.memo((props) => {
-  const { torrents, isRandom, category } = props;
-  const [sortBy, setSortBy] = useState({
-    label: "ASC. NAME",
-    value: "ascname",
-  });
-
-  const sliderSettings = {
-    arrows: false,
-    className: "center",
-    centerMode: true,
-    infinite: torrents.length < 7 ? false : true,
-    centerPadding: "60px",
-    slidesToShow: 7,
-    speed: 500,
-    swipeToSlide: true,
-    focusOnSelect: true,
-    initialSlide: 0,
-    responsive: [
-      {
-        breakpoint: 1400,
-        settings: {
-          infinite: torrents.length < 5 ? false : true,
-          slidesToShow: 5,
-        },
-      },
-      {
-        breakpoint: 1200,
-        settings: {
-          infinite: torrents.length < 4 ? false : true,
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          infinite: torrents.length < 3 ? false : true,
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 600,
-        settings: {
-          infinite: torrents.length < 1 ? false : true,
-          slidesToShow: 1,
-        },
-      },
-    ],
-  };
-
-  const sortOptions = [
-    { label: "ASC. NAME", value: "ascname" },
-    { label: "DESC. NAME", value: "descname" },
-    { label: "ASC. RATING", value: "ascrating" },
-    { label: "DESC. RATING", value: "descrating" },
-    { label: "ASC. YEAR", value: "ascyear" },
-    { label: "DESC. YEAR", value: "descyear" },
-  ];
-
-  const handleSortList = (el) => {
-    setSortBy(el);
-    if (el.value === "ascname") {
-      torrents.sort((a, b) =>
-        a.title < b.title ? -1 : a.title > b.title ? 1 : 0
-      );
-    } else if (el.value === "descname") {
-      torrents.sort((a, b) =>
-        a.title > b.title ? -1 : a.title < b.title ? 1 : 0
-      );
-    } else if (el.value === "ascrating") {
-      torrents.sort((a, b) =>
-        a.rating < b.rating ? -1 : a.rating > b.rating ? 1 : 0
-      );
-    } else if (el.value === "descrating") {
-      torrents.sort((a, b) =>
-        a.rating > b.rating ? -1 : a.rating < b.rating ? 1 : 0
-      );
-    } else if (el.value === "ascyear") {
-      torrents.sort((a, b) =>
-        a.production_year < b.production_year
-          ? -1
-          : a.production_year > b.production_year
-          ? 1
-          : 0
-      );
-    } else if (el.value === "descyear") {
-      torrents.sort((a, b) =>
-        a.production_year > b.production_year
-          ? -1
-          : a.production_year < b.production_year
-          ? 1
-          : 0
-      );
-    }
-  };
-
-  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
-
-  return (
-    <div>
-      {!isRandom ? (
-        <div
-          style={{
-            display: "flex",
-            marginLeft: 70,
-            marginRight: 70,
-            marginBottom: 10,
-          }}
-        >
-          <div
-            style={{
-              flex: 3,
-              textAlign: "left",
-              alignSelf: "center",
-              fontWeight: "bold",
-            }}
-          >
-            AVAILABLE TORRENTS
-          </div>
-          <div style={{ flex: 1, textAlign: "right" }}>
-            <Select
-              value={sortBy}
-              className="react-select-container"
-              classNamePrefix="react-select"
-              theme={(theme) => ({
-                ...theme,
-                colors: {
-                  ...theme.colors,
-                  primary: "#EFF1F3",
-                  primary75: "red",
-                  primary50: "#FBBA72",
-                  primary25: "#9A1300",
-                  danger: "yellow",
-                  dangerLight: "#FBBA72",
-                  neutral0: "#1A1A1A",
-                  neutral5: "pink",
-                  neutral10: "#9A1300",
-                  neutral20: "#373737",
-                  neutral30: "#9A1300",
-                  neutral40: "#FBBA72",
-                  neutral50: "#EFF1F3",
-                  neutral60: "#FBBA72",
-                  neutral70: "yellow",
-                  neutral80: "#EFF1F3",
-                  neutral90: "#EFF1F3",
-                },
-              })}
-              filterOption={createFilter({
-                ignoreAccents: false,
-              })}
-              options={sortOptions}
-              key={"sortList"}
-              onChange={handleSortList}
-              placeholder={"SORT BY: " + sortBy.label}
-            />
-          </div>
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "flex",
-            marginLeft: 70,
-            marginRight: 70,
-            marginTop: 20,
-          }}
-        >
-          <div
-            style={{
-              flex: 3,
-              textAlign: "left",
-              alignSelf: "center",
-              fontWeight: "bold",
-              fontSize: 20,
-            }}
-          >
-            {category.toUpperCase()}
-          </div>
-        </div>
-      )}
-      <Slider {...sliderSettings}>
-        {torrents.map((el) => (
-          <Torrent
-            key={el.id}
-            torrent={el}
-            isRandom={isRandom}
-            setShowMore={props.setShowMore}
-            setShowMoreBis={props.setShowMoreBis}
-          />
-        ))}
-      </Slider>
-    </div>
-  );
-});
-
 const RenderShowMore = (props) => {
   const [selectedTab, setSelectedTab] = useState(0);
 
   if (!props.showMore) return <></>;
 
   const { history, classes } = props;
-  const { torrent, subtitles, languages, categories } = props.showMore;
-  const t9_torrents = JSON.parse(torrent.torrents).filter(
-    (el) => el.source === "torrent9"
-  );
-  const yts_torrents = JSON.parse(torrent.torrents).filter(
-    (el) => el.source === "yts"
-  );
-  const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
-  const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
+  const {
+    torrent,
+    subtitles,
+    languages,
+    categories,
+    t9_torrents,
+    yts_torrents,
+    qualities,
+    summaries,
+  } = props.showMore;
 
   return (
     <div className={classes.container}>
@@ -764,6 +593,576 @@ const RenderShowMore = (props) => {
   );
 };
 
+const RenderTorrent = (props) => {
+  const [hover, setHover] = useState(false);
+  const [expand, setExpand] = useState(false);
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  const { torrent, classes, isRandom, history } = props;
+  const languages = JSON.parse(torrent.languages);
+  const categories = JSON.parse(torrent.categories);
+  const subtitles = JSON.parse(torrent.subtitles);
+
+  const t9_torrents = JSON.parse(torrent.torrents).filter(
+    (el) => el.source === "torrent9"
+  );
+  const yts_torrents = JSON.parse(torrent.torrents).filter(
+    (el) => el.source === "yts"
+  );
+
+  const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
+  const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
+
+  if (isRandom) {
+    return (
+      <div
+        className={isRandom ? classes.torrent : classes.torrentNotRandom}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onClick={() => {
+          props.setShowMore({
+            torrent: torrent,
+            languages: languages,
+            categories: categories,
+            subtitles: subtitles,
+            t9_torrents: t9_torrents,
+            yts_torrents: yts_torrents,
+            qualities: qualities,
+            summaries: summaries,
+          });
+          props.setShowMoreBis(false);
+        }}
+      >
+        <img
+          className={classes.image}
+          src={torrent.cover_url}
+          alt={torrent.title}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "./src/assets/img/nophotos.png";
+          }}
+        ></img>
+        {hover ? (
+          <div className={classes.hover}>
+            <div className={classes.hoverContent}>
+              <div>
+                <span>
+                  {torrent.rating}
+                  <StarRateIcon
+                    style={{
+                      fontSize: 25,
+                      color: "#FBBA72",
+                      verticalAlign: "middle",
+                    }}
+                  ></StarRateIcon>
+                </span>
+                <span className={classes.torrentYear}>
+                  ({torrent.production_year})
+                </span>
+              </div>
+              <div>
+                <span className={classes.torrentTitle}>{torrent.title}</span>
+              </div>
+            </div>
+          </div>
+        ) : undefined}
+      </div>
+    );
+  } else {
+    return (
+      <div
+        className={isRandom ? classes.torrent : classes.torrentNotRandom}
+        onClick={() => {
+          if (!expand) setExpand(true);
+        }}
+      >
+        <img
+          className={classes.image}
+          src={torrent.cover_url}
+          alt={torrent.title}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "./src/assets/img/nophotos.png";
+          }}
+        ></img>
+        <div>
+          <span>
+            {torrent.rating}
+            <StarRateIcon className={classes.titleStar}></StarRateIcon>
+          </span>
+          <span className={classes.torrentYear}>
+            ({torrent.production_year})
+          </span>
+          <span className={classes.torrentTitle}>{torrent.title}</span>
+        </div>
+        {expand ? (
+          <div className={classes.container}>
+            <Tabs
+              value={selectedTab}
+              onChange={(e, v) => setSelectedTab(v)}
+              variant="fullWidth"
+            >
+              <Tab label="INFORMATIONS" id="INFO_TAB" />
+              <Tab label="TORRENTS" id="TORRENT_TAB" />
+            </Tabs>
+            <div className={classes.titleAndLeftInfo}>
+              <div className={classes.closeButton}>
+                <IconButton onClick={() => setExpand(false)}>
+                  <CloseIcon className={classes.titleClose} />
+                </IconButton>
+              </div>
+            </div>
+            {selectedTab === 0 ? (
+              <div className={classes.torrentInfos}>
+                <div className={classes.titleAndLeftInfo}>
+                  {summaries ? (
+                    <div className={classes.torrentSummary}>{summaries}</div>
+                  ) : undefined}
+                </div>
+                <div className={classes.rightInfo}>
+                  <div>
+                    <span className={classes.boldInfo}>Categories:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {categories.length
+                        ? categories.map((el, i) =>
+                            i < categories.length - 1 ? el + " / " : el
+                          )
+                        : "No informations"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className={classes.boldInfo}>Languages:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {languages.length
+                        ? languages.map((el, i) =>
+                            i < languages.length - 1 ? el + " / " : el
+                          )
+                        : "No informations"}
+                    </span>
+                  </div>
+                  {subtitles && subtitles.length ? (
+                    <div>
+                      <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {subtitles.length
+                          ? subtitles.map((el, i) =>
+                              i < subtitles.length - 1
+                                ? el.language + " / "
+                                : el.language
+                            )
+                          : "No informations"}
+                      </span>
+                    </div>
+                  ) : undefined}
+                  <div>
+                    <span className={classes.boldInfo}>Qualities:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {qualities.length
+                        ? qualities.map((el, i) =>
+                            i < qualities.length - 1 ? el + " / " : el
+                          )
+                        : "No informations"}
+                    </span>
+                  </div>
+                  {torrent.duration ? (
+                    <div>
+                      <span className={classes.boldInfo}>Duration:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {torrent.duration}mn
+                      </span>
+                    </div>
+                  ) : undefined}
+                  {torrent.lastviewed_at ? (
+                    <div>
+                      <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {torrent.lastviewed_at}
+                      </span>
+                    </div>
+                  ) : undefined}
+                  {torrent.downloaded_at ? (
+                    <div>
+                      <span className={classes.boldInfo}>Last download:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {torrent.downloaded_at}
+                      </span>
+                    </div>
+                  ) : undefined}
+                </div>
+              </div>
+            ) : (
+              <div className={classes.torrentTab}>
+                {yts_torrents.length ? (
+                  <div>
+                    <div>
+                      <span className={classes.torrentTabTitle}>YTS</span>
+                      <FiberManualRecordIcon
+                        style={{
+                          color: torrent.yts_url ? "#0CCA4A" : "#E63946",
+                          verticalAlign: "middle",
+                        }}
+                      ></FiberManualRecordIcon>
+                    </div>
+                    <div className={classes.sourceContainer}>
+                      {yts_torrents.map((el, i) => (
+                        <div key={el.magnet + i} className={classes.source}>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              {el.language}
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Quality:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.quality}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Size:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.size}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>
+                                Downloaded:
+                              </span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.downloaded ? "Yes" : "No"}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Seeds:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.seeds}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Peers:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.peers}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              <Button
+                                variant="outlined"
+                                className={classes.sourceWatch}
+                                onClick={() =>
+                                  history.push({
+                                    pathname: `/Watch`,
+                                    state: { movie: torrent, torrent: el },
+                                  })
+                                }
+                              >
+                                WATCH
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : undefined}
+                {t9_torrents.length ? (
+                  <div>
+                    <div>
+                      <span className={classes.torrentTabTitle}>Torrent9</span>
+                      <FiberManualRecordIcon
+                        style={{
+                          color: torrent.torrent9_url ? "#0CCA4A" : "#E63946",
+                          verticalAlign: "middle",
+                        }}
+                      ></FiberManualRecordIcon>
+                    </div>
+                    <div className={classes.sourceContainer}>
+                      {t9_torrents.map((el, i) => (
+                        <div key={el.magnet + i} className={classes.source}>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              {el.language}
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Quality:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.quality}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Size:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.size}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>
+                                Downloaded:
+                              </span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.downloaded ? "Yes" : "No"}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Seeds:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.seeds}
+                              </span>
+                            </div>
+                            <div className={classes.sourceContent}>
+                              <span className={classes.boldInfo}>Peers:</span>{" "}
+                              <span className={classes.contentInfo}>
+                                {el.peers}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={classes.sourceSection}>
+                            <div className={classes.sourceContent}>
+                              <Button
+                                variant="outlined"
+                                className={classes.sourceWatch}
+                                onClick={() =>
+                                  history.push({
+                                    pathname: `/Watch`,
+                                    state: { movie: torrent, torrent: el },
+                                  })
+                                }
+                              >
+                                WATCH
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : undefined}
+              </div>
+            )}
+          </div>
+        ) : undefined}
+      </div>
+    );
+  }
+};
+
+const TorrentSlider = React.memo((props) => {
+  const { torrents, isRandom, category } = props;
+
+  const sliderSettings = {
+    arrows: false,
+    className: "center",
+    centerMode: true,
+    infinite: torrents.length < 7 ? false : true,
+    centerPadding: "60px",
+    slidesToShow: 7,
+    speed: 500,
+    swipeToSlide: true,
+    focusOnSelect: true,
+    initialSlide: 0,
+    responsive: [
+      {
+        breakpoint: 1400,
+        settings: {
+          infinite: torrents.length < 5 ? false : true,
+          slidesToShow: 5,
+        },
+      },
+      {
+        breakpoint: 1200,
+        settings: {
+          infinite: torrents.length < 4 ? false : true,
+          slidesToShow: 4,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          infinite: torrents.length < 3 ? false : true,
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          infinite: torrents.length < 1 ? false : true,
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
+
+  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          marginLeft: 70,
+          marginRight: 70,
+          marginTop: 20,
+        }}
+      >
+        <div
+          style={{
+            flex: 3,
+            textAlign: "left",
+            alignSelf: "center",
+            fontWeight: "bold",
+            fontSize: 20,
+          }}
+        >
+          {category.toUpperCase()}
+        </div>
+      </div>
+      <Slider {...sliderSettings}>
+        {torrents.map((el) => (
+          <Torrent
+            key={el.id}
+            torrent={el}
+            isRandom={isRandom}
+            setShowMore={props.setShowMore}
+            setShowMoreBis={props.setShowMoreBis}
+          />
+        ))}
+      </Slider>
+    </div>
+  );
+});
+
+const TorrentList = (props) => {
+  const { torrents, isRandom, history } = props;
+  const [sortBy, setSortBy] = useState({
+    label: "ASC. NAME",
+    value: "ascname",
+  });
+
+  const sortOptions = [
+    { label: "ASC. NAME", value: "ascname" },
+    { label: "DESC. NAME", value: "descname" },
+    { label: "ASC. RATING", value: "ascrating" },
+    { label: "DESC. RATING", value: "descrating" },
+    { label: "ASC. YEAR", value: "ascyear" },
+    { label: "DESC. YEAR", value: "descyear" },
+  ];
+
+  const handleSortList = (el) => {
+    setSortBy(el);
+    if (el.value === "ascname") {
+      torrents.sort((a, b) =>
+        a.title < b.title ? -1 : a.title > b.title ? 1 : 0
+      );
+    } else if (el.value === "descname") {
+      torrents.sort((a, b) =>
+        a.title > b.title ? -1 : a.title < b.title ? 1 : 0
+      );
+    } else if (el.value === "ascrating") {
+      torrents.sort((a, b) =>
+        a.rating < b.rating ? -1 : a.rating > b.rating ? 1 : 0
+      );
+    } else if (el.value === "descrating") {
+      torrents.sort((a, b) =>
+        a.rating > b.rating ? -1 : a.rating < b.rating ? 1 : 0
+      );
+    } else if (el.value === "ascyear") {
+      torrents.sort((a, b) =>
+        a.production_year < b.production_year
+          ? -1
+          : a.production_year > b.production_year
+          ? 1
+          : 0
+      );
+    } else if (el.value === "descyear") {
+      torrents.sort((a, b) =>
+        a.production_year > b.production_year
+          ? -1
+          : a.production_year < b.production_year
+          ? 1
+          : 0
+      );
+    }
+  };
+
+  const Torrent = withStyles(TorrentStyles)(RenderTorrent);
+
+  return (
+    <div>
+      <div
+        style={{
+          display: "flex",
+          marginLeft: 70,
+          marginRight: 70,
+          marginBottom: 10,
+        }}
+      >
+        <div
+          style={{
+            flex: 3,
+            textAlign: "left",
+            alignSelf: "center",
+            fontWeight: "bold",
+          }}
+        >
+          AVAILABLE TORRENTS
+        </div>
+        <div style={{ flex: 1, textAlign: "right" }}>
+          <Select
+            value={sortBy}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            theme={(theme) => ({
+              ...theme,
+              colors: {
+                ...theme.colors,
+                primary: "#EFF1F3",
+                primary75: "red",
+                primary50: "#FBBA72",
+                primary25: "#9A1300",
+                danger: "yellow",
+                dangerLight: "#FBBA72",
+                neutral0: "#1A1A1A",
+                neutral5: "pink",
+                neutral10: "#9A1300",
+                neutral20: "#373737",
+                neutral30: "#9A1300",
+                neutral40: "#FBBA72",
+                neutral50: "#EFF1F3",
+                neutral60: "#FBBA72",
+                neutral70: "yellow",
+                neutral80: "#EFF1F3",
+                neutral90: "#EFF1F3",
+              },
+            })}
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            options={sortOptions}
+            key={"sortList"}
+            onChange={handleSortList}
+            placeholder={"SORT BY: " + sortBy.label}
+          />
+        </div>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap" }}>
+        {torrents.map((el) => (
+          <Torrent
+            key={el.id}
+            torrent={el}
+            history={history}
+            isRandom={isRandom}
+            setShowMore={props.setShowMore}
+            setShowMoreBis={props.setShowMoreBis}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const RenderTorrents = (props) => {
   const [showMore, setShowMore] = useState(false);
   const [showMoreBis, setShowMoreBis] = useState(false);
@@ -809,18 +1208,11 @@ const RenderTorrents = (props) => {
             />
           </div>
         ) : (
-          <div>
-            <TorrentSlider
-              torrents={torrents}
-              isRandom={isRandom}
-              setShowMore={setShowMore}
-            />
-            <ShowMore
-              history={history}
-              showMore={showMore}
-              setShowMore={setShowMore}
-            />
-          </div>
+          <TorrentList
+            torrents={torrents}
+            isRandom={isRandom}
+            history={history}
+          />
         )}
       </div>
     </div>
@@ -1328,14 +1720,7 @@ const Home = (props) => {
         handleResetSearch={handleResetSearch}
         handleSearchTorrent={handleSearchTorrent}
       />
-      {isRandom && randomTorrents.length && torrents.torrents.length ? (
-        <Torrents
-          torrents={torrents.torrents}
-          randomTorrents={randomTorrents}
-          randomCategories={randomCategories}
-          isRandom={isRandom}
-        />
-      ) : torrents.torrents.length ? (
+      {torrents.torrents && torrents.torrents.length ? (
         <Torrents
           torrents={torrents.torrents}
           randomTorrents={randomTorrents}

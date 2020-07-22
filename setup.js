@@ -83,7 +83,7 @@ const setupComments = async () => {
 const setupViews = () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS views (id SERIAL, user_id INTEGER NULL DEFAULT NULL, torrent_id VARCHAR(1000) NOT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS views (id SERIAL, user_id INTEGER NULL DEFAULT NULL, movie_id VARCHAR(1000) NOT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
