@@ -8,7 +8,7 @@ const usrAccount = (request, response) => {
       [true, 1, req.r, false, req.u, req.e],
       (error, results) => {
         if (error) {
-          reject(error);
+          resolve({ msg: error });
         }
         if (!results.rowCount) {
           resolve({ msg: "Informations doesn't match." });

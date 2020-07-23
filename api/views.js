@@ -15,7 +15,7 @@ const setViewed = (request, response) => {
           [token, req.id],
           (error, resultInsert) => {
             if (error) {
-              reject(error);
+              resolve({ msg: error });
             }
             if (resultInsert.rowCount) {
               resolve({ views: true });
@@ -29,6 +29,27 @@ const setViewed = (request, response) => {
   });
 };
 
+const getUserViews = (request, response) => {
+  const { req } = request;
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT v.*, t.* FROM views v INNER JOIN torrents t ON v.movie_id = t.id WHERE user_id = $1;",
+      [req.id],
+      (error, results) => {
+        if (error) {
+          resolve({ msg: error });
+        }
+        if (!results.rowCount) {
+          resolve({ views: false });
+        } else {
+          resolve(results.rows);
+        }
+      }
+    );
+  });
+};
+
 module.exports = {
   setViewed,
+  getUserViews,
 };

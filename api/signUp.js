@@ -152,7 +152,7 @@ const userSignUp = (request, response) => {
                               ],
                               (error, results) => {
                                 if (error) {
-                                  reject(error);
+                                  resolve({ msg: error });
                                 }
                                 if (!results.rowCount) {
                                   resolve({

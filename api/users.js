@@ -9,7 +9,7 @@ const getLoggedUser = (request, response) => {
         [token],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({ user: false });
@@ -24,4 +24,24 @@ const getLoggedUser = (request, response) => {
   });
 };
 
-module.exports = { getLoggedUser };
+const getUserInfos = (request, response) => {
+  const { req } = request;
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT id, username, firstname, lastname, connected, last_connection, language, photos FROM users WHERE id = $1;",
+      [req.id],
+      (error, results) => {
+        if (error) {
+          resolve({ msg: error });
+        }
+        if (!results.rowCount) {
+          resolve({ users: false });
+        } else {
+          resolve(results.rows);
+        }
+      }
+    );
+  });
+};
+
+module.exports = { getLoggedUser, getUserInfos };

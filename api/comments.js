@@ -9,7 +9,7 @@ const getComments = (request, response) => {
         [req.id, req.limit],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results) {
             resolve({ msg: "Error while fetching comments" });
@@ -35,7 +35,7 @@ const sendComment = (request, response) => {
           [token, req.video_id, req.comment],
           (error, results) => {
             if (error) {
-              reject(error);
+              resolve({ msg: error });
             }
             if (!results.rowCount) {
               resolve({
@@ -68,7 +68,7 @@ const deleteComment = (request, response) => {
         [req.video_id, req.user_id, token, req.comment_id],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({

@@ -162,34 +162,6 @@ const getRandomTorrents = (request, response) => {
       }
     );
   });
-
-  //   return new Promise(function (resolve, reject) {
-  //     pool.pool.query("SELECT COUNT (id) FROM torrents;", (error, results) => {
-  //       if (error) {
-  //         reject(error);
-  //       }
-  //       if (results.rowCount) {
-  //         pool.pool.query(
-  //           "SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, duration, subtitles FROM torrents OFFSET (SELECT floor(random() * (SELECT count(id) FROM torrents) + 1)::int) LIMIT 15;",
-  //           (error, results) => {
-  //             if (error) {
-  //               reject(error);
-  //             }
-  //             if (results.rowCount) {
-  //               resolve({
-  //                 torrents: results.rows,
-  //                 randomTorrents: results.rows,
-  //               });
-  //             } else {
-  //               resolve({ msg: "Error while fetching total torrents" });
-  //             }
-  //           }
-  //         );
-  //       } else {
-  //         resolve({ msg: "Error while fetching total torrents" });
-  //       }
-  //     });
-  //   });
 };
 
 const getTorrentSettings = (request, response) => {
@@ -198,7 +170,7 @@ const getTorrentSettings = (request, response) => {
       "SELECT minProductionYear, maxProductionYear, categories, languages, subtitles FROM settings;",
       (error, results) => {
         if (error) {
-          reject(error);
+          resolve({ msg: error });
         }
         if (results.rowCount) {
           resolve({ settings: results.rows });
@@ -218,7 +190,7 @@ const getTorrentInfos = (request, response) => {
       [req.id],
       (error, results) => {
         if (error) {
-          reject(error);
+          resolve({ msg: error });
         }
         if (results.rowCount) {
           resolve({ torrents: results.rows });
@@ -292,10 +264,31 @@ const likeTorrent = (request, response) => {
   });
 };
 
+const getUserLikes = (request, response) => {
+  const { req } = request;
+  return new Promise(function (resolve, reject) {
+    pool.pool.query(
+      "SELECT l.*, t.* FROM likes l INNER JOIN torrents t ON l.movie_id = t.id WHERE user_id = $1;",
+      [req.id],
+      (error, results) => {
+        if (error) {
+          resolve({ msg: error });
+        }
+        if (!results.rowCount) {
+          resolve({ likes: false });
+        } else {
+          resolve(results.rows);
+        }
+      }
+    );
+  });
+};
+
 module.exports = {
   getQueryTorrents,
   getTorrentInfos,
   getRandomTorrents,
   getTorrentSettings,
   likeTorrent,
+  getUserLikes,
 };

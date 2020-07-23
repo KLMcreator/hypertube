@@ -294,6 +294,18 @@ app.post("/api/confirm/account", (req, res) => {
     });
 });
 
+// Get user infos
+app.post("/api/users/get", (req, res) => {
+  users
+    .getUserInfos({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ users: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Get torrents search query
 app.post("/api/torrents/query", (req, res) => {
   torrents
@@ -360,6 +372,30 @@ app.post("/api/views/set", (req, res) => {
     .setViewed({ req: req.body, token: req.cookies._hypertubeAuth })
     .then((response) => {
       res.status(200).send({ views: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Get user viewed movies
+app.post("/api/views/get", (req, res) => {
+  views
+    .getUserViews({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ views: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Get user liked movies
+app.post("/api/likes/get", (req, res) => {
+  torrents
+    .getUserLikes({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ likes: response });
     })
     .catch((error) => {
       res.status(500).send(error);
