@@ -168,7 +168,7 @@ const hydrateSeed = async (totalUser) => {
     ).format("DD/MM/YYYY hh:mm:ss"),
     verified: 1,
     verified_value: 1,
-    language: "French",
+    language: "English",
   });
   return users;
 };
