@@ -14,7 +14,7 @@ const setLoggedUser = (request, response) => {
         [isLogged, moment().format("DD/MM/YYYY hh:mm:ss"), token, login],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({ msg: "Unable to update user connected state" });
@@ -40,7 +40,7 @@ const unsetLoggedUser = (request, response) => {
         [isLogged, null, token],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({ msg: "Unable to update user connected state" });
@@ -69,7 +69,7 @@ const logUser = (request, response) => {
         [login],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({ msg: "User not found" });
@@ -108,7 +108,7 @@ const checkToken = (request, response) => {
         [token],
         (error, results) => {
           if (error) {
-            reject(error);
+            resolve({ msg: error });
           }
           if (!results.rowCount) {
             resolve({ token: false });

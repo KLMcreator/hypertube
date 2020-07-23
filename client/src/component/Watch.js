@@ -92,7 +92,7 @@ const commentStyle = (theme) => ({
 });
 
 const RenderComment = (props) => {
-  const { auth, loggedId, comment, classes } = props;
+  const { auth, loggedId, comment, classes, history } = props;
 
   const handleDeleteComment = () => {
     props.handleDeleteComment(loggedId, comment.id, comment.video_id);
@@ -112,8 +112,21 @@ const RenderComment = (props) => {
       </div>
       <div className={classes.main}>
         <div className={classes.content}>
-          From <b>{comment.username}</b>,{" "}
-          {moment(comment.created_at).format("DD/MM/YYYY HH:mm:ss ")}
+          From{" "}
+          <b
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              history.push({
+                pathname: "/User",
+                state: {
+                  user: comment.user_id,
+                },
+              });
+            }}
+          >
+            {comment.username}
+          </b>
+          , {moment(comment.created_at).format("DD/MM/YYYY HH:mm:ss ")}
         </div>
         <div className={classes.content}>{comment.comment}</div>
       </div>
@@ -155,8 +168,6 @@ const Watch = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.views.views) {
-          setIsLoading(false);
-          props.auth.successMessage("This movie has been marked as viewed");
         } else if (res.comments.msg) {
           props.auth.errorMessage(res.comments.msg);
         } else {
@@ -181,7 +192,6 @@ const Watch = (props) => {
       .then((res) => {
         if (ref.current) {
           if (res.comments.comments) {
-            console.log(loadMore);
             if (loadMore) {
               setLimit(limit + 10);
             } else {
@@ -206,6 +216,7 @@ const Watch = (props) => {
                 break;
               }
             }
+            setIsLoading(false);
             setComments(res.comments.comments);
           } else if (res.comments.msg) {
             props.auth.errorMessage(res.comments.msg);
@@ -250,8 +261,8 @@ const Watch = (props) => {
               ];
             setTorrent(selectedTorrent);
             getComments(false, res.torrents.torrents[0], selectedTorrent);
-          } else if (res.comments.msg) {
-            props.auth.errorMessage(res.comments.msg);
+          } else if (res.torrents.msg) {
+            props.auth.errorMessage(res.torrents.msg);
           } else {
             props.auth.errorMessage("Error while fetching database.");
           }
@@ -319,16 +330,14 @@ const Watch = (props) => {
 
   useEffect(() => {
     ref.current = true;
-    if (
-      !props.props.location.state.movie ||
-      !props.props.location.state.torrent
-    ) {
+    if (!props.props.location.state) {
       props.auth.errorMessage("Missing arguments, action not allowed.");
       history.push({
         pathname: "/",
       });
+    } else {
+      getTorrentsInfos();
     }
-    getTorrentsInfos();
     return () => {
       ref.current = false;
       setIsLoading(true);
@@ -418,6 +427,7 @@ const Watch = (props) => {
               <Comments
                 key={el.id}
                 auth={props.auth}
+                history={history}
                 loggedId={auth.loggedId}
                 handleDeleteComment={handleDeleteComment}
                 comment={el}

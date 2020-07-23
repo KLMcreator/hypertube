@@ -48,7 +48,7 @@ const updateTorrent = (torrent) => {
       [torrent.movie],
       (error, resultSelect) => {
         if (error) {
-          reject(error);
+          resolve({ msg: error });
         }
         if (resultSelect.rowCount) {
           let torrents = JSON.parse(resultSelect.rows[0].torrents);
@@ -78,7 +78,7 @@ const updateTorrent = (torrent) => {
               [JSON.stringify(torrents), torrent.movie],
               (error, results) => {
                 if (error) {
-                  reject(error);
+                  resolve({ msg: error });
                 }
                 if (results.rowCount) {
                   resolve(true);
@@ -111,7 +111,7 @@ const updateTorrentSubtitle = (movie, lang, path) => {
       [movie],
       (error, resultSelect) => {
         if (error) {
-          reject(error);
+          resolve({ msg: error });
         }
         if (resultSelect.rowCount) {
           let subtitles = JSON.parse(resultSelect.rows[0].subtitles);
@@ -122,7 +122,7 @@ const updateTorrentSubtitle = (movie, lang, path) => {
             [JSON.stringify(subtitles), movie],
             (error, results) => {
               if (error) {
-                reject(error);
+                resolve({ msg: error });
               }
               if (results.rowCount) {
                 resolve(true);
