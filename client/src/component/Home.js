@@ -1396,8 +1396,6 @@ const RenderTorrents = (props) => {
   const history = useHistory();
   const ShowMore = withStyles(showMoreStyles)(RenderShowMore);
   const Torrents = withStyles(TorrentListStyles)(TorrentList);
-<<<<<<< HEAD
-=======
 
   const handleIsNowLiked = (isLiked, movie, row) => {
     if (row) {
@@ -1408,7 +1406,6 @@ const RenderTorrents = (props) => {
       torrents[torrents.findIndex((e) => e.id === movie)].isliked = isLiked;
     }
   };
->>>>>>> cvannica
 
   return (
     <div>
