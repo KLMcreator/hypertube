@@ -19,6 +19,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import StarRateIcon from "@material-ui/icons/StarRate";
 import ThumbDownIcon from "@material-ui/icons/ThumbDown";
+import VisibilityIcon from "@material-ui/icons/Visibility";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 import Slider from "react-slick";
@@ -447,7 +448,7 @@ const RenderShowMore = (props) => {
             );
           }
           setLiked(isLiked);
-          torrent.isLiked = isLiked;
+          props.handleIsNowLiked(isLiked, torrent.id, props.row);
         } else if (res.torrents.msg) {
           props.auth.errorMessage(res.torrents.msg);
         } else {
@@ -743,8 +744,6 @@ const RenderTorrent = (props) => {
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
 
-  console.log(torrent);
-
   const handleSetLiked = (isLiked) => {
     fetch("/api/torrents/like", {
       method: "POST",
@@ -814,15 +813,27 @@ const RenderTorrent = (props) => {
           props.setShowMoreBis(false);
         }}
       >
-        <img
-          className={classes.image}
-          src={torrent.cover_url}
-          alt={torrent.title}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "./src/assets/img/nophotos.png";
-          }}
-        ></img>
+        <div>
+          <img
+            className={classes.image}
+            src={torrent.cover_url}
+            alt={torrent.title}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "./src/assets/img/nophotos.png";
+            }}
+          ></img>
+          {torrent.viewed_at ? (
+            <VisibilityIcon
+              style={{
+                color: "#C0DFA1",
+                position: "absolute",
+                top: 0,
+                right: 0,
+              }}
+            ></VisibilityIcon>
+          ) : undefined}
+        </div>
         {hover ? (
           <div className={classes.hover}>
             <div className={classes.hoverContent}>
@@ -851,15 +862,28 @@ const RenderTorrent = (props) => {
           if (!expand) setExpand(true);
         }}
       >
-        <img
-          className={classes.image}
-          src={torrent.cover_url}
-          alt={torrent.title}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = "./src/assets/img/nophotos.png";
-          }}
-        ></img>
+        <div>
+          <img
+            className={classes.image}
+            src={torrent.cover_url}
+            alt={torrent.title}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "./src/assets/img/nophotos.png";
+            }}
+          ></img>
+          {torrent.viewed_at ? (
+            <VisibilityIcon
+              style={{
+                color: "#C0DFA1",
+                position: "absolute",
+                top: 0,
+                right: 0,
+              }}
+            ></VisibilityIcon>
+          ) : undefined}
+        </div>
+
         <div>
           <span>
             {rating}
@@ -1371,6 +1395,16 @@ const RenderTorrents = (props) => {
   const ShowMore = withStyles(showMoreStyles)(RenderShowMore);
   const Torrents = withStyles(TorrentListStyles)(TorrentList);
 
+  const handleIsNowLiked = (isLiked, movie, row) => {
+    if (row) {
+      randomTorrents[
+        randomTorrents.findIndex((e) => e.id === movie)
+      ].isliked = isLiked;
+    } else {
+      torrents[torrents.findIndex((e) => e.id === movie)].isliked = isLiked;
+    }
+  };
+
   return (
     <div>
       <div className={classes.torrentContainer}>
@@ -1386,9 +1420,11 @@ const RenderTorrents = (props) => {
             />
             {showMore ? (
               <ShowMore
+                row={0}
                 auth={auth}
                 history={history}
                 showMore={showMore}
+                handleIsNowLiked={handleIsNowLiked}
                 setShowMore={setShowMore}
               />
             ) : undefined}
@@ -1402,9 +1438,11 @@ const RenderTorrents = (props) => {
             />
             {showMoreBis ? (
               <ShowMore
+                row={1}
                 auth={auth}
                 history={history}
                 showMore={showMoreBis}
+                handleIsNowLiked={handleIsNowLiked}
                 setShowMore={setShowMoreBis}
               />
             ) : undefined}
