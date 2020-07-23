@@ -101,7 +101,7 @@ const getRandomTorrents = (request, response) => {
         if (resRandomCategories.rowCount === 2) {
           let query = `%${resRandomCategories.rows[0].category}%`;
           pool.pool.query(
-            "SELECT *, l.liked as isLiked FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 WHERE categories::text ILIKE $2 ORDER BY l.id LIMIT 15;",
+            "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.large_cover_url, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, l.liked as isLiked FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 WHERE categories::text ILIKE $2 ORDER BY l.id LIMIT 15;",
             [req.loggedId, query],
             (error, resultsFirstList) => {
               if (error) {
@@ -112,7 +112,7 @@ const getRandomTorrents = (request, response) => {
               if (resultsFirstList.rowCount) {
                 query = `%${resRandomCategories.rows[1].category}%`;
                 pool.pool.query(
-                  "SELECT *, l.liked as isLiked FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 WHERE categories::text ILIKE $2 ORDER BY l.id LIMIT 15;",
+                  "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.large_cover_url, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, l.liked as isLiked FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 WHERE categories::text ILIKE $2 ORDER BY l.id LIMIT 15;",
                   [req.loggedId, query],
                   (error, resultsSecondList) => {
                     if (error) {
@@ -242,21 +242,21 @@ const likeTorrent = (request, response) => {
                 if (req.isLiked) {
                   plusWhat =
                     parseFloat(req.rating) < 3
-                      ? (parseFloat(req.rating) + 0.5).toFixed(2)
+                      ? (parseFloat(req.rating) + 0.5).toFixed(1)
                       : parseFloat(req.rating) < 6
-                      ? (parseFloat(req.rating) + 0.3).toFixed(2)
+                      ? (parseFloat(req.rating) + 0.3).toFixed(1)
                       : parseFloat(req.rating) < 8
-                      ? (parseFloat(req.rating) + 0.2).toFixed(2)
-                      : (parseFloat(req.rating) + 0.1).toFixed(2);
+                      ? (parseFloat(req.rating) + 0.2).toFixed(1)
+                      : (parseFloat(req.rating) + 0.1).toFixed(1);
                 } else {
                   plusWhat =
                     parseFloat(req.rating) < 3
-                      ? (parseFloat(req.rating) - 0.5).toFixed(2)
+                      ? (parseFloat(req.rating) - 0.5).toFixed(1)
                       : parseFloat(req.rating) < 6
-                      ? (parseFloat(req.rating) - 0.3).toFixed(2)
+                      ? (parseFloat(req.rating) - 0.3).toFixed(1)
                       : parseFloat(req.rating) < 8
-                      ? (parseFloat(req.rating) - 0.2).toFixed(2)
-                      : (parseFloat(req.rating) - 0.1).toFixed(2);
+                      ? (parseFloat(req.rating) - 0.2).toFixed(1)
+                      : (parseFloat(req.rating) - 0.1).toFixed(1);
                 }
               }
               pool.pool.query(

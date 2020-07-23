@@ -342,10 +342,10 @@ const showMoreStyles = (theme) => ({
 
 const RenderShowMore = (props) => {
   const [selectedTab, setSelectedTab] = useState(0);
+  const [liked, setLiked] = useState(props.showMore.torrent.isliked);
+  const [rating, setRating] = useState(props.showMore.torrent.rating);
 
-  if (!props.showMore) return <></>;
-
-  const { history, classes } = props;
+  const { history, classes, auth } = props;
   const {
     torrent,
     subtitles,
@@ -356,6 +356,56 @@ const RenderShowMore = (props) => {
     qualities,
     summaries,
   } = props.showMore;
+
+  const handleSetLiked = (isLiked) => {
+    fetch("/api/torrents/like", {
+      method: "POST",
+      body: JSON.stringify({
+        rating: rating,
+        movie: torrent.id,
+        user: auth.loggedId,
+        isLiked: isLiked,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.torrents.torrents) {
+          props.auth.successMessage("Your like has been registered.");
+          if (parseFloat(rating) < 10) {
+            if (isLiked) {
+              setRating(
+                parseFloat(rating) < 3
+                  ? (parseFloat(rating) + 0.5).toFixed(1)
+                  : parseFloat(rating) < 6
+                  ? (parseFloat(rating) + 0.3).toFixed(1)
+                  : parseFloat(rating) < 8
+                  ? (parseFloat(rating) + 0.2).toFixed(1)
+                  : (parseFloat(rating) + 0.1).toFixed(1)
+              );
+            } else {
+              setRating(
+                parseFloat(rating) < 3
+                  ? (parseFloat(rating) - 0.5).toFixed(1)
+                  : parseFloat(rating) < 6
+                  ? (parseFloat(rating) - 0.3).toFixed(1)
+                  : parseFloat(rating) < 8
+                  ? (parseFloat(rating) - 0.2).toFixed(1)
+                  : (parseFloat(rating) - 0.1).toFixed(1)
+              );
+            }
+          }
+          setLiked(isLiked);
+        } else if (res.torrents.msg) {
+          props.auth.errorMessage(res.torrents.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
 
   return (
     <div className={classes.container}>
@@ -371,9 +421,35 @@ const RenderShowMore = (props) => {
         <div className={classes.title}>
           <span className={classes.titleText}>({torrent.production_year})</span>{" "}
           <span className={classes.titleYear}>
-            {torrent.title} - {torrent.rating}
+            {torrent.title} - {rating}
           </span>
           <StarRateIcon className={classes.titleStar}></StarRateIcon>
+        </div>
+        <div style={{ display: "flex", flex: 1, textAlign: "left" }}>
+          <IconButton
+            onClick={() => {
+              handleSetLiked(true);
+            }}
+            disabled={liked === true ? true : false}
+          >
+            <ThumbUpIcon
+              style={{
+                color: liked === true ? "#9A1300" : " #373737",
+              }}
+            />
+          </IconButton>
+          <IconButton
+            onClick={() => {
+              handleSetLiked(false);
+            }}
+            disabled={liked === false ? true : false}
+          >
+            <ThumbDownIcon
+              style={{
+                color: liked === false ? "#9A1300" : " #373737",
+              }}
+            />
+          </IconButton>
         </div>
         <div className={classes.closeButton}>
           <IconButton onClick={() => props.setShowMore(false)}>
@@ -598,9 +674,9 @@ const RenderShowMore = (props) => {
 const RenderTorrent = (props) => {
   const [hover, setHover] = useState(false);
   const [expand, setExpand] = useState(false);
-  const [rating, setRating] = useState(props.torrent.rating);
   const [selectedTab, setSelectedTab] = useState(0);
   const [liked, setLiked] = useState(props.torrent.isliked);
+  const [rating, setRating] = useState(props.torrent.rating);
 
   const { torrent, classes, isRandom, history, auth } = props;
   const languages = JSON.parse(torrent.languages);
@@ -638,22 +714,22 @@ const RenderTorrent = (props) => {
             if (isLiked) {
               setRating(
                 parseFloat(rating) < 3
-                  ? (parseFloat(rating) + 0.5).toFixed(2)
+                  ? (parseFloat(rating) + 0.5).toFixed(1)
                   : parseFloat(rating) < 6
-                  ? (parseFloat(rating) + 0.3).toFixed(2)
+                  ? (parseFloat(rating) + 0.3).toFixed(1)
                   : parseFloat(rating) < 8
-                  ? (parseFloat(rating) + 0.2).toFixed(2)
-                  : (parseFloat(rating) + 0.1).toFixed(2)
+                  ? (parseFloat(rating) + 0.2).toFixed(1)
+                  : (parseFloat(rating) + 0.1).toFixed(1)
               );
             } else {
               setRating(
                 parseFloat(rating) < 3
-                  ? (parseFloat(rating) - 0.5).toFixed(2)
+                  ? (parseFloat(rating) - 0.5).toFixed(1)
                   : parseFloat(rating) < 6
-                  ? (parseFloat(rating) - 0.3).toFixed(2)
+                  ? (parseFloat(rating) - 0.3).toFixed(1)
                   : parseFloat(rating) < 8
-                  ? (parseFloat(rating) - 0.2).toFixed(2)
-                  : (parseFloat(rating) - 0.1).toFixed(2)
+                  ? (parseFloat(rating) - 0.2).toFixed(1)
+                  : (parseFloat(rating) - 0.1).toFixed(1)
               );
             }
           }
@@ -701,7 +777,7 @@ const RenderTorrent = (props) => {
             <div className={classes.hoverContent}>
               <div>
                 <span>
-                  {torrent.rating}
+                  {rating}
                   <StarRateIcon
                     style={{
                       fontSize: 25,
@@ -1278,11 +1354,14 @@ const RenderTorrents = (props) => {
               setShowMoreBis={setShowMoreBis}
               category={randomCategories[0]}
             />
-            <ShowMore
-              history={history}
-              showMore={showMore}
-              setShowMore={setShowMore}
-            />
+            {showMore ? (
+              <ShowMore
+                auth={auth}
+                history={history}
+                showMore={showMore}
+                setShowMore={setShowMore}
+              />
+            ) : undefined}
             <TorrentSlider
               auth={auth}
               isRandom={isRandom}
@@ -1291,11 +1370,14 @@ const RenderTorrents = (props) => {
               setShowMoreBis={setShowMore}
               category={randomCategories[1]}
             />
-            <ShowMore
-              history={history}
-              showMore={showMoreBis}
-              setShowMore={setShowMoreBis}
-            />
+            {showMoreBis ? (
+              <ShowMore
+                auth={auth}
+                history={history}
+                showMore={showMoreBis}
+                setShowMore={setShowMoreBis}
+              />
+            ) : undefined}
           </div>
         ) : (
           <TorrentList
