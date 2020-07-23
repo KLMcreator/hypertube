@@ -142,6 +142,30 @@ const Watch = (props) => {
 
   const Comments = withStyles(commentStyle)(RenderComment);
 
+  const updateViews = () => {
+    fetch("/api/views/set", {
+      method: "POST",
+      body: JSON.stringify({
+        id: props.props.location.state.movie.id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.views.views) {
+          setIsLoading(false);
+          props.auth.successMessage("This movie has been marked as viewed");
+        } else if (res.comments.msg) {
+          props.auth.errorMessage(res.comments.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   const getComments = (loadMore, mv, tr) => {
     fetch("/api/comments/torrent", {
       method: "POST",
@@ -181,7 +205,7 @@ const Watch = (props) => {
               }
             }
             setComments(res.comments.comments);
-            setIsLoading(false);
+            updateViews();
           } else if (res.comments.msg) {
             props.auth.errorMessage(res.comments.msg);
           } else {

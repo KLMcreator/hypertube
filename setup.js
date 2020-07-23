@@ -83,12 +83,28 @@ const setupComments = async () => {
 const setupViews = () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS views (id SERIAL, user_id INTEGER NULL DEFAULT NULL, movie_id VARCHAR(1000) NOT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS views (id SERIAL, user_id INTEGER NULL DEFAULT NULL, movie_id INTEGER NULL DEFAULT NULL, viewed_at TIMESTAMP DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
         } else {
           console.log("TABLE", chalk.green("views"), "HAS BEEN CREATED.");
+          resolve(true);
+        }
+      }
+    );
+  });
+};
+
+const setupLikes = () => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "CREATE TABLE IF NOT EXISTS likes (id SERIAL, user_id INTEGER NULL DEFAULT NULL, movie_id INTEGER NULL DEFAULT NULL, liked BOOLEAN DEFAULT TRUE, PRIMARY KEY (id));",
+      (error, res) => {
+        if (error) {
+          resolve(error);
+        } else {
+          console.log("TABLE", chalk.green("likes"), "HAS BEEN CREATED.");
           resolve(true);
         }
       }
@@ -407,6 +423,7 @@ const setupDatabase = () => {
                           setupTorrents(),
                           setupComments(),
                           setupViews(),
+                          setupLikes(),
                           setupUsers(),
                           setupSettings(),
                         ])

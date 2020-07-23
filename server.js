@@ -333,9 +333,33 @@ app.post("/api/torrents/get/settings", (req, res) => {
 // Get home random torrent
 app.post("/api/torrents/random", (req, res) => {
   torrents
-    .getRandomTorrents()
+    .getRandomTorrents({ req: req.body })
     .then((response) => {
       res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Like to dislike torrent
+app.post("/api/torrents/like", (req, res) => {
+  torrents
+    .likeTorrent({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Set torrent as viewed for logged user
+app.post("/api/views/set", (req, res) => {
+  views
+    .setViewed({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ views: response });
     })
     .catch((error) => {
       res.status(500).send(error);

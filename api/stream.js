@@ -30,7 +30,8 @@ const emmitToFront = (success, msg) => {
   if (
     socket.id &&
     socket.sockets.connected[socket.id] &&
-    socket.sockets.connected[socket.id].connected
+    socket.sockets.connected[socket.id].connected &&
+    (currentDownloads || currentConvert)
   )
     socket.sockets.emit("torrentDownloader", {
       success: success,

@@ -16,7 +16,9 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 // icons
 import CloseIcon from "@material-ui/icons/Close";
 import SearchIcon from "@material-ui/icons/Search";
+import ThumbUpIcon from "@material-ui/icons/ThumbUp";
 import StarRateIcon from "@material-ui/icons/StarRate";
+import ThumbDownIcon from "@material-ui/icons/ThumbDown";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 import Slider from "react-slick";
@@ -596,9 +598,11 @@ const RenderShowMore = (props) => {
 const RenderTorrent = (props) => {
   const [hover, setHover] = useState(false);
   const [expand, setExpand] = useState(false);
+  const [rating, setRating] = useState(props.torrent.rating);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [liked, setLiked] = useState(props.torrent.isliked);
 
-  const { torrent, classes, isRandom, history } = props;
+  const { torrent, classes, isRandom, history, auth } = props;
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
   const subtitles = JSON.parse(torrent.subtitles);
@@ -612,6 +616,56 @@ const RenderTorrent = (props) => {
 
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
+
+  const handleSetLiked = (isLiked) => {
+    fetch("/api/torrents/like", {
+      method: "POST",
+      body: JSON.stringify({
+        rating: rating,
+        movie: torrent.id,
+        user: auth.loggedId,
+        isLiked: isLiked,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.torrents.torrents) {
+          props.auth.successMessage("Your like has been registered.");
+          if (parseFloat(rating) < 10) {
+            if (isLiked) {
+              setRating(
+                parseFloat(rating) < 3
+                  ? (parseFloat(rating) + 0.5).toFixed(2)
+                  : parseFloat(rating) < 6
+                  ? (parseFloat(rating) + 0.3).toFixed(2)
+                  : parseFloat(rating) < 8
+                  ? (parseFloat(rating) + 0.2).toFixed(2)
+                  : (parseFloat(rating) + 0.1).toFixed(2)
+              );
+            } else {
+              setRating(
+                parseFloat(rating) < 3
+                  ? (parseFloat(rating) - 0.5).toFixed(2)
+                  : parseFloat(rating) < 6
+                  ? (parseFloat(rating) - 0.3).toFixed(2)
+                  : parseFloat(rating) < 8
+                  ? (parseFloat(rating) - 0.2).toFixed(2)
+                  : (parseFloat(rating) - 0.1).toFixed(2)
+              );
+            }
+          }
+          setLiked(isLiked);
+        } else if (res.torrents.msg) {
+          props.auth.errorMessage(res.torrents.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
 
   if (isRandom) {
     return (
@@ -671,7 +725,7 @@ const RenderTorrent = (props) => {
   } else {
     return (
       <div
-        className={isRandom ? classes.torrent : classes.torrentNotRandom}
+        className={classes.torrentNotRandom}
         onClick={() => {
           if (!expand) setExpand(true);
         }}
@@ -687,7 +741,7 @@ const RenderTorrent = (props) => {
         ></img>
         <div>
           <span>
-            {torrent.rating}
+            {rating}
             <StarRateIcon className={classes.titleStar}></StarRateIcon>
           </span>
           <span className={classes.torrentYear}>
@@ -705,9 +759,40 @@ const RenderTorrent = (props) => {
               <Tab label="INFORMATIONS" id="INFO_TAB" />
               <Tab label="TORRENTS" id="TORRENT_TAB" />
             </Tabs>
-            <div className={classes.titleAndLeftInfo}>
-              <div className={classes.closeButton}>
-                <IconButton onClick={() => setExpand(false)}>
+            <div style={{ display: "flex" }}>
+              <div style={{ display: "flex", flex: 1, textAlign: "left" }}>
+                <IconButton
+                  onClick={() => {
+                    handleSetLiked(true);
+                  }}
+                  disabled={liked === true ? true : false}
+                >
+                  <ThumbUpIcon
+                    style={{
+                      color: liked === true ? "#9A1300" : " #373737",
+                    }}
+                  />
+                </IconButton>
+                <IconButton
+                  onClick={() => {
+                    handleSetLiked(false);
+                  }}
+                  disabled={liked === false ? true : false}
+                >
+                  <ThumbDownIcon
+                    style={{
+                      color: liked === false ? "#9A1300" : " #373737",
+                    }}
+                  />
+                </IconButton>
+              </div>
+              <div style={{ flex: 1, textAlign: "right" }}>
+                <IconButton
+                  onClick={() => {
+                    setExpand(false);
+                    setSelectedTab(0);
+                  }}
+                >
                   <CloseIcon className={classes.titleClose} />
                 </IconButton>
               </div>
@@ -950,7 +1035,7 @@ const RenderTorrent = (props) => {
 };
 
 const TorrentSlider = React.memo((props) => {
-  const { torrents, isRandom, category } = props;
+  const { torrents, isRandom, category, auth } = props;
 
   const sliderSettings = {
     arrows: false,
@@ -1022,6 +1107,7 @@ const TorrentSlider = React.memo((props) => {
       <Slider {...sliderSettings}>
         {torrents.map((el) => (
           <Torrent
+            auth={auth}
             key={el.id}
             torrent={el}
             isRandom={isRandom}
@@ -1035,7 +1121,7 @@ const TorrentSlider = React.memo((props) => {
 });
 
 const TorrentList = (props) => {
-  const { torrents, isRandom, history } = props;
+  const { torrents, isRandom, history, auth } = props;
   const [sortBy, setSortBy] = useState({
     label: "ASC. NAME",
     value: "ascname",
@@ -1150,6 +1236,7 @@ const TorrentList = (props) => {
       <div style={{ display: "flex", flexWrap: "wrap" }}>
         {torrents.map((el) => (
           <Torrent
+            auth={auth}
             key={el.id}
             torrent={el}
             history={history}
@@ -1168,6 +1255,7 @@ const RenderTorrents = (props) => {
   const [showMoreBis, setShowMoreBis] = useState(false);
 
   const {
+    auth,
     classes,
     isRandom,
     torrents,
@@ -1183,6 +1271,7 @@ const RenderTorrents = (props) => {
         {isRandom ? (
           <div>
             <TorrentSlider
+              auth={auth}
               torrents={torrents}
               isRandom={isRandom}
               setShowMore={setShowMore}
@@ -1195,6 +1284,7 @@ const RenderTorrents = (props) => {
               setShowMore={setShowMore}
             />
             <TorrentSlider
+              auth={auth}
               isRandom={isRandom}
               torrents={randomTorrents}
               setShowMore={setShowMoreBis}
@@ -1209,9 +1299,10 @@ const RenderTorrents = (props) => {
           </div>
         ) : (
           <TorrentList
+            auth={auth}
+            history={history}
             torrents={torrents}
             isRandom={isRandom}
-            history={history}
           />
         )}
       </div>
@@ -1490,7 +1581,7 @@ const RenderSearchBar = (props) => {
 
 const Home = (props) => {
   const ref = useRef(false);
-  const { classes } = props;
+  const { classes, auth } = props;
   const [limit, setLimit] = useState(15);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({});
@@ -1522,6 +1613,7 @@ const Home = (props) => {
         selectedRating: query.selectedRating ? query.selectedRating : [0, 10],
         selectedSubs: query.selectedSubs ? query.selectedSubs : null,
         limit: loadMore ? loadMore : limit,
+        loggedId: auth.loggedId,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -1581,6 +1673,12 @@ const Home = (props) => {
   const getRandomTorrents = (reset) => {
     fetch("/api/torrents/random", {
       method: "POST",
+      body: JSON.stringify({
+        loggedId: auth.loggedId,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
       .then((res) => res.json())
       .then((res) => {
@@ -1722,10 +1820,11 @@ const Home = (props) => {
       />
       {torrents.torrents && torrents.torrents.length ? (
         <Torrents
+          auth={auth}
+          isRandom={isRandom}
           torrents={torrents.torrents}
           randomTorrents={randomTorrents}
           randomCategories={randomCategories}
-          isRandom={isRandom}
         />
       ) : (
         <div className={classes.loading}>
