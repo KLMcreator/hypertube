@@ -181,6 +181,7 @@ const Watch = (props) => {
       .then((res) => {
         if (ref.current) {
           if (res.comments.comments) {
+            console.log(loadMore);
             if (loadMore) {
               setLimit(limit + 10);
             } else {
@@ -197,6 +198,7 @@ const Watch = (props) => {
                   `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}`
                 );
               }
+              updateViews();
             }
             for (let i = 0; i < res.comments.comments.length; i++) {
               if (res.comments.comments[i].user_id === auth.loggedId) {
@@ -205,7 +207,6 @@ const Watch = (props) => {
               }
             }
             setComments(res.comments.comments);
-            updateViews();
           } else if (res.comments.msg) {
             props.auth.errorMessage(res.comments.msg);
           } else {

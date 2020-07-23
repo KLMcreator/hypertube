@@ -5,14 +5,14 @@ const setViewed = (request, response) => {
   return new Promise(function (resolve, reject) {
     pool.pool.query(
       "DELETE FROM views WHERE movie_id = $1 AND user_id = (SELECT id FROM users WHERE connected_token = $2)",
-      [req.movie, token],
+      [req.id, token],
       (error, resultDelete) => {
         if (error) {
           resolve({ msg: error });
         }
         pool.pool.query(
           "INSERT INTO views (user_id, movie_id, viewed_at) VALUES ((SELECT id FROM users WHERE connected_token = $1), $2, (SELECT NOW()))",
-          [token, req.movie],
+          [token, req.id],
           (error, resultInsert) => {
             if (error) {
               reject(error);
