@@ -247,6 +247,53 @@ const TorrentStyles = (theme) => ({
     color: "#FBBA72",
     border: "1px solid #FBBA72",
   },
+  starIcon: {
+    fontSize: 25,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
+  flexContainer: {
+    display: "flex",
+  },
+  likeButtons: {
+    display: "flex",
+    flex: 1,
+    textAlign: "left",
+  },
+  closeContainer: {
+    flex: 1,
+    textAlign: "right",
+  },
+});
+
+const TorrentListStyles = (theme) => ({
+  container: {
+    display: "flex",
+    marginLeft: 70,
+    marginRight: 70,
+    marginBottom: 10,
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
+  },
+  available: {
+    flex: 3,
+    textAlign: "left",
+    alignSelf: "center",
+    fontWeight: "bold",
+    [theme.breakpoints.down("xs")]: {
+      textAlign: "center",
+    },
+  },
+  filter: {
+    flex: 1,
+    textAlign: "right",
+  },
+  torrentContainer: {
+    display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
+  },
 });
 
 const showMoreStyles = (theme) => ({
@@ -338,6 +385,11 @@ const showMoreStyles = (theme) => ({
     color: "#FBBA72",
     border: "1px solid #FBBA72",
   },
+  likeButtons: {
+    display: "flex",
+    flex: 1,
+    textAlign: "left",
+  },
 });
 
 const RenderShowMore = (props) => {
@@ -423,7 +475,7 @@ const RenderShowMore = (props) => {
           </span>
           <StarRateIcon className={classes.titleStar}></StarRateIcon>
         </div>
-        <div style={{ display: "flex", flex: 1, textAlign: "left" }}>
+        <div className={classes.likeButtons}>
           <IconButton
             onClick={() => {
               handleSetLiked(true);
@@ -691,6 +743,8 @@ const RenderTorrent = (props) => {
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
 
+  console.log(torrent);
+
   const handleSetLiked = (isLiked) => {
     fetch("/api/torrents/like", {
       method: "POST",
@@ -775,13 +829,7 @@ const RenderTorrent = (props) => {
               <div>
                 <span>
                   {rating}
-                  <StarRateIcon
-                    style={{
-                      fontSize: 25,
-                      color: "#FBBA72",
-                      verticalAlign: "middle",
-                    }}
-                  ></StarRateIcon>
+                  <StarRateIcon className={classes.starIcon}></StarRateIcon>
                 </span>
                 <span className={classes.torrentYear}>
                   ({torrent.production_year})
@@ -832,8 +880,8 @@ const RenderTorrent = (props) => {
               <Tab label="INFORMATIONS" id="INFO_TAB" />
               <Tab label="TORRENTS" id="TORRENT_TAB" />
             </Tabs>
-            <div style={{ display: "flex" }}>
-              <div style={{ display: "flex", flex: 1, textAlign: "left" }}>
+            <div className={classes.flexContainer}>
+              <div className={classes.likeButtons}>
                 <IconButton
                   onClick={() => {
                     handleSetLiked(true);
@@ -859,7 +907,7 @@ const RenderTorrent = (props) => {
                   />
                 </IconButton>
               </div>
-              <div style={{ flex: 1, textAlign: "right" }}>
+              <div className={classes.closeContainer}>
                 <IconButton
                   onClick={() => {
                     setExpand(false);
@@ -1194,7 +1242,7 @@ const TorrentSlider = React.memo((props) => {
 });
 
 const TorrentList = (props) => {
-  const { torrents, isRandom, history, auth } = props;
+  const { torrents, isRandom, history, auth, classes } = props;
   const [sortBy, setSortBy] = useState({
     label: "ASC. NAME",
     value: "ascname",
@@ -1250,25 +1298,9 @@ const TorrentList = (props) => {
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          marginLeft: 70,
-          marginRight: 70,
-          marginBottom: 10,
-        }}
-      >
-        <div
-          style={{
-            flex: 3,
-            textAlign: "left",
-            alignSelf: "center",
-            fontWeight: "bold",
-          }}
-        >
-          AVAILABLE TORRENTS
-        </div>
-        <div style={{ flex: 1, textAlign: "right" }}>
+      <div className={classes.container}>
+        <div className={classes.available}>AVAILABLE TORRENTS</div>
+        <div className={classes.filter}>
           <Select
             value={sortBy}
             className="react-select-container"
@@ -1306,7 +1338,7 @@ const TorrentList = (props) => {
           />
         </div>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap" }}>
+      <div className={classes.torrentContainer}>
         {torrents.map((el) => (
           <Torrent
             auth={auth}
@@ -1337,6 +1369,7 @@ const RenderTorrents = (props) => {
   } = props;
   const history = useHistory();
   const ShowMore = withStyles(showMoreStyles)(RenderShowMore);
+  const Torrents = withStyles(TorrentListStyles)(TorrentList);
 
   return (
     <div>
@@ -1377,7 +1410,7 @@ const RenderTorrents = (props) => {
             ) : undefined}
           </div>
         ) : (
-          <TorrentList
+          <Torrents
             auth={auth}
             history={history}
             torrents={torrents}
