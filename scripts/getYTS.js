@@ -50,12 +50,15 @@ const getTitle = (title) => {
     "true",
     "hdts",
     "md",
+    "hdrip",
   ];
 
   purify.map((el) => {
-    if (title.toLowerCase().indexOf(el) > -1) {
+    if (title.toLowerCase().indexOf(el.toLowerCase()) > -1) {
       title = title
         .replace(new RegExp(el, "i"), "")
+        .replace(/ !/g, "!")
+        .replace(/ :/g, ":")
         .replace(/\s+/g, " ")
         .split(" ")
         .slice(0, -1)

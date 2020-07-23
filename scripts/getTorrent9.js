@@ -5,6 +5,23 @@ const cheerio = require("cheerio");
 
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 
+const isMultiple = (title) => {
+  const multi = [
+    "(trilogie)",
+    "(integrale)",
+    "1CD",
+    "2CD",
+    "3CD",
+    "4CD",
+    "5CD",
+  ];
+
+  multi.map((el) => {
+    if (title.toLowerCase().indexOf(el.toLowerCase()) > -1) return 0;
+  });
+  return 1;
+};
+
 const getTitle = (title) => {
   const purify = [
     "bluray",
@@ -36,12 +53,15 @@ const getTitle = (title) => {
     "true",
     "hdts",
     "md",
+    "hdrip",
   ];
 
   purify.map((el) => {
-    if (title.toLowerCase().indexOf(el) > -1) {
+    if (title.toLowerCase().indexOf(el.toLowerCase()) > -1) {
       title = title
         .replace(new RegExp(el, "i"), "")
+        .replace(/ !/g, "!")
+        .replace(/ :/g, ":")
         .replace(/\s+/g, " ")
         .split(" ")
         .slice(0, -1)
@@ -238,12 +258,9 @@ const getMovieList = async (url) => {
               movies[el].children[5].children[0].children[0].data.trim(),
               10
             ) > 3 &&
-            movies[el].children[0].next.children[1].next.children[0].data
-              .toLowerCase()
-              .indexOf("(trilogie)") === -1 &&
-            movies[el].children[0].next.children[1].next.children[0].data
-              .toLowerCase()
-              .indexOf("(integrale)") === -1
+            isMultiple(
+              movies[el].children[0].next.children[1].next.children[0].data
+            )
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
@@ -281,12 +298,9 @@ const getMovieList = async (url) => {
               movies[el].children[5].children[0].children[0].data.trim(),
               10
             ) > 3 &&
-            movies[el].children[0].next.children[1].next.children[0].data
-              .toLowerCase()
-              .indexOf("(trilogie)") === -1 &&
-            movies[el].children[0].next.children[1].next.children[0].data
-              .toLowerCase()
-              .indexOf("(integrale)") === -1
+            isMultiple(
+              movies[el].children[0].next.children[1].next.children[0].data
+            )
           ) {
             torrent9Infos.movies.push({
               yts_id: null,

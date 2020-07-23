@@ -373,31 +373,29 @@ const RenderShowMore = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.torrents.torrents) {
-          props.auth.successMessage("Your like has been registered.");
-          if (parseFloat(rating) < 10) {
-            if (isLiked) {
-              setRating(
-                parseFloat(rating) < 3
-                  ? (parseFloat(rating) + 0.5).toFixed(1)
-                  : parseFloat(rating) < 6
-                  ? (parseFloat(rating) + 0.3).toFixed(1)
-                  : parseFloat(rating) < 8
-                  ? (parseFloat(rating) + 0.2).toFixed(1)
-                  : (parseFloat(rating) + 0.1).toFixed(1)
-              );
-            } else {
-              setRating(
-                parseFloat(rating) < 3
-                  ? (parseFloat(rating) - 0.5).toFixed(1)
-                  : parseFloat(rating) < 6
-                  ? (parseFloat(rating) - 0.3).toFixed(1)
-                  : parseFloat(rating) < 8
-                  ? (parseFloat(rating) - 0.2).toFixed(1)
-                  : (parseFloat(rating) - 0.1).toFixed(1)
-              );
-            }
+          if (parseFloat(rating) < 10 && isLiked) {
+            setRating(
+              parseFloat(rating) < 3
+                ? (parseFloat(rating) + 0.5).toFixed(1)
+                : parseFloat(rating) < 6
+                ? (parseFloat(rating) + 0.3).toFixed(1)
+                : parseFloat(rating) < 8
+                ? (parseFloat(rating) + 0.2).toFixed(1)
+                : (parseFloat(rating) + 0.1).toFixed(1)
+            );
+          } else if (parseFloat(rating) > 0 && !isLiked) {
+            setRating(
+              parseFloat(rating) < 3
+                ? (parseFloat(rating) - 0.5).toFixed(1)
+                : parseFloat(rating) < 6
+                ? (parseFloat(rating) - 0.3).toFixed(1)
+                : parseFloat(rating) < 8
+                ? (parseFloat(rating) - 0.2).toFixed(1)
+                : (parseFloat(rating) - 0.1).toFixed(1)
+            );
           }
           setLiked(isLiked);
+          torrent.isLiked = isLiked;
         } else if (res.torrents.msg) {
           props.auth.errorMessage(res.torrents.msg);
         } else {
@@ -709,7 +707,6 @@ const RenderTorrent = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.torrents.torrents) {
-          props.auth.successMessage("Your like has been registered.");
           if (parseFloat(rating) < 10) {
             if (isLiked) {
               setRating(
