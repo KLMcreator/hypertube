@@ -309,6 +309,9 @@ const showMoreStyles = (theme) => ({
   titleAndLeftInfo: {
     display: "flex",
     textAlign: "left",
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
   },
   title: {
     paddingLeft: 5,
@@ -345,10 +348,16 @@ const showMoreStyles = (theme) => ({
     flex: 2,
     color: "#D0D0D0",
     marginRight: 10,
+    [theme.breakpoints.down("xs")]: {
+      margin: 5,
+    },
   },
   rightInfo: {
     flex: 1,
     marginLeft: 10,
+    [theme.breakpoints.down("xs")]: {
+      margin: 5,
+    },
   },
   boldInfo: {
     color: "#EFF1F3",
