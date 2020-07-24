@@ -4,12 +4,16 @@ import React, { useState, useEffect } from "react";
 // framework
 import Grid from "@material-ui/core/Grid";
 import Paper from "@material-ui/core/Paper";
+import Input from "@material-ui/core/Input";
 import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 import { withStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // icons
+import VpnKey from "@material-ui/icons/VpnKey";
 import ErrorIcon from "@material-ui/icons/Error";
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import PhotoCameraIcon from "@material-ui/icons/PhotoCamera";
+import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 
 const SignUpStyles = (theme) => ({
@@ -49,8 +53,8 @@ const SignUpStyles = (theme) => ({
     },
   },
   cardSection: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderColor: "hsl(0,0%,80%)",
+    backgroundColor: "#1A1A1A",
+    border: "0.5px solid rgba(41, 41, 41, 1)",
     borderRadius: "4px",
     borderStyle: "solid",
     borderWidth: 1,
@@ -68,21 +72,31 @@ const SignUpStyles = (theme) => ({
   elGrid: {
     marginBottom: 15,
   },
-  rootInputText: {
-    fontSize: 13,
-  },
-  rootInput: {
+  rootSend: {
     width: "100%",
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "#e63946",
+    marginBottom: 5,
+  },
+  borderBottom: {
+    "&.MuiInput-underline:before": {
+      borderBottom: "1px solid #373737",
+    },
+    "&.MuiInput-underline:after": {
+      borderBottom: "1px solid #9A1300",
+    },
+    "&.MuiInput-underline:hover::before": {
+      borderBottom: "2px solid #9A1300",
+    },
+    "&.MuiInput-underline:hover::after": {
+      borderBottom: "1px solid #9A1300",
     },
   },
-  label: {
-    "&$focusedLabel": {
-      color: "#e63946",
-    },
+  sendIcon: {
+    color: "#9A1300",
   },
-  focusedLabel: {},
+  inputColor: {
+    backgroundColor: "#373737",
+    color: "#fff",
+  },
   submitButton: {
     width: "100%",
   },
@@ -99,27 +113,38 @@ const SignUpStyles = (theme) => ({
 });
 
 const SignUp = (props) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [lastname, setLastname] = useState("");
   const [firstname, setFirstname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [newFilePicture, setNewFilePicture] = useState(null);
-  const [confirmedPassword, setConfirmedPassword] = useState("");
-  const [pwdMatches, setPwdMatches] = useState(true);
-  const [pwdWhiteSpaces, setPwdWhiteSpaces] = useState(true);
-  const [lastNameWhiteSpaces, setLastNameWhiteSpaces] = useState(true);
-  const [firstNameWhiteSpaces, setFirstNameWhiteSpaces] = useState(true);
-  const [emailWhiteSpaces, setEmailWhiteSpaces] = useState(true);
-  const [usernameWhiteSpaces, setUsernameWhiteSpaces] = useState(true);
-  const [lastNameRegExp, setLastnameRegExp] = useState(true);
-  const [firstNameRegExp, setFirstnameRegExp] = useState(true);
-  const [usernameRegex, setUsernameRegex] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [pwdRegLet, setPwdRegLet] = useState(false);
   const [pwdRegCap, setPwdRegCap] = useState(false);
   const [pwdRegDig, setPwdRegDig] = useState(false);
   const [pwdRegLen, setPwdRegLen] = useState(false);
+  const [pwdMatches, setPwdMatches] = useState(true);
+  const [usernameRegex, setUsernameRegex] = useState(true);
+  const [lastNameRegExp, setLastnameRegExp] = useState(true);
+  const [newFilePicture, setNewFilePicture] = useState(null);
+  const [pwdWhiteSpaces, setPwdWhiteSpaces] = useState(true);
+  const [firstNameRegExp, setFirstnameRegExp] = useState(true);
+  const [confirmedPassword, setConfirmedPassword] = useState("");
+  const [emailWhiteSpaces, setEmailWhiteSpaces] = useState(true);
+  const [usernameWhiteSpaces, setUsernameWhiteSpaces] = useState(true);
+  const [lastNameWhiteSpaces, setLastNameWhiteSpaces] = useState(true);
+  const [firstNameWhiteSpaces, setFirstNameWhiteSpaces] = useState(true);
+  const inputSelectedStyles = {
+    WebkitBoxShadow: "0 0 0 1000px #1A1A1A inset",
+    WebkitTextFillColor: "#EFF1F3",
+    padding: 10,
+  };
+  const inputPropsFileStyles = {
+    WebkitBoxShadow: "0 0 0 1000px #1A1A1A inset",
+    WebkitTextFillColor: "#1A1A1A",
+    padding: 10,
+    width: "100%",
+  };
 
   const { classes } = props;
 
@@ -181,7 +206,7 @@ const SignUp = (props) => {
   };
 
   const checkUsernameLength = (str) => {
-    if (str.length === str.replace(/\s/g, "").length) {
+    if (str.length === str.replace(/\s/g, "").length && str.length > 2) {
       setUsernameWhiteSpaces(true);
     } else {
       setUsernameWhiteSpaces(false);
@@ -308,45 +333,56 @@ const SignUp = (props) => {
         <form encType="multipart/form-data" onSubmit={createUser}>
           <Grid container spacing={1} className={classes.mainGrid}>
             <Grid item xs={12} sm={6} className={classes.elGrid}>
-              <Grid container spacing={1}>
-                <Grid item xs={12} sm={6}>
-                  <input
-                    className={classes.fullWidth}
-                    type="file"
-                    id="file"
-                    name="file"
-                    accept="image/png, image/jpeg"
-                    onChange={handleUploadPic}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={12} sm={6} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputPropsFileStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
+                style={{
+                  width: "100%",
                 }}
+                id="file"
+                type="file"
+                placeholder="Username"
+                accept="image/png, image/jpeg"
                 required
+                onChange={handleUploadPic}
+                startAdornment={
+                  <PhotoCameraIcon
+                    className={classes.sendIcon}
+                  ></PhotoCameraIcon>
+                }
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} className={classes.elGrid}>
+              <Input
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
+                inputProps={{
+                  style: inputSelectedStyles,
+                }}
                 id="usernameTextfield"
-                label="Username"
                 type="text"
-                name="username"
+                placeholder="Username"
                 value={username}
+                required
                 onChange={handleChangeUsername}
+                startAdornment={
+                  <AccountCircle className={classes.sendIcon}></AccountCircle>
+                }
               />
               {!usernameWhiteSpaces ? (
                 <p className={classes.errorCheck}>
                   <ErrorIcon className={classes.iconsMessage} />
-                  Username must not contain white space.
+                  Username must not contain white space and be at least 3 char
+                  long.
                 </p>
               ) : undefined}
               {!usernameRegex ? (
@@ -357,26 +393,24 @@ const SignUp = (props) => {
               ) : undefined}
             </Grid>
             <Grid item xs={12} sm={4} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputSelectedStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
-                }}
-                required
                 id="lastnameTextfield"
-                label="Last Name"
                 type="text"
-                name="lastname"
+                placeholder="Last Name"
                 value={lastname}
+                required
                 onChange={handleChangeLastname}
+                startAdornment={
+                  <AccountCircle className={classes.sendIcon}></AccountCircle>
+                }
               />
               {lastNameWhiteSpaces === false ? (
                 <p className={classes.errorCheck}>
@@ -392,26 +426,24 @@ const SignUp = (props) => {
               ) : undefined}
             </Grid>
             <Grid item xs={12} sm={4} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputSelectedStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
-                }}
-                required
                 id="firstnameTextfield"
-                label="First Name"
                 type="text"
-                name="firstname"
+                placeholder="First Name"
                 value={firstname}
+                required
                 onChange={handleChangeFirstname}
+                startAdornment={
+                  <AccountCircle className={classes.sendIcon}></AccountCircle>
+                }
               />
               {firstNameWhiteSpaces === false ? (
                 <p className={classes.errorCheck}>
@@ -428,26 +460,26 @@ const SignUp = (props) => {
             </Grid>
 
             <Grid item xs={12} sm={4} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputSelectedStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
-                }}
-                required
                 id="emailTextfield"
-                label="Email"
                 type="email"
-                name="email"
+                placeholder="Email"
                 value={email}
+                required
                 onChange={handleChangeEmail}
+                startAdornment={
+                  <AlternateEmailIcon
+                    className={classes.sendIcon}
+                  ></AlternateEmailIcon>
+                }
               />
               {emailWhiteSpaces === false ? (
                 <p className={classes.errorCheck}>
@@ -457,51 +489,41 @@ const SignUp = (props) => {
               ) : undefined}
             </Grid>
             <Grid item xs={12} sm={6} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputSelectedStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
-                }}
-                required
                 id="passwordTextfield"
-                label="Password"
-                autoComplete="password"
                 type="password"
-                name="password"
+                placeholder="Password"
                 value={password}
+                required
                 onChange={handleChangePassword}
+                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
               />
             </Grid>
             <Grid item xs={12} sm={6} className={classes.elGrid}>
-              <TextField
+              <Input
                 classes={{
-                  root: classes.rootInput,
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
                 }}
                 inputProps={{
-                  className: classes.rootInputText,
+                  style: inputSelectedStyles,
                 }}
-                InputLabelProps={{
-                  classes: {
-                    root: classes.label,
-                    focused: classes.focusedLabel,
-                  },
-                }}
-                required
                 id="confirmedPasswordTextfield"
-                label="Confirmed password"
                 type="password"
-                autoComplete="password"
-                name="confirmedPassword"
+                placeholder="Confirmed Password"
                 value={confirmedPassword}
+                required
                 onChange={handleChangeConfirmedPassword}
+                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
               />
             </Grid>
             <Grid item xs={12} className={classes.elGrid}>
@@ -545,7 +567,10 @@ const SignUp = (props) => {
             <Grid item xs={12}>
               <Button
                 variant="outlined"
-                color="secondary"
+                style={{
+                  color: "#FBBA72",
+                  border: "1px solid #FBBA72",
+                }}
                 type="submit"
                 className={classes.submitButton}
               >

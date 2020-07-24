@@ -168,6 +168,14 @@ const appBarStyles = (theme) => ({
     boxShadow: "none",
     border: "1px solid rgba(41, 41, 41, .2)",
   },
+  backgroundMenu: {
+    backgroundColor: "#1A1A1A",
+    border: "0.5px solid rgba(41, 41, 41, 1)",
+    color: "#EFF1F3",
+  },
+  iconMobile: {
+    color: "#9A1300",
+  },
 });
 
 const auth = {
@@ -291,6 +299,9 @@ const AuthButton = (props) => {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
         open={mobileMoreAnchorEl === null ? false : true}
         onClose={handleMobileMenuClose}
+        classes={{
+          paper: classes.backgroundMenu,
+        }}
       >
         {auth.isLogged ? (
           <div>
@@ -306,7 +317,7 @@ const AuthButton = (props) => {
               to="/"
             >
               <ListItemIcon>
-                <HomeIcon />
+                <HomeIcon className={classes.iconMobile} />
               </ListItemIcon>
               <Typography variant="inherit">HOME</Typography>
             </MenuItem>
@@ -324,7 +335,7 @@ const AuthButton = (props) => {
               to="/Profile"
             >
               <ListItemIcon>
-                <PersonIcon />
+                <PersonIcon className={classes.iconMobile} />
               </ListItemIcon>
               <Typography variant="inherit">PROFILE</Typography>
             </MenuItem>
@@ -338,7 +349,7 @@ const AuthButton = (props) => {
               to="/SignIn"
             >
               <ListItemIcon>
-                <ExitToAppIcon />
+                <ExitToAppIcon className={classes.iconMobile} />
               </ListItemIcon>
               <Typography variant="inherit">LOGOUT</Typography>
             </MenuItem>
@@ -352,7 +363,7 @@ const AuthButton = (props) => {
               to="/SignUp"
             >
               <IconButton>
-                <PersonAddIcon />
+                <PersonAddIcon className={classes.iconMobile} />
               </IconButton>
               <Typography variant="inherit">REGISTER</Typography>
             </MenuItem>
@@ -363,7 +374,7 @@ const AuthButton = (props) => {
               to="/SignIn"
             >
               <IconButton>
-                <ArrowForwardIosIcon />
+                <ArrowForwardIosIcon className={classes.iconMobile} />
               </IconButton>
               <Typography variant="inherit">LOGIN</Typography>
             </MenuItem>
@@ -374,7 +385,7 @@ const AuthButton = (props) => {
               to="/Recover"
             >
               <IconButton>
-                <HelpIcon />
+                <HelpIcon className={classes.iconMobile} />
               </IconButton>
               <Typography variant="inherit">FORGOT MY PASSWORD</Typography>
             </MenuItem>

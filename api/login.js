@@ -84,7 +84,11 @@ const logUser = (request, response) => {
                 password,
                 results.rows[0].password,
                 (err, result) => {
-                  resolve({ logged: result, id: results.rows[0].id });
+                  if (result) {
+                    resolve({ logged: result, id: results.rows[0].id });
+                  } else {
+                    resolve({ msg: "Wrong password" });
+                  }
                 }
               );
             }
