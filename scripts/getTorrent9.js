@@ -91,7 +91,7 @@ const getFormat = (title) => {
 
 const getQuality = (title) => {
   const quality = ["720p", "1080p", "4K", "ULTRA HD"];
-  let type = "Default";
+  let type = "360p";
 
   quality.map((el) => {
     if (title.toLowerCase().indexOf(el) > -1)

@@ -200,12 +200,12 @@ const Watch = (props) => {
                   setSource(`http://localhost:3000${tr.path}`);
                 } else {
                   setSource(
-                    `http://localhost:3000/stream/pump?path=${tr.path}`
+                    `http://localhost:3000/stream/pump?path=${tr.path}&title=${mv.title}`
                   );
                 }
               } else {
                 setSource(
-                  `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}`
+                  `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}&cover=${mv.cover_url}&title=${mv.title}`
                 );
               }
               updateViews();

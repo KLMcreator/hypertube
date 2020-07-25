@@ -27,18 +27,12 @@ const config = {
 };
 
 const emmitToFront = (success, msg) => {
-  if (
-    socket.id &&
-    socket.sockets.connected[socket.id] &&
-    socket.sockets.connected[socket.id].connected &&
-    (currentDownloads || currentConvert)
-  )
-    socket.sockets.emit("torrentDownloader", {
-      success: success,
-      msg: msg,
-      downloads: currentDownloads,
-      converts: currentConvert,
-    });
+  socket.sockets.emit("torrentDownloader", {
+    success: success,
+    msg: msg,
+    downloads: currentDownloads,
+    converts: currentConvert,
+  });
 };
 
 const updateTorrent = (torrent) => {
@@ -176,140 +170,183 @@ const getDownloadPercent = (el) => {
 };
 
 router.get("/", (req, res) => {
-  const { movie, torrent } = req.query;
+  const { movie, torrent, cover, title } = req.query;
   const hash = movie + "_" + torrent;
-  try {
-    let magnet =
-      req.query.magnet + "&dn=" + req.query.dn + "&tr=" + req.query.tr;
-    magnet = magnet.includes("btih")
-      ? magnet.split("btih:")[1].split("&dn")[0]
-      : magnet;
-    let ext;
-    let nbPieces;
-    let dlFile = null;
-    const loadedChunks = new Map();
-    const allowedExts = [".mp4", ".mkv", ".webm", ".avi"];
-    const engine = torrentStream(magnet, config);
-    engine.on("ready", async () => {
-      const file = engine.files.find(({ name }) =>
-        allowedExts.some((ext) => name.endsWith(ext))
-      );
+  if (currentDownloads[hash]) {
+    const stream = currentDownloads[hash].file.createReadStream();
 
-      if (!file) {
-        emmitToFront(false, "This file format is not supported yet");
-        res.sendStatus(200);
-      }
-
-      if (!dlFile) {
-        dlFile = { file };
-      }
-
-      dlFile.file.select();
-      ext = file.name.split(".").pop();
-      const stream = file.createReadStream();
-
-      currentDownloads[hash] = {
-        movie: movie,
-        torrent: torrent,
-        name: stream._engine.torrent.name,
-        identifier: hash,
-        ext: ext,
-        parent_path:
-          "/src/assets/torrents/downloads/" + stream._engine.torrent.name + "/",
-        path:
-          "/src/assets/torrents/downloads/" +
-          (stream._engine.torrent.name === file.name
-            ? file.name
-            : stream._engine.torrent.name + "/" + file.name),
-        downloaded_at: moment().toString(),
-        lastviewed_at: moment().toString(),
-        delete_at: moment(moment()).add(1, "M").toString(),
-      };
-
-      if (ext === "mp4" || ext === "mkv") {
-        emmitToFront(
-          true,
-          `Download started, your stream will start shortly: ${currentDownloads[hash].name}`
+    emmitToFront(true, `Download already started, continuing: ${title}`);
+    if (
+      currentDownloads[hash].ext === "mp4" ||
+      currentDownloads[hash].ext === "mkv"
+    ) {
+      pump(stream, res);
+    } else {
+      ffmpeg()
+        .input(stream)
+        .outputOptions("-movflags frag_keyframe+empty_moov")
+        .outputFormat("mp4")
+        .on("end", () => {
+          emmitToFront(true, `Your file has been converted: ${title}`);
+        })
+        .on("error", (err) => {
+          emmitToFront(
+            false,
+            `Error while converting file: ${title} - ${err.message}`
+          );
+        })
+        .inputFormat(currentDownloads[hash].ext)
+        .audioCodec("aac")
+        .videoCodec("libx264")
+        .pipe(res);
+      res.on("close", () => {
+        stream.destroy();
+      });
+    }
+  } else {
+    try {
+      let magnet =
+        req.query.magnet + "&dn=" + req.query.dn + "&tr=" + req.query.tr;
+      magnet = magnet.includes("btih")
+        ? magnet.split("btih:")[1].split("&dn")[0]
+        : magnet;
+      let ext;
+      let nbPieces;
+      let dlFile = null;
+      const loadedChunks = new Map();
+      const allowedExts = [".mp4", ".mkv", ".webm", ".avi"];
+      const engine = torrentStream(magnet, config);
+      engine.on("ready", async () => {
+        const file = engine.files.find(({ name }) =>
+          allowedExts.some((ext) => name.endsWith(ext))
         );
-        pump(stream, res);
-      } else {
-        emmitToFront(
-          true,
-          `Downloading and converting the file as you watch it, the stream will start shortly: ${currentDownloads[hash].name}`
-        );
-        ffmpeg()
-          .input(stream)
-          .outputOptions("-movflags frag_keyframe+empty_moov")
-          .outputFormat("mp4")
-          .on("end", () => {
-            emmitToFront(
-              true,
-              `Your file has been converted: ${currentDownloads[hash].name}`
-            );
-          })
-          .on("error", (err) => {
-            emmitToFront(
-              false,
-              `Error while converting file: ${currentDownloads[hash].name} - ${err.message}`
-            );
-          })
-          .inputFormat(ext)
-          .audioCodec("aac")
-          .videoCodec("libx264")
-          .pipe(res);
-        res.on("close", () => {
-          stream.destroy();
-        });
-      }
-    });
 
-    engine.on("torrent", ({ pieces }) => {
-      nbPieces = pieces.length;
-    });
+        if (!file) {
+          emmitToFront(false, "This file format is not supported yet");
+          res.sendStatus(200);
+        }
 
-    engine.on("download", (index, buffer) => {
-      loadedChunks.set(index, buffer.length);
+        if (!dlFile) {
+          dlFile = { file };
+        }
 
-      const lastEl = getDownloadPercent([...loadedChunks.keys()]);
-      const loadedBytes = [...loadedChunks.entries()]
-        .sort(([a], [b]) => a - b)
-        .reduce((bytesCount, [i, bytesLength]) => {
-          if (i > lastEl) return bytesCount;
+        dlFile.file.select();
+        ext = file.name.split(".").pop();
+        const stream = file.createReadStream();
+        if (!currentDownloads[hash]) {
+          currentDownloads[hash] = {
+            movie: movie,
+            torrent: torrent,
+            cover: cover,
+            name: title,
+            identifier: hash,
+            progress: "0%",
+            ext: ext,
+            parent_path:
+              "/src/assets/torrents/downloads" +
+              (stream._engine.torrent.name === file.name
+                ? "/"
+                : "/" + stream._engine.torrent.name + "/"),
+            path:
+              "/src/assets/torrents/downloads/" +
+              (stream._engine.torrent.name === file.name
+                ? file.name
+                : stream._engine.torrent.name + "/" + file.name),
+            downloaded_at: moment().toString(),
+            lastviewed_at: moment().toString(),
+            delete_at: moment(moment()).add(1, "M").toString(),
+            file: file,
+          };
+        }
 
-          return bytesCount + bytesLength;
-        }, 0);
+        if (ext === "mp4" || ext === "mkv") {
+          emmitToFront(
+            true,
+            `Download started, your stream will start shortly: ${title}`
+          );
+          pump(stream, res);
+        } else {
+          emmitToFront(
+            true,
+            `Downloading and converting the file as you watch it, the stream will start shortly: ${title}`
+          );
+          ffmpeg()
+            .input(stream)
+            .outputOptions("-movflags frag_keyframe+empty_moov")
+            .outputFormat("mp4")
+            .on("end", () => {
+              emmitToFront(true, `Your file has been converted: ${title}`);
+            })
+            .on("error", (err) => {
+              emmitToFront(
+                false,
+                `Error while converting file: ${title} - ${err.message}`
+              );
+            })
+            .inputFormat(ext)
+            .audioCodec("aac")
+            .videoCodec("libx264")
+            .pipe(res);
+          res.on("close", () => {
+            stream.destroy();
+          });
+        }
+      });
 
-      const percent = (100 * lastEl) / nbPieces;
+      engine.on("torrent", ({ pieces }) => {
+        nbPieces = pieces.length;
+      });
 
-      const MIN_FILE_BYTES_DOWNLOADED_PERCENT = 2;
+      engine.on("download", (index, buffer) => {
+        loadedChunks.set(index, buffer.length);
 
-      if (
-        loadedBytes >=
-        (dlFile.file.size / 100) * MIN_FILE_BYTES_DOWNLOADED_PERCENT
-      ) {
-      } else {
-        emmitToFront("progress", percent.toFixed(2));
-      }
-    });
+        const lastEl = getDownloadPercent([...loadedChunks.keys()]);
+        const loadedBytes = [...loadedChunks.entries()]
+          .sort(([a], [b]) => a - b)
+          .reduce((bytesCount, [i, bytesLength]) => {
+            if (i > lastEl) return bytesCount;
 
-    engine.on("idle", () => {
-      if (currentDownloads[hash] && currentDownloads[hash].name) {
-        emmitToFront(true, `Download finished: ${currentDownloads[hash].name}`);
-        if (updateTorrent(currentDownloads[hash]))
-          delete currentDownloads[hash];
-      }
-    });
-  } catch (e) {
-    emmitToFront(false, `Error while streaming: ${e.message}`);
-    res.sendStatus(200);
+            return bytesCount + bytesLength;
+          }, 0);
+
+        const percent = (100 * lastEl) / nbPieces;
+
+        const MIN_FILE_BYTES_DOWNLOADED_PERCENT = 2;
+
+        if (
+          loadedBytes >=
+          (dlFile.file.size / 100) * MIN_FILE_BYTES_DOWNLOADED_PERCENT
+        ) {
+        } else {
+          if (currentDownloads[hash]) {
+            currentDownloads[hash].progress = percent.toFixed(2);
+            emmitToFront("progress", `${title}: ${percent.toFixed(2)}`);
+          }
+        }
+      });
+
+      engine.on("idle", () => {
+        if (currentDownloads[hash] && currentDownloads[hash].name) {
+          if (updateTorrent(currentDownloads[hash])) {
+            delete currentDownloads[hash];
+            emmitToFront(true, `Download finished: ${title}`);
+          }
+        }
+      });
+    } catch (e) {
+      emmitToFront(false, `Error while streaming: ${e.message}`);
+      res.sendStatus(200);
+    }
   }
 });
 
 router.get("/pump", (req, res) => {
-  const { path } = req.query;
+  const { path, title } = req.query;
   try {
     const ext = path.substring(path.lastIndexOf(".") + 1, path.length);
     const stream = fs.createReadStream("./client" + path);
+
+    emmitToFront(true, `Convert needed for this movie: ${title}`);
 
     if (ext === "mp4" || ext === "mkv") {
       pump(stream, res);
@@ -398,7 +435,7 @@ router.get("/subs", async (req, res) => {
 
             zip.on("ready", () => {
               if (file_sub) {
-                let finalFile = path + lang + file_sub.name;
+                let finalFile = path + lang + "_" + file_sub.name;
                 zip.extract(file_sub.name, finalFile, (err) => {
                   if (err) {
                     emmitToFront(false, `Error while extracting subs: ${err}`);
@@ -422,7 +459,6 @@ router.get("/subs", async (req, res) => {
               }
             });
           });
-
           response.on("error", (err) => {
             fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
             emmitToFront(false, `Error while saving subs archive: ${err}`);
