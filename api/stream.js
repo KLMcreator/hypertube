@@ -422,7 +422,6 @@ router.get("/subs", async (req, res) => {
               }
             });
           });
-
           response.on("error", (err) => {
             fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
             emmitToFront(false, `Error while saving subs archive: ${err}`);
