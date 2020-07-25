@@ -398,7 +398,8 @@ router.get("/subs", async (req, res) => {
 
             zip.on("ready", () => {
               if (file_sub) {
-                zip.extract(file_sub.name, path + file_sub.name, (err) => {
+                let finalFile = path + lang + file_sub.name;
+                zip.extract(file_sub.name, finalFile, (err) => {
                   if (err) {
                     emmitToFront(false, `Error while extracting subs: ${err}`);
                     res.sendStatus(200);
@@ -413,7 +414,10 @@ router.get("/subs", async (req, res) => {
             });
 
             zip.on("entry", (entry) => {
-              if (entry.name.endsWith(".srt")) {
+              if (
+                !entry.name.toLowerCase().startsWith("__macosx/") &&
+                entry.name.endsWith(".srt")
+              ) {
                 file_sub = entry;
               }
             });
@@ -430,15 +434,12 @@ router.get("/subs", async (req, res) => {
       rq_subs
         .then((response) => {
           if (response) {
+            let finalFile = path + lang + file_sub.name;
             fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
-
-            if (updateTorrentSubtitle(movie, s, path + file_sub.name)) {
+            if (updateTorrentSubtitle(movie, s, finalFile)) {
               emmitToFront(true, `${lang} subtitles downloaded`);
               res.contentType("text/vtt");
-              return fs
-                .createReadStream(path + file_sub.name)
-                .pipe(srt2vtt())
-                .pipe(res);
+              return fs.createReadStream(finalFile).pipe(srt2vtt()).pipe(res);
             } else {
               emmitToFront(false, `Error while saving subs state`);
             }
