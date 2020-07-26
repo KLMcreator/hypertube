@@ -1,15 +1,15 @@
-const socketio = require("socket.io");
+let io;
 
-module.exports.listen = (app) => {
-  io = socketio.listen(app);
-  exports.sockets = io.sockets;
-
-  io.sockets.on("connection", (socket) => {
-    exports.id = socket.id;
-    socket.on("disconnect", () => {
-      //   console.log("socket", socket.id, "disconnected");
-    });
+const initSocket = (server) => {
+  io = server;
+  io.on("connection", (socket) => {
+    socket.on("disconnect", () => {});
   });
+};
 
-  return io;
+const emmitToFront = (data) => io.emit("torrentDownloader", data);
+
+module.exports = {
+  initSocket,
+  emmitToFront,
 };

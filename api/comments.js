@@ -2,7 +2,7 @@ const pool = require("./../pool.js");
 
 const getComments = (request, response) => {
   const { req } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (req.id) {
       pool.pool.query(
         "SELECT c.id, c.user_id, u.username, u.photos, c.video_id, c.created_at, c.comment FROM comments c INNER JOIN users u ON u.id = c.user_id WHERE c.video_id = $1 ORDER BY id DESC LIMIT $2;",
@@ -26,7 +26,7 @@ const getComments = (request, response) => {
 
 const sendComment = (request, response) => {
   const { req, token } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (req.video_id && req.comment && token) {
       req.comment = req.comment.trim();
       if (req.comment && req.comment.length < 1000) {
@@ -61,7 +61,7 @@ const sendComment = (request, response) => {
 
 const deleteComment = (request, response) => {
   const { req, token } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (req.user_id && req.video_id && req.comment_id && token) {
       pool.pool.query(
         "DELETE FROM comments WHERE video_id = $1 AND user_id = $2 AND user_id = (SELECT id FROM users WHERE connected_token = $3) AND id = $4;",

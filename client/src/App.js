@@ -10,7 +10,7 @@ import {
   withRouter,
 } from "react-router-dom";
 import Dropdown from "rc-dropdown";
-import socketIOClient from "socket.io-client";
+// import socketIOClient from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import React, { useState, useEffect, useRef } from "react";
 import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
@@ -45,6 +45,8 @@ import Confirm from "./component/Confirm";
 import FourOFour from "./component/FourOFour";
 // files
 import "rc-dropdown/assets/index.css";
+
+import { initiateSocket, disconnectSocket, getDownloads } from "./Socket";
 
 const appBarStyles = (theme) => ({
   loadMoreButton: {
@@ -295,25 +297,6 @@ const RenderDownloadMenu = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;
 
-  const openSocketClient = () => {
-    if (auth.isLogged && ref.current && isLoading) {
-      const socket = socketIOClient("http://127.0.0.1:5000");
-      socket.on("torrentDownloader", (data) => {
-        if (data) {
-          setDownloads(data);
-          if (data.msg && data.success !== "progress") {
-            if (data.success) {
-              auth.successMessage(data.msg);
-            } else if (!data.success) {
-              auth.errorMessage(data.msg);
-            }
-          }
-          setIsLoading(false);
-        }
-      });
-    }
-  };
-
   const DownloadItems = () => {
     let DownloadItems = [];
     let ConvertItems = [];
@@ -382,8 +365,23 @@ const RenderDownloadMenu = (props) => {
 
   useEffect(() => {
     ref.current = true;
-    openSocketClient();
+    if (auth.isLogged && ref.current && isLoading) {
+      initiateSocket();
+      getDownloads((err, data) => {
+        if (err) return;
+        setDownloads(data);
+        if (data.msg && data.success !== "progress") {
+          if (data.success) {
+            auth.successMessage(data.msg);
+          } else if (!data.success) {
+            auth.errorMessage(data.msg);
+          }
+        }
+        setIsLoading(false);
+      });
+    }
     return () => {
+      disconnectSocket();
       ref.current = false;
       setIsLoading(true);
     };

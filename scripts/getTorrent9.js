@@ -22,6 +22,12 @@ const isMultiple = (title) => {
   return 1;
 };
 
+const getSize = (size) => {
+  return size.toLowerCase().indexOf("mo") > -1
+    ? parseInt(size.split(" ")[0], 10) * 1024 * 1024
+    : parseInt(size.split(" ")[0], 10) * 1024 * 1024 * 1024;
+};
+
 const getTitle = (title) => {
   const purify = [
     "bluray",
@@ -260,7 +266,9 @@ const getMovieList = async (url) => {
             ) > 3 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
-            )
+            ) &&
+            getSize(movies[el].children[3].children[0].data.toLowerCase()) <
+              10000000000
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
@@ -300,7 +308,9 @@ const getMovieList = async (url) => {
             ) > 3 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
-            )
+            ) &&
+            getSize(movies[el].children[3].children[0].data.toLowerCase()) <
+              10000000000
           ) {
             torrent9Infos.movies.push({
               yts_id: null,
@@ -407,7 +417,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4600"
+    "https://www.torrent9.ac/torrents/films/4650"
   );
   console.log(
     torrent9Infos.number_of_pages,

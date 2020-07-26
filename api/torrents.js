@@ -1,3 +1,5 @@
+const fs = require("fs");
+const moment = require("moment");
 const pool = require("./../pool.js");
 
 const buildFilter = (filter) => {
@@ -12,7 +14,7 @@ const buildFilter = (filter) => {
 
 const getQueryTorrents = (request, response) => {
   const { req } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     let likeQuery = req.query ? "%" + req.query + "%" : "%%";
     pool.pool.query(
       "SELECT query.id, query.yts_id, query.torrent9_id, query.title, query.production_year, query.rating, query.yts_url, query.torrent9_url, query.cover_url, query.categories, query.languages, query.torrents, query.large_cover_url, query.production_year, query.summary, query.imdb_code, query.yt_trailer, query.subtitles, query.duration, l.liked as isLiked, v.viewed_at as viewed_at FROM ((SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration, ts_rank_cd(search_vector, ts_query, 1) AS score FROM torrents, plainto_tsquery($1) ts_query) query WHERE score > 0 ORDER BY score DESC) UNION ALL (SELECT id, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration FROM torrents WHERE title ILIKE $2)) query LEFT JOIN likes l ON l.movie_id = query.id AND l.user_id = $3 LEFT JOIN views v ON v.movie_id = query.id AND v.user_id = $4 WHERE query.rating BETWEEN $5 AND $6 AND query.production_year BETWEEN $7 AND $8 GROUP BY query.id, query.yts_id, query.torrent9_id, query.title, query.production_year, query.rating, query.yts_url, query.torrent9_url, query.cover_url, query.categories, query.languages, query.torrents, query.large_cover_url, query.summary, query.imdb_code, query.yt_trailer, query.subtitles, query.duration, l.liked, v.viewed_at;",
@@ -100,7 +102,7 @@ const getQueryTorrents = (request, response) => {
 
 const getRandomTorrents = (request, response) => {
   const { req } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT * FROM (SELECT json_array_elements(categories::json)->>'label' as category FROM settings) as parseCategories ORDER BY random() LIMIT 2;",
       (error, resRandomCategories) => {
@@ -165,7 +167,7 @@ const getRandomTorrents = (request, response) => {
 };
 
 const getTorrentSettings = (request, response) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT minProductionYear, maxProductionYear, categories, languages, subtitles FROM settings;",
       (error, results) => {
@@ -184,7 +186,7 @@ const getTorrentSettings = (request, response) => {
 
 const getTorrentInfos = (request, response) => {
   const { req } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT * FROM torrents where id = $1;",
       [req.id],
@@ -202,85 +204,77 @@ const getTorrentInfos = (request, response) => {
   });
 };
 
-const likeTorrent = (request, response) => {
-  const { req, token } = request;
-  return new Promise(function (resolve, reject) {
-    pool.pool.query(
-      "DELETE FROM likes WHERE movie_id = $1 AND user_id = (SELECT id FROM users WHERE connected_token = $2)",
-      [req.movie, token],
-      (error, resultDelete) => {
+const doCleanUpUpdate = (torrent) => {
+  return new Promise((resolve, reject) => {
+    pool.query(
+      "UPDATE torrents SET torrents = $1 WHERE id = $2",
+      [JSON.stringify(torrent.torrents), torrent.id],
+      (error, results) => {
         if (error) {
-          resolve({ msg: error });
+          resolve(false);
+        } else {
+          resolve(true);
         }
-        pool.pool.query(
-          "INSERT INTO likes (user_id, movie_id, liked) VALUES ((SELECT id FROM users WHERE connected_token = $1), $2, $3)",
-          [token, req.movie, req.isLiked],
-          (error, resultInsert) => {
-            if (error) {
-              resolve({ msg: error });
-            }
-            if (resultInsert.rowCount) {
-              let plusWhat = parseFloat(req.rating);
-              if (plusWhat < 10 && req.isLiked) {
-                plusWhat =
-                  parseFloat(req.rating) < 3
-                    ? (parseFloat(req.rating) + 0.5).toFixed(1)
-                    : parseFloat(req.rating) < 6
-                    ? (parseFloat(req.rating) + 0.3).toFixed(1)
-                    : parseFloat(req.rating) < 8
-                    ? (parseFloat(req.rating) + 0.2).toFixed(1)
-                    : (parseFloat(req.rating) + 0.1).toFixed(1);
-              } else if (plusWhat > 0 && !req.isLiked) {
-                plusWhat =
-                  parseFloat(req.rating) < 3
-                    ? (parseFloat(req.rating) - 0.5).toFixed(1)
-                    : parseFloat(req.rating) < 6
-                    ? (parseFloat(req.rating) - 0.3).toFixed(1)
-                    : parseFloat(req.rating) < 8
-                    ? (parseFloat(req.rating) - 0.2).toFixed(1)
-                    : (parseFloat(req.rating) - 0.1).toFixed(1);
-              }
-              pool.pool.query(
-                "UPDATE torrents SET rating = $1 WHERE id = $2",
-                [plusWhat <= 0 ? 0 : plusWhat >= 10 ? 10 : plusWhat, req.movie],
-                (error, resultUpdate) => {
-                  if (error) {
-                    resolve({ msg: error });
-                  }
-                  if (resultUpdate.rowCount) {
-                    resolve({ torrents: true });
-                  } else {
-                    resolve({ msg: "Unable to update your like" });
-                  }
-                }
-              );
-            } else {
-              resolve({ msg: "Unable to update your like" });
-            }
-          }
-        );
       }
     );
   });
 };
 
-const getUserLikes = (request, response) => {
-  const { req } = request;
-  return new Promise(function (resolve, reject) {
-    pool.pool.query(
-      "SELECT l.*, t.* FROM likes l INNER JOIN torrents t ON l.movie_id = t.id WHERE user_id = $1;",
-      [req.id],
-      (error, results) => {
-        if (error) {
-          resolve({ msg: error });
-        }
-        if (!results.rowCount) {
-          resolve({ likes: false });
-        } else {
-          resolve(results.rows);
-        }
+const doCleanUpMaintenance = (request, response) => {
+  return new Promise((resolve, reject) => {
+    pool.pool.query("SELECT id, torrents FROM torrents;", (error, results) => {
+      if (error) {
+        resolve({
+          state: true,
+          updated: 0,
+          msg: "Error while getting torrents",
+        });
       }
-    );
+      if (results.rowCount) {
+        let i = 0;
+        let updated = 0;
+        while (i < results.rows.length) {
+          let torrents = JSON.parse(results.rows[i].torrents);
+          let j = 0;
+          while (j < torrents.length) {
+            if (
+              torrents[j].downloaded &&
+              torrents[j].path &&
+              fs.existsSync(torrents[j].path) &&
+              torrents[j].delete_at.isSame(moment(), "day")
+            ) {
+              updated++;
+              torrents[j].downloaded = false;
+              torrents[j].path = null;
+              torrents[j].downloaded_at = null;
+              torrents[j].lastviewed_at = null;
+              torrents[j].delete_at = null;
+              if (
+                !fs.unlinkSync(torrents[j].path) ||
+                !doCleanUpUpdate({ torrents: torrents, id: results.rows[i].id })
+              ) {
+                resolve({
+                  state: true,
+                  updated: updated,
+                  msg:
+                    "Error while doing maintenance on torrent:" +
+                    results.rows[i].id,
+                });
+              }
+            }
+            j++;
+          }
+          i++;
+        }
+        resolve({
+          state: true,
+          updated: updated,
+          msg: "Maintenance finished, see you in 12 hours.",
+        });
+      } else {
+        resolve({ msg: "Unable to get torrent infos" });
+      }
+    });
   });
 };
 
@@ -289,6 +283,5 @@ module.exports = {
   getTorrentInfos,
   getRandomTorrents,
   getTorrentSettings,
-  likeTorrent,
-  getUserLikes,
+  doCleanUpMaintenance,
 };
