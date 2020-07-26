@@ -1,5 +1,5 @@
 # Hypertube
-A torrent search engine and streaming website that also stores the movies on the server to avoid useless re-downloads.
+A torrent search engine and streaming website that also stores movies on the server to avoid useless re-downloads.
 # Dependencies
 You need to have [PostgreSQL](https://wiki.postgresql.org/wiki/Homebrew) and [NodeJS](https://nodejs.org/en/) installed, everything else is included in the modules.
 # Installation
