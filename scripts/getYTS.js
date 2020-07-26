@@ -189,7 +189,7 @@ const getMovieList = async (page, url) => {
               res.data.movies[i].torrents.length
             ) {
               res.data.movies[i].torrents.map((ele) => {
-                if (ele.seeds > 3) {
+                if (ele.seeds > 3 && ele.size_bytes < 10000000000) {
                   ytsInfos.movies[isDuplicate].torrents.push({
                     id: "yts_" + ytsInfos.movies[isDuplicate].torrents.length,
                     source: "yts",
@@ -257,7 +257,7 @@ const getMovieList = async (page, url) => {
               torrents: [],
             };
             res.data.movies[i].torrents.map((ele, i) => {
-              if (ele.seeds > 3) {
+              if (ele.seeds > 3 && ele.size_bytes < 10000000000) {
                 infos.torrents.push({
                   id: "yts_" + i,
                   source: "yts",

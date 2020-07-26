@@ -88,6 +88,7 @@ const commentStyle = (theme) => ({
   },
   content: {
     padding: 5,
+    wordBreak: "break-word",
   },
 });
 
@@ -155,11 +156,12 @@ const Watch = (props) => {
 
   const Comments = withStyles(commentStyle)(RenderComment);
 
-  const updateViews = () => {
+  const updateViews = (mv, tr) => {
     fetch("/api/views/set", {
       method: "POST",
       body: JSON.stringify({
-        id: props.props.location.state.movie.id,
+        movie: mv.id,
+        torrent: tr.id,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -208,7 +210,7 @@ const Watch = (props) => {
                   `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}&cover=${mv.cover_url}&title=${mv.title}`
                 );
               }
-              updateViews();
+              updateViews(mv, tr);
             }
             for (let i = 0; i < res.comments.comments.length; i++) {
               if (res.comments.comments[i].user_id === auth.loggedId) {
@@ -273,7 +275,7 @@ const Watch = (props) => {
 
   const handleSendComment = (e) => {
     e.preventDefault();
-    if (newComment && newComment.length < 1000) {
+    if (newComment && newComment.length <= 1000) {
       fetch("/api/comments/send", {
         method: "POST",
         body: JSON.stringify({

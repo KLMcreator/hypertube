@@ -5,7 +5,7 @@ const moment = require("moment");
 const setLoggedUser = (request, response) => {
   const { login, token, isLogged } = request;
   const type = login.includes("@") ? 0 : 1;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (token && login) {
       pool.pool.query(
         type === 1
@@ -33,7 +33,7 @@ const setLoggedUser = (request, response) => {
 
 const unsetLoggedUser = (request, response) => {
   const { token, isLogged } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
         "UPDATE users SET connected = $1, connected_token = $2 WHERE connected_token = $3",
@@ -60,7 +60,7 @@ const unsetLoggedUser = (request, response) => {
 const logUser = (request, response) => {
   const { login, password } = request;
   const type = login.includes("@") ? 0 : 1;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (login && password) {
       pool.pool.query(
         type === 1
@@ -105,7 +105,7 @@ const logUser = (request, response) => {
 
 const checkToken = (request, response) => {
   const { token } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
         "SELECT id, connected_token FROM users WHERE connected_token = $1;",

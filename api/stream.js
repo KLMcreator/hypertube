@@ -27,7 +27,7 @@ const config = {
 };
 
 const emmitToFront = (success, msg) => {
-  socket.sockets.emit("torrentDownloader", {
+  socket.emmitToFront({
     success: success,
     msg: msg,
     downloads: currentDownloads,
@@ -36,7 +36,7 @@ const emmitToFront = (success, msg) => {
 };
 
 const updateTorrent = (torrent) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT torrents FROM torrents where id = $1;",
       [torrent.movie],
@@ -99,7 +99,7 @@ const updateTorrent = (torrent) => {
 };
 
 const updateTorrentSubtitle = (movie, lang, path) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT subtitles FROM torrents where id = $1;",
       [movie],
@@ -136,7 +136,7 @@ const updateTorrentSubtitle = (movie, lang, path) => {
 };
 
 const getMovieInfos = (movie) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT * FROM torrents where id = $1;",
       [movie],
@@ -240,7 +240,7 @@ router.get("/", (req, res) => {
             cover: cover,
             name: title,
             identifier: hash,
-            progress: "0%",
+            progress: "0",
             ext: ext,
             parent_path:
               "/src/assets/torrents/downloads" +
@@ -252,9 +252,9 @@ router.get("/", (req, res) => {
               (stream._engine.torrent.name === file.name
                 ? file.name
                 : stream._engine.torrent.name + "/" + file.name),
-            downloaded_at: moment().toString(),
-            lastviewed_at: moment().toString(),
-            delete_at: moment(moment()).add(1, "M").toString(),
+            downloaded_at: moment(),
+            lastviewed_at: moment(),
+            delete_at: moment(moment()).add(1, "M"),
             file: file,
           };
         }
@@ -460,7 +460,11 @@ router.get("/subs", async (req, res) => {
             });
           });
           response.on("error", (err) => {
-            fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+            if (
+              fs.existsSync(path + movie + "_" + torrent + "_" + lang + ".zip")
+            ) {
+              fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+            }
             emmitToFront(false, `Error while saving subs archive: ${err}`);
             res.sendStatus(200);
           });
@@ -470,8 +474,12 @@ router.get("/subs", async (req, res) => {
       rq_subs
         .then((response) => {
           if (response) {
-            let finalFile = path + lang + file_sub.name;
-            fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+            let finalFile = path + lang + "_" + file_sub.name;
+            if (
+              fs.existsSync(path + movie + "_" + torrent + "_" + lang + ".zip")
+            ) {
+              fs.unlinkSync(path + movie + "_" + torrent + "_" + lang + ".zip");
+            }
             if (updateTorrentSubtitle(movie, s, finalFile)) {
               emmitToFront(true, `${lang} subtitles downloaded`);
               res.contentType("text/vtt");
