@@ -20,7 +20,6 @@ const Confirm = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const { classes } = props;
 
-  // r = random, u = user, e = email
   const verifyAccount = () => {
     const params = new URLSearchParams(props.props.location.search);
     if (params.has("r") && params.has("u") && params.has("e")) {

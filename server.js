@@ -18,6 +18,7 @@ const likes = require("./api/likes");
 const signUp = require("./api/signUp");
 const stream = require("./api/stream");
 const confirm = require("./api/confirm");
+const recover = require("./api/recover");
 const sockets = require("./api/sockets");
 const settings = require("./api/settings");
 const comments = require("./api/comments");
@@ -471,23 +472,14 @@ app.get("/api/profile", (req, res) => {
     });
 });
 
-//                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
-  users
-    .recoverPwd({ req: req.body })
+  recover
+    .userRecover({ req: req.body })
     .then((response) => {
       if (response.recover) {
-        sendMail(req.body.email, 2, response.random)
+        sendMail(response.email, 2, response.pass)
           .then((result) => {
-            console.log(
-              "Username: " +
-                req.body.login +
-                " email: " +
-                req.body.email +
-                " password: " +
-                response.random
-            );
             if (result) {
               res.status(200).send({ recover: { recover: response.recover } });
             } else {
@@ -503,179 +495,6 @@ app.post("/api/recover", (req, res) => {
         res.status(200).send({
           recover: { msg: "Given informations don't match any users." },
         });
-      }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user message history with clicked user
-app.post("/api/messages/get", (req, res) => {
-  messages
-    .getMessages({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ message: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Send message from logged user to matched user (clicked user)
-app.post("/api/messages/send", (req, res) => {
-  messages
-    .sendMessage({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ message: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Delete message from logged user with matched user (clicked user) based on his id
-app.post("/api/messages/delete", (req, res) => {
-  messages
-    .deleteMessage({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ delete: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Update visit history and user points
-app.post("/api/visits/add", (req, res) => {
-  visits
-    .addVisits({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user visit history
-app.post("/api/visits/get", (req, res) => {
-  visits
-    .getLastVisits({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user visit list
-app.post("/api/visits/get/list", (req, res) => {
-  visits
-    .getVisitList({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user email | with clear cookie and push to signin page
-app.post("/api/settings/email", (req, res) => {
-  settings
-    .editUserEmail({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.edit) {
-        sendMail(
-          req.body.verifEmail,
-          1,
-          "http://localhost:3000/confirm?r=" + response.random
-        )
-          .then((result) => {
-            console.log(
-              "http://localhost:3000/confirm?r=" +
-                response.random +
-                "&u=" +
-                response.rows[0].username +
-                "&e=" +
-                req.body.verifEmail
-            );
-            if (result) {
-              res.status(200).clearCookie("_hypertubeAuth", {
-                path: "/",
-              });
-              res.status(200).send({ edit: { edit: response.edit } });
-            } else {
-              res.status(200).send({ edit: { msg: "Unable to send email." } });
-            }
-          })
-          .catch((error) => {
-            res.status(200).send({ edit: { msg: "Unable to send email." } });
-          });
-      } else {
-        res.status(200).send({ edit: { msg: "Unable to edit." } });
-      }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user password | with clear cookie and push to signin page
-app.post("/api/settings/password", (req, res) => {
-  settings
-    .editUserPassword({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.edit === true) {
-        res.status(200).clearCookie("_hypertubeAuth", {
-          path: "/",
-        });
-      }
-      res.status(200).send({ edit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user firstname
-app.post("/api/settings/firstname", (req, res) => {
-  settings
-    .editUserFirstname({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ edit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user lastname
-app.post("/api/settings/lastname", (req, res) => {
-  settings
-    .editUserLastname({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ edit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Delete user account and all the related datas
-app.post("/api/settings/delete/user", (req, res) => {
-  settings
-    .deleteUser({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.delete === true) {
-        res.status(200).clearCookie("_hypertubeAuth", {
-          path: "/",
-        });
-        res.send({ delete: true });
-      } else {
-        res.send(result);
       }
     })
     .catch((error) => {

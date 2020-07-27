@@ -10,7 +10,6 @@ import {
   withRouter,
 } from "react-router-dom";
 import Dropdown from "rc-dropdown";
-// import socketIOClient from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import React, { useState, useEffect, useRef } from "react";
 import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
@@ -36,16 +35,15 @@ import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
 // components
 import User from "./component/User";
 import Home from "./component/Home";
+import Watch from "./component/Watch";
 import SignUp from "./component/SignUp";
 import SignIn from "./component/SignIn";
-import Watch from "./component/Watch";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
 import FourOFour from "./component/FourOFour";
 // files
 import "rc-dropdown/assets/index.css";
-
 import { initiateSocket, disconnectSocket, getDownloads } from "./Socket";
 
 const appBarStyles = (theme) => ({
