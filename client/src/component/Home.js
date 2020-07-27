@@ -10,8 +10,8 @@ import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Input from "@material-ui/core/Input";
 import Button from "@material-ui/core/Button";
-import { withStyles } from "@material-ui/core/styles";
 import IconButton from "@material-ui/core/IconButton";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // icons
 import CloseIcon from "@material-ui/icons/Close";
@@ -23,9 +23,9 @@ import VisibilityIcon from "@material-ui/icons/Visibility";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 
 import Slider from "react-slick";
+import "./../assets/css/home.css";
 import "../../node_modules/slick-carousel/slick/slick.css";
 import "../../node_modules/slick-carousel/slick/slick-theme.css";
-import "./../assets/css/home.css";
 
 const HomeStyles = (theme) => ({
   root: {
@@ -52,9 +52,6 @@ const SearchBarStyles = (theme) => ({
     marginBottom: 30,
     marginRight: 40,
     marginLeft: 40,
-  },
-  halfWidth: {
-    width: "50%",
   },
   rootSend: {
     width: "100%",
@@ -140,21 +137,9 @@ const TorrentStyles = (theme) => ({
     fontSize: 14,
     color: "#EFF1F3",
   },
-  torrentInfoContainer: {
-    display: "flex",
-    marginTop: 2,
-  },
   torrentYear: {
     flex: 1,
     textAlign: "left",
-    marginRight: 2,
-    fontSize: 13,
-    color: "#D0D0D0",
-    alignSelf: "center",
-  },
-  torrentRating: {
-    flex: 1,
-    textAlign: "right",
     marginRight: 2,
     fontSize: 13,
     color: "#D0D0D0",
@@ -417,6 +402,8 @@ const RenderShowMore = (props) => {
     yts_torrents,
     qualities,
     summaries,
+    actors,
+    crew,
   } = props.showMore;
 
   const handleSetLiked = (isLiked) => {
@@ -573,6 +560,30 @@ const RenderShowMore = (props) => {
                   <span className={classes.boldInfo}>Duration:</span>{" "}
                   <span className={classes.contentInfo}>
                     {torrent.duration}mn
+                  </span>
+                </div>
+              ) : undefined}
+              {actors && actors.length ? (
+                <div>
+                  <span className={classes.boldInfo}>Actors:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {actors.length
+                      ? actors.map((el, i) =>
+                          i < actors.length - 1 ? el.name + " / " : el.name
+                        )
+                      : "No informations"}
+                  </span>
+                </div>
+              ) : undefined}
+              {crew && crew.length ? (
+                <div>
+                  <span className={classes.boldInfo}>Crew:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {crew.length
+                      ? crew.map((el, i) =>
+                          i < crew.length - 1 ? el.name + " / " : el.name
+                        )
+                      : "No informations"}
                   </span>
                 </div>
               ) : undefined}
@@ -742,6 +753,7 @@ const RenderTorrent = (props) => {
   const languages = JSON.parse(torrent.languages);
   const categories = JSON.parse(torrent.categories);
   const subtitles = JSON.parse(torrent.subtitles);
+  const cast = torrent.casts ? JSON.parse(torrent.casts) : [];
 
   const t9_torrents = JSON.parse(torrent.torrents).filter(
     (el) => el.source === "torrent9"
@@ -749,9 +761,15 @@ const RenderTorrent = (props) => {
   const yts_torrents = JSON.parse(torrent.torrents).filter(
     (el) => el.source === "yts"
   );
+  const actors = cast
+    .filter((el) => el.job.findIndex((e) => e === "actor") > -1)
+    .slice(0, 5);
+  const crew = cast
+    .filter((el) => el.job.findIndex((e) => e !== "actor") > -1)
+    .slice(0, 5);
 
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
-  const summaries = torrent.summary ? JSON.parse(torrent.summary)[0] : [];
+  const summaries = torrent.summary ? torrent.summary : [];
 
   console.log(torrent);
 
@@ -820,6 +838,8 @@ const RenderTorrent = (props) => {
             yts_torrents: yts_torrents,
             qualities: qualities,
             summaries: summaries,
+            actors: actors,
+            crew: crew,
           });
           props.setShowMoreBis(false);
         }}
@@ -1010,6 +1030,30 @@ const RenderTorrent = (props) => {
                       <span className={classes.boldInfo}>Duration:</span>{" "}
                       <span className={classes.contentInfo}>
                         {torrent.duration}mn
+                      </span>
+                    </div>
+                  ) : undefined}
+                  {actors && actors.length ? (
+                    <div>
+                      <span className={classes.boldInfo}>Actors:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {actors.length
+                          ? actors.map((el, i) =>
+                              i < actors.length - 1 ? el.name + " / " : el.name
+                            )
+                          : "No informations"}
+                      </span>
+                    </div>
+                  ) : undefined}
+                  {crew && crew.length ? (
+                    <div>
+                      <span className={classes.boldInfo}>Crew:</span>{" "}
+                      <span className={classes.contentInfo}>
+                        {crew.length
+                          ? crew.map((el, i) =>
+                              i < crew.length - 1 ? el.name + " / " : el.name
+                            )
+                          : "No informations"}
                       </span>
                     </div>
                   ) : undefined}
@@ -1479,12 +1523,16 @@ const RenderSearchBar = (props) => {
   const [selectedLanguage, setSelectedLanguage] = useState(
     props.filters.selectedLanguage
   );
+  const [selectedCasts, setselectedCasts] = useState(
+    props.filters.selectedCasts
+  );
   const [selectedSubs, setSelectedSubs] = useState(props.filters.selectedSubs);
   const [selectedYear, setSelectedYear] = useState(props.filters.selectedYear);
   const [selectedRating, setSelectedRating] = useState(
     props.filters.selectedRating
   );
   const { settings, classes } = props;
+  const casts = props.settings.casts;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
   const subtitles = props.settings.subtitles;
@@ -1497,7 +1545,8 @@ const RenderSearchBar = (props) => {
       selectedLanguage,
       selectedYear,
       selectedRating,
-      selectedSubs
+      selectedSubs,
+      selectedCasts
     );
   };
 
@@ -1516,6 +1565,10 @@ const RenderSearchBar = (props) => {
 
   const handleAppendSubs = (subsToAdd) => {
     setSelectedSubs(subsToAdd);
+  };
+
+  const handleAppendCasts = (castsToAdd) => {
+    setselectedCasts(castsToAdd);
   };
 
   const handleFilterYear = (e) => {
@@ -1542,6 +1595,46 @@ const RenderSearchBar = (props) => {
         endAdornment={<SearchIcon className={classes.sendIcon}></SearchIcon>}
       />
       <div className={classes.selectContainer}>
+        <div className={classes.selectDivider}>
+          <Select
+            value={selectedCasts}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            theme={(theme) => ({
+              ...theme,
+              colors: {
+                ...theme.colors,
+                primary: "#373737",
+                primary75: "red",
+                primary50: "#FBBA72",
+                primary25: "#9A1300",
+                danger: "yellow",
+                dangerLight: "#FBBA72",
+                neutral0: "#1A1A1A",
+                neutral5: "pink",
+                neutral10: "#9A1300",
+                neutral20: "#373737",
+                neutral30: "#9A1300",
+                neutral40: "#FBBA72",
+                neutral50: "#EFF1F3",
+                neutral60: "#FBBA72",
+                neutral70: "yellow",
+                neutral80: "#EFF1F3",
+                neutral90: "#EFF1F3",
+              },
+            })}
+            closeMenuOnSelect={false}
+            isMulti
+            filterOption={createFilter({
+              ignoreAccents: false,
+            })}
+            isSearchable={true}
+            options={casts}
+            key={"changeCasts"}
+            onChange={handleAppendCasts}
+            placeholder={"CASTS: ALL"}
+          />
+        </div>
         <div className={classes.selectDivider}>
           <Select
             value={selectedCategories}
@@ -1773,6 +1866,7 @@ const Home = (props) => {
           : [settings.minProductionYear, settings.maxProductionYear],
         selectedRating: query.selectedRating ? query.selectedRating : [0, 10],
         selectedSubs: query.selectedSubs ? query.selectedSubs : null,
+        selectedCasts: query.selectedCasts ? query.selectedCasts : null,
         limit: loadMore ? loadMore : limit,
         loggedId: auth.loggedId,
       }),
@@ -1810,6 +1904,7 @@ const Home = (props) => {
             categories: JSON.parse(res.settings.settings[0].categories),
             languages: JSON.parse(res.settings.settings[0].languages),
             subtitles: JSON.parse(res.settings.settings[0].subtitles),
+            casts: JSON.parse(res.settings.settings[0].casts),
           });
           setFilters({
             selectedCategories: [],
@@ -1820,6 +1915,7 @@ const Home = (props) => {
             ],
             selectedRating: [0, 10],
             selectedSubs: [],
+            selectedCasts: [],
           });
           setIsLoading(false);
         } else if (res.settings.msg) {
@@ -1880,7 +1976,8 @@ const Home = (props) => {
     selectedLanguage,
     selectedYear,
     selectedRating,
-    selectedSubs
+    selectedSubs,
+    selectedCasts
   ) => {
     await getQueryTorrents({
       query: query,
@@ -1889,6 +1986,7 @@ const Home = (props) => {
       selectedYear: selectedYear,
       selectedRating: selectedRating,
       selectedSubs: selectedSubs,
+      selectedCasts: selectedCasts,
     });
     setSearch(query);
     setFilters({
@@ -1897,6 +1995,7 @@ const Home = (props) => {
       selectedYear: selectedYear ? selectedYear : null,
       selectedRating: selectedRating ? selectedRating : null,
       selectedSubs: selectedSubs ? selectedSubs : null,
+      selectedCasts: selectedCasts ? selectedCasts : null,
     });
   };
 
@@ -1921,6 +2020,7 @@ const Home = (props) => {
                 selectedYear: filters.selectedYear,
                 selectedRating: filters.selectedRating,
                 selectedSubs: filters.selectedSubs,
+                selectedCasts: filters.selectedCasts,
               },
               limit + 15
             );

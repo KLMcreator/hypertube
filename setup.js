@@ -1,4 +1,5 @@
 const fs = require("fs");
+const os = require("os");
 const Pool = require("pg").Pool;
 const chalk = require("chalk");
 const faker = require("faker");
@@ -11,7 +12,7 @@ let torrents;
 let totalUser = 42;
 
 const rootPool = new Pool({
-  user: "klm",
+  user: os.userInfo().username,
   host: "localhost",
   database: "postgres",
   password: "root",
@@ -35,7 +36,7 @@ const randomDate = (start, end) => {
 const setupTorrents = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating NUMERIC DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL,large_cover_url VARCHAR(1000) DEFAULT NULL,summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS torrents (id SERIAL, search_vector TSVECTOR, yts_id VARCHAR(255) DEFAULT NULL, torrent9_id VARCHAR(255) DEFAULT NULL, title VARCHAR(1000) DEFAULT NULL, production_year INTEGER DEFAULT NULL, duration INTEGER DEFAULT NULL, rating NUMERIC DEFAULT NULL, yts_url VARCHAR(1000) DEFAULT NULL, torrent9_url VARCHAR(1000) DEFAULT NULL, cover_url VARCHAR(1000) DEFAULT NULL, summary VARCHAR DEFAULT NULL, imdb_code VARCHAR(100) DEFAULT NULL,yt_trailer VARCHAR(300) DEFAULT NULL,categories VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL, casts VARCHAR DEFAULT NULL, torrents VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -51,7 +52,7 @@ const setupTorrents = async () => {
 const setupSettings = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL,casts VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -203,7 +204,7 @@ const insertIntoUsers = (user) => {
 const insertIntoTorrents = (torrent) => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, large_cover_url, summary, imdb_code, yt_trailer, subtitles, duration) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)",
+      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, summary, imdb_code, yt_trailer, subtitles, duration, casts) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)",
       [
         torrent.title ? torrent.title : null,
         torrent.yts_id ? torrent.yts_id : null,
@@ -217,12 +218,12 @@ const insertIntoTorrents = (torrent) => {
         torrent.categories ? JSON.stringify(torrent.categories) : null,
         torrent.languages ? JSON.stringify(torrent.languages) : null,
         torrent.torrents ? JSON.stringify(torrent.torrents) : null,
-        torrent.large_image ? torrent.large_image : null,
-        torrent.summary ? JSON.stringify(torrent.summary) : null,
+        torrent.summary ? torrent.summary : null,
         torrent.imdb_code ? torrent.imdb_code : null,
         torrent.yt_trailer ? torrent.yt_trailer : null,
         torrent.subtitles ? JSON.stringify(torrent.subtitles) : null,
         torrent.duration ? torrent.duration : null,
+        torrent.cast ? JSON.stringify(torrent.cast) : null,
       ],
       (error, results) => {
         if (error) {
@@ -289,30 +290,37 @@ const populateTorrents = () => {
 const populateSettings = () => {
   return new Promise(async (resolve, reject) => {
     console.log(
-      "Getting min/max production year, available languages/subtitles and every categories"
+      "Getting min/max production year, available languages/subtitles, categories and every actors. It might take up to a minut depending on your computer"
     );
     let totalSubsMovies = 0;
+    let totalCastMovies = 0;
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
       categories: [],
       languages: [],
       subtitles: [],
+      cast: [],
     };
     torrents.movies.map((e) => {
-      if (e.production_year && e.production_year > settings.maxProductionYear) {
+      if (e.production_year && e.production_year > settings.maxProductionYear)
         settings.maxProductionYear = e.production_year;
-      }
-      if (e.production_year && e.production_year < settings.minProductionYear) {
+      if (e.production_year && e.production_year < settings.minProductionYear)
         settings.minProductionYear = e.production_year;
+      if (e.cast && e.cast.length) {
+        totalCastMovies++;
+        e.cast.map((cast) => {
+          settings.cast.push({
+            value: cast.name,
+            label: cast.name,
+          });
+        });
       }
       if (e.subtitles && e.subtitles.length) {
         totalSubsMovies++;
         e.subtitles.map((subtitle) => {
           let pos = settings.subtitles
-            .map((e) => {
-              return e.value;
-            })
+            .map((e) => e.value)
             .indexOf(subtitle.language);
           if (pos === -1) {
             settings.subtitles.push({
@@ -324,11 +332,7 @@ const populateSettings = () => {
       }
       if (e.categories && e.categories.length) {
         e.categories.map((category) => {
-          let pos = settings.categories
-            .map((e) => {
-              return e.value;
-            })
-            .indexOf(category);
+          let pos = settings.categories.map((e) => e.value).indexOf(category);
           if (pos === -1) {
             settings.categories.push({ value: category, label: category });
           }
@@ -336,25 +340,25 @@ const populateSettings = () => {
       }
       if (e.languages && e.languages.length) {
         e.languages.map((languages) => {
-          let pos = settings.languages
-            .map((e) => {
-              return e.value;
-            })
-            .indexOf(languages);
+          let pos = settings.languages.map((e) => e.value).indexOf(languages);
           if (pos === -1) {
             settings.languages.push({ value: languages, label: languages });
           }
         });
       }
     });
+    settings.cast = settings.cast.filter(
+      (e, i, casts) => i === casts.findIndex((t) => t.label === e.label)
+    );
     pool.query(
-      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles) VALUES($1, $2, $3, $4, $5)",
+      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts) VALUES($1, $2, $3, $4, $5, $6)",
       [
         settings.minProductionYear,
         settings.maxProductionYear,
         JSON.stringify(settings.categories),
         JSON.stringify(settings.languages),
         JSON.stringify(settings.subtitles),
+        JSON.stringify(settings.cast),
       ],
       (error, results) => {
         if (error) {
@@ -370,11 +374,13 @@ const populateSettings = () => {
             settings.categories.length,
             "categories,",
             settings.languages.length,
-            "languages and",
+            "languages,",
             settings.subtitles.length,
             "subtitles languages for",
             totalSubsMovies,
-            "movies"
+            "movies and",
+            totalCastMovies,
+            "movies with cast and crew"
           );
           resolve(0);
         }

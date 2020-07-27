@@ -1,7 +1,7 @@
 // react
 import React, { useEffect } from "react";
 // framework
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 
 const FourOFourStyles = (theme) => ({
   root: { flexGrow: 1 },

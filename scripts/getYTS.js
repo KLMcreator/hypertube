@@ -2,6 +2,7 @@ const got = require("got");
 const chalk = require("chalk");
 const moment = require("moment");
 const cheerio = require("cheerio");
+const TMDB_KEY = "609316880b9db19a22c16eddc70c6e60";
 
 let ytsInfos = {
   fetched_at: 0,
@@ -166,6 +167,65 @@ const getSubs = async (url) => {
     .catch(() => {});
 };
 
+const getCast = async (code) => {
+  return got(`https://api.themoviedb.org/3/movie/${code}`, {
+    searchParams: {
+      api_key: TMDB_KEY,
+      language: "en-US",
+      append_to_response: "credits",
+    },
+    retry: {
+      limit: 0,
+    },
+    headers: { "Content-Type": "application/json" },
+    responseType: "json",
+    resolveBodyOnly: true,
+  })
+    .then(async (res) => {
+      let cast = [];
+      if (res.credits) {
+        let nbActors = 0;
+        let nbCrew = 0;
+        if (res.credits.cast && res.credits.cast.length) {
+          res.credits.cast.map((el) => {
+            if (nbActors < 10) {
+              let found = cast.findIndex((e) => e.name === el.name);
+              if (found > -1) {
+                cast[found].job.push("actor");
+              } else {
+                cast.push({
+                  name: el.name,
+                  job: ["actor"],
+                });
+              }
+              nbActors++;
+            }
+          });
+        }
+        if (res.credits.crew && res.credits.crew.length) {
+          res.credits.crew.map((el) => {
+            if (nbCrew < 5) {
+              let found = cast.findIndex((e) => e.name === el.name);
+              if (found > -1) {
+                cast[found].job.push(el.job);
+              } else {
+                cast.push({
+                  name: el.name,
+                  job: [el.job],
+                });
+              }
+              nbCrew++;
+            }
+          });
+        }
+      }
+      return cast && cast.length ? cast : [];
+    })
+    .catch((err) => {
+      //   console.log(chalk.red("TMDB: Error while getting pages:", err, code));
+    });
+};
+
 const getMovieList = async (page, url) => {
   return got(url, {
     searchParams: { page: page, limit: 50 },
@@ -238,10 +298,10 @@ const getMovieList = async (page, url) => {
               yts_url: res.data.movies[i].url,
               torrent9_url: null,
               cover_url: res.data.movies[i].medium_cover_image,
-              large_image: res.data.movies[i].large_cover_image,
               summary: res.data.movies[i].summary
-                ? [res.data.movies[i].summary]
+                ? res.data.movies[i].summary
                 : null,
+              cast: [],
               duration: res.data.movies[i].runtime
                 ? res.data.movies[i].runtime
                 : null,
@@ -291,6 +351,7 @@ const getMovieList = async (page, url) => {
             });
             if (infos.torrents && infos.torrents.length) {
               let subs = [];
+              let cast = [];
               if (
                 infos.imdb_code &&
                 ((infos.production_year > 1970 &&
@@ -298,12 +359,18 @@ const getMovieList = async (page, url) => {
                   (infos.production_year > 2000 &&
                     parseInt(infos.rating, 10) > 5))
               ) {
-                subs = await getSubs(
-                  "https://www.yifysubtitles.com/movie-imdb/" + infos.imdb_code
-                );
-                infos.torrents.map((el) => (el.subtitles = subs));
+                let status = await Promise.all([
+                  getSubs(
+                    "https://www.yifysubtitles.com/movie-imdb/" +
+                      infos.imdb_code
+                  ),
+                  getCast(infos.imdb_code),
+                ]);
+                subs = status[0] && status[0].length ? status[0] : [];
+                cast = status[1] && status[1].length ? status[1] : [];
               }
               infos.subtitles = subs;
+              infos.cast = cast;
               ytsInfos.movies.push(infos);
             }
           }
@@ -312,7 +379,7 @@ const getMovieList = async (page, url) => {
       }
     })
     .catch((err) => {
-      //   console.log(chalk.red("YTS: Error while getting pages:", err))
+      console.log(chalk.red("YTS: Error while getting pages:", err));
     });
 };
 
@@ -336,7 +403,7 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < ytsInfos.number_of_pages; i++) {
     await getMovieList(i, url);
-    if (i && i % 10 === 0) {
+    if (i && i % 20 === 0) {
       console.log(
         i,
         "pages done on",
