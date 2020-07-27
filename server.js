@@ -452,6 +452,121 @@ app.get("/api/profile", (req, res) => {
     });
 });
 
+// Edit photo in profile page
+app.post("/api/settings/edit/photo", (req, res) => {
+  const upload = multer({
+    storage: storage,
+  }).single("file");
+  upload(req, res, function (err) {
+    if (!req.file) {
+      res.status(200).send({ edit: { msg: "No files uploaded." } });
+    } else {
+      settings
+        .editUserPhoto({
+          photo: req.file.filename,
+          token: req.cookies._hypertubeAuth,
+        })
+        .then((response) => {
+          res.status(200).send({ edit: response });
+        })
+        .catch((error) => {
+          res.status(500).send(error);
+        });
+    }
+  });
+});
+
+// Edit language settings page
+app.post("/api/settings/edit/language", (req, res) => {
+  settings
+    .editUserLanguage({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ edit: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Edit user email | with clear cookie and push to signin page
+app.post("/api/settings/edit/mail", (req, res) => {
+  settings
+    .editUserEmail({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      if (response.edit) {
+        sendMail(
+          req.body.confirmedMail,
+          1,
+          "http://localhost:3000/confirm?r=" +
+            response.random +
+            "&u=" +
+            response.rows[0].username +
+            "&e=" +
+            req.body.confirmedMail
+        )
+          .then((result) => {
+            if (result) {
+              res.status(200).clearCookie("_hypertubeAuth", {
+                path: "/",
+              });
+              res.status(200).send({ edit: { edit: response.edit } });
+            } else {
+              res.status(200).send({ edit: { msg: "Unable to send email." } });
+            }
+          })
+          .catch((error) => {
+            res.status(200).send({ edit: { msg: "Unable to send email." } });
+          });
+      } else {
+        res.status(200).send({ edit: { msg: "Unable to edit mail." } });
+      }
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Edit user lastname
+app.post("/api/settings/lastname", (req, res) => {
+  settings
+    .editUserLastname({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ edit: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Edit user firstname
+app.post("/api/settings/firstname", (req, res) => {
+  settings
+    .editUserFirstname({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ edit: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
+// Edit user password | with clear cookie and push to signin page
+app.post("/api/settings/password", (req, res) => {
+  settings
+    .editUserPassword({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      if (response.edit === true) {
+        res.status(200).clearCookie("_hypertubeAuth", {
+          path: "/",
+        });
+      }
+      res.status(200).send({ edit: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 //                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
@@ -598,47 +713,6 @@ app.post("/api/settings/email", (req, res) => {
       } else {
         res.status(200).send({ edit: { msg: "Unable to edit." } });
       }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user password | with clear cookie and push to signin page
-app.post("/api/settings/password", (req, res) => {
-  settings
-    .editUserPassword({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.edit === true) {
-        res.status(200).clearCookie("_hypertubeAuth", {
-          path: "/",
-        });
-      }
-      res.status(200).send({ edit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user firstname
-app.post("/api/settings/firstname", (req, res) => {
-  settings
-    .editUserFirstname({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ edit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user lastname
-app.post("/api/settings/lastname", (req, res) => {
-  settings
-    .editUserLastname({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ edit: response });
     })
     .catch((error) => {
       res.status(500).send(error);
