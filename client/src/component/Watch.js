@@ -104,11 +104,6 @@ const WatchStyles = (theme) => ({
     paddingRight: 10,
     paddingLeft: 10,
   },
-  starIcon: {
-    fontSize: 25,
-    color: "#FBBA72",
-    verticalAlign: "middle",
-  },
 });
 
 const commentStyle = (theme) => ({
@@ -237,19 +232,19 @@ const Watch = (props) => {
             if (loadMore) {
               setLimit(limit + 10);
             } else {
-              //   if (tr.downloaded) {
-              //     if (tr.path.endsWith(".mp4") || tr.path.endsWith(".webm")) {
-              //       setSource(`http://localhost:3000${tr.path}`);
-              //     } else {
-              //       setSource(
-              //         `http://localhost:3000/stream/pump?path=${tr.path}&title=${mv.title}`
-              //       );
-              //     }
-              //   } else {
-              //     setSource(
-              //       `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}&cover=${mv.cover_url}&title=${mv.title}`
-              //     );
-              //   }
+              if (tr.downloaded) {
+                if (tr.path.endsWith(".mp4") || tr.path.endsWith(".webm")) {
+                  setSource(`http://localhost:3000${tr.path}`);
+                } else {
+                  setSource(
+                    `http://localhost:3000/stream/pump?path=${tr.path}&title=${mv.title}`
+                  );
+                }
+              } else {
+                setSource(
+                  `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}&cover=${mv.cover_url}&title=${mv.title}`
+                );
+              }
               updateViews(mv, tr);
             }
             for (let i = 0; i < res.comments.comments.length; i++) {
