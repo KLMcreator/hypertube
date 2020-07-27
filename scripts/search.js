@@ -1,4 +1,5 @@
 const fs = require("fs");
+const got = require("got");
 const chalk = require("chalk");
 const crypto = require("crypto");
 const moment = require("moment");
@@ -134,8 +135,8 @@ const purifyAllTorrents = async () => {
         yts_url: null,
         torrent9_url: null,
         cover_url: null,
-        large_image: null,
-        summary: [],
+        summary: "",
+        cast: [],
         duration: null,
         imdb_code: null,
         yt_trailer: null,
@@ -170,10 +171,10 @@ const purifyAllTorrents = async () => {
           cover_url: finalTorrents.movies[occurences[k]].cover_url
             ? finalTorrents.movies[occurences[k]].cover_url
             : infos.cover_url,
-          large_image: finalTorrents.movies[occurences[k]].large_image
-            ? finalTorrents.movies[occurences[k]].large_image
-            : infos.large_image,
-          summary: infos.summary.length ? infos.summary : [],
+          summary: finalTorrents.movies[occurences[k]].summary
+            ? finalTorrents.movies[occurences[k]].summary
+            : infos.summary,
+          cast: [],
           duration: infos.runtime ? infos.runtime : null,
           imdb_code: finalTorrents.movies[occurences[k]].imdb_code
             ? finalTorrents.movies[occurences[k]].imdb_code
@@ -186,9 +187,6 @@ const purifyAllTorrents = async () => {
           subtitles: infos.subtitles.length ? infos.subtitles : [],
           torrents: infos.torrents.length ? infos.torrents : [],
         };
-        if (finalTorrents.movies[occurences[k]].summary) {
-          infos.summary.push(finalTorrents.movies[occurences[k]].summary);
-        }
         if (finalTorrents.movies[occurences[k]].languages) {
           finalTorrents.movies[occurences[k]].languages.map((ele) => {
             infos.languages.push(ele);
@@ -252,7 +250,6 @@ const purifyMaintenanceTorrents = async (differencies, oldTorrents) => {
         yts_url: null,
         torrent9_url: null,
         cover_url: null,
-        large_image: null,
         summary: [],
         duration: null,
         imdb_code: null,
@@ -288,10 +285,9 @@ const purifyMaintenanceTorrents = async (differencies, oldTorrents) => {
           cover_url: oldTorrents.movies[occurences[k]].cover_url
             ? oldTorrents.movies[occurences[k]].cover_url
             : infos.cover_url,
-          large_image: oldTorrents.movies[occurences[k]].large_image
-            ? oldTorrents.movies[occurences[k]].large_image
-            : infos.large_image,
-          summary: infos.summary.length ? infos.summary : [],
+          summary: oldTorrents.movies[occurences[k]].summary
+            ? oldTorrents.movies[occurences[k]].summary
+            : infos.summary,
           duration: infos.runtime ? infos.runtime : null,
           imdb_code: oldTorrents.movies[occurences[k]].imdb_code
             ? oldTorrents.movies[occurences[k]].imdb_code
@@ -304,9 +300,7 @@ const purifyMaintenanceTorrents = async (differencies, oldTorrents) => {
           subtitles: infos.subtitles.length ? infos.subtitles : [],
           torrents: infos.torrents.length ? infos.torrents : [],
         };
-        if (oldTorrents.movies[occurences[k]].summary) {
-          infos.summary.push(oldTorrents.movies[occurences[k]].summary);
-        }
+
         if (oldTorrents.movies[occurences[k]].languages) {
           oldTorrents.movies[occurences[k]].languages.map((ele) => {
             infos.languages.push(ele);
@@ -411,9 +405,8 @@ const groupAndSave = async () => {
     "Creating one big final list for every movies before storing it into the database"
   );
   console.log(
-    torrent9Infos.movies.length +
-      ytsInfos.movies.length +
-      "movies in total before purify!"
+    torrent9Infos.movies.length + ytsInfos.movies.length,
+    "movies in total before purify!"
   );
   await purifyAllTorrents();
   console.log(

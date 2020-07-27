@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 // Check if mail is already existing AND if user did not put space in the field
 const checkMail = (request, response) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (
       request.email &&
       request.email.length === request.email.replace(/\s/g, "").length
@@ -30,7 +30,7 @@ const checkMail = (request, response) => {
 
 // Check if password contain only letters and at least one cap, one min letter, one digit and at least 8 char AND if user did not put space in the field
 const checkPassword = (request, response) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     let checkPwd = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})");
     if (
       request.confirmedPassword &&
@@ -48,7 +48,7 @@ const checkPassword = (request, response) => {
 
 // Check if username is already existing AND if user did not put space in the field
 const checkUsername = (request, response) => {
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     let accentedCharacters =
       "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ";
     let checkSpecChar = new RegExp(
@@ -84,7 +84,7 @@ const checkFirstname = (request, response) => {
   let accentedCharacters =
     "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ";
   let checkSpecChar = new RegExp("^[-'A-Z" + accentedCharacters + "a-z0-9 ]+$");
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (
       request.firstName &&
       request.firstName.length ===
@@ -103,7 +103,7 @@ const checkLastname = (request, response) => {
   let accentedCharacters =
     "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ";
   let checkSpecChar = new RegExp("^[-'A-Z" + accentedCharacters + "a-z0-9 ]+$");
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (
       request.lastName &&
       request.lastName.length === request.lastName.replace(/\s/g, "").length &&
@@ -119,7 +119,7 @@ const checkLastname = (request, response) => {
 // Sign up -> username, lastname, firstname, gender, mail, age and password in database
 const userSignUp = (request, response) => {
   const { username, firstName, lastName, email, password, photo } = request;
-  return new Promise(function (resolve, reject) {
+  return new Promise((resolve, reject) => {
     checkUsername(request, response).then((usernameCheck) => {
       if (usernameCheck) {
         checkFirstname(request, response).then((firstnameCheck) => {

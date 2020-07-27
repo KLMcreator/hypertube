@@ -5,7 +5,7 @@ import Grid from "@material-ui/core/Grid";
 import Input from "@material-ui/core/Input";
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 // icons
 import VpnKey from "@material-ui/icons/VpnKey";
 import AccountCircle from "@material-ui/icons/AccountCircle";

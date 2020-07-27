@@ -22,6 +22,12 @@ const isMultiple = (title) => {
   return 1;
 };
 
+const getSize = (size) => {
+  return size.toLowerCase().indexOf("mo") > -1
+    ? parseInt(size.split(" ")[0], 10) * 1024 * 1024
+    : parseInt(size.split(" ")[0], 10) * 1024 * 1024 * 1024;
+};
+
 const getTitle = (title) => {
   const purify = [
     "bluray",
@@ -91,7 +97,7 @@ const getFormat = (title) => {
 
 const getQuality = (title) => {
   const quality = ["720p", "1080p", "4K", "ULTRA HD"];
-  let type = "Default";
+  let type = "360p";
 
   quality.map((el) => {
     if (title.toLowerCase().indexOf(el) > -1)
@@ -196,14 +202,12 @@ const getMoreInfos = async (url, i, j) => {
           i
         ].categories.map((el) => getCategoriesTranslated(el.toLowerCase()));
       }
-      summ[1].children[0] && !torrent9Infos.movies[i].summary.length
-        ? torrent9Infos.movies[i].summary.push(summ[1].children[0].data)
-        : summ[0].children[0] && !torrent9Infos.movies[i].summary.length
-        ? torrent9Infos.movies[i].summary.push(summ[0].children[0].data)
+      summ[1].children[0] && !torrent9Infos.movies[i].summary
+        ? (torrent9Infos.movies[i].summary = summ[1].children[0].data)
+        : summ[0].children[0] && !torrent9Infos.movies[i].summary
+        ? (torrent9Infos.movies[i].summary = summ[0].children[0].data)
         : undefined;
       torrent9Infos.movies[i].cover_url =
-        "https://www.torrent9.ac" + cover[0].attribs.src;
-      torrent9Infos.movies[i].large_image =
         "https://www.torrent9.ac" + cover[0].attribs.src;
       torrent9Infos.movies[i].torrents[j].magnet =
         buttons[1].children[0].attribs.href;
@@ -260,7 +264,9 @@ const getMovieList = async (url) => {
             ) > 3 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
-            )
+            ) &&
+            getSize(movies[el].children[3].children[0].data.toLowerCase()) <
+              10000000000
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
@@ -300,7 +306,9 @@ const getMovieList = async (url) => {
             ) > 3 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
-            )
+            ) &&
+            getSize(movies[el].children[3].children[0].data.toLowerCase()) <
+              10000000000
           ) {
             torrent9Infos.movies.push({
               yts_id: null,
@@ -314,7 +322,8 @@ const getMovieList = async (url) => {
                 movies[el].children[0].next.children[1].next.attribs.href,
               cover_url: null,
               large_image: null,
-              summary: [],
+              summary: "",
+              cast: [],
               duration: null,
               imdb_code: null,
               yt_trailer: null,
@@ -407,7 +416,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4600"
+    "https://www.torrent9.ac/torrents/films/4650"
   );
   console.log(
     torrent9Infos.number_of_pages,

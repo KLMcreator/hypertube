@@ -9,9 +9,10 @@ import {
   Redirect,
   withRouter,
 } from "react-router-dom";
-import socketIOClient from "socket.io-client";
-import React, { useState, useEffect } from "react";
+import Dropdown from "rc-dropdown";
 import { ToastContainer, toast } from "react-toastify";
+import React, { useState, useEffect, useRef } from "react";
+import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
 // framework
 import Menu from "@material-ui/core/Menu";
 import AppBar from "@material-ui/core/AppBar";
@@ -19,8 +20,8 @@ import Toolbar from "@material-ui/core/Toolbar";
 import MenuItem from "@material-ui/core/MenuItem";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import withStyles from "@material-ui/core/styles/withStyles";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
+import withStyles from "@material-ui/core/styles/withStyles";
 // icons
 import HelpIcon from "@material-ui/icons/Help";
 import HomeIcon from "@material-ui/icons/Home";
@@ -34,17 +35,16 @@ import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
 // components
 import User from "./component/User";
 import Home from "./component/Home";
+import Watch from "./component/Watch";
 import SignUp from "./component/SignUp";
 import SignIn from "./component/SignIn";
-import Watch from "./component/Watch";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
 import FourOFour from "./component/FourOFour";
-
-import Dropdown from "rc-dropdown";
-import DropdownMenu, { Item as DropdownMenuItem } from "rc-menu";
+// files
 import "rc-dropdown/assets/index.css";
+import { initiateSocket, disconnectSocket, getDownloads } from "./Socket";
 
 const appBarStyles = (theme) => ({
   loadMoreButton: {
@@ -178,6 +178,39 @@ const appBarStyles = (theme) => ({
   },
 });
 
+const downloadMenuStyles = (theme) => ({
+  loading: {
+    display: "flex",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingLogo: {
+    color: "#9A1300",
+  },
+  dropdown: {
+    backgroundColor: "#1a1a1a",
+    boxShadow: "none",
+    border: "0.5px solid rgba(41, 41, 41, 1)",
+    color: "#EFF1F3",
+    padding: 5,
+  },
+  dropdownItem: {
+    padding: 5,
+    color: "#D0D0D0",
+    display: "flex",
+  },
+  itemAvatar: {
+    flex: 1,
+    width: 25,
+  },
+  itemInfos: {
+    flex: 9,
+    padding: 5,
+    alignSelf: "center",
+  },
+});
+
 const auth = {
   isLogged: false,
   loggedId: false,
@@ -256,10 +289,116 @@ const PublicRoute = ({ component: Component, ...rest }) => (
   />
 );
 
-const AuthButton = (props) => {
+const RenderDownloadMenu = (props) => {
+  const ref = useRef(false);
   const [downloads, setDownloads] = useState(0);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { classes } = props;
+
+  const DownloadItems = () => {
+    let DownloadItems = [];
+    let ConvertItems = [];
+
+    if (downloads) {
+      for (const [key, value] of Object.entries(downloads.downloads)) {
+        DownloadItems.push(
+          <DropdownMenuItem className={classes.dropdownItem} disabled key={key}>
+            <img
+              className={classes.itemAvatar}
+              src={value.cover}
+              alt={key}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "./src/assets/img/nophotos.png";
+              }}
+            ></img>
+            <div className={classes.itemInfos}>
+              {value.name}: {value.progress}%
+            </div>
+          </DropdownMenuItem>
+        );
+      }
+      for (const [key, value] of Object.entries(downloads.converts)) {
+        ConvertItems.push(
+          <DropdownMenuItem className={classes.dropdownItem} disabled key={key}>
+            {value.name}
+          </DropdownMenuItem>
+        );
+      }
+    }
+
+    if (isLoading) {
+      return (
+        <DropdownMenu className={classes.dropdown}>
+          <DropdownMenuItem className={classes.dropdownItem} disabled>
+            You have no ongoing downloads
+          </DropdownMenuItem>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <DropdownMenu className={classes.dropdown}>
+        {downloads &&
+        ((DownloadItems && DownloadItems.length) ||
+          (ConvertItems && ConvertItems.length)) ? (
+          <div>
+            {DownloadItems && DownloadItems.length ? (
+              <div>Downloads</div>
+            ) : undefined}
+            {DownloadItems.map((el) => el)}
+            {ConvertItems && ConvertItems.length ? (
+              <div>Converts</div>
+            ) : undefined}
+            {ConvertItems.map((el) => el)}
+          </div>
+        ) : (
+          <DropdownMenuItem disabled>
+            You have no ongoing downloads
+          </DropdownMenuItem>
+        )}
+      </DropdownMenu>
+    );
+  };
+
+  useEffect(() => {
+    ref.current = true;
+    if (auth.isLogged && ref.current && isLoading) {
+      initiateSocket();
+      getDownloads((err, data) => {
+        if (err) return;
+        setDownloads(data);
+        if (data.msg && data.success !== "progress") {
+          if (data.success) {
+            auth.successMessage(data.msg);
+          } else if (!data.success) {
+            auth.errorMessage(data.msg);
+          }
+        }
+        setIsLoading(false);
+      });
+    }
+    return () => {
+      disconnectSocket();
+      ref.current = false;
+      setIsLoading(true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Dropdown trigger={["click"]} overlay={DownloadItems} animation="slide-up">
+      <IconButton style={{ color: "#fff" }}>
+        <GetAppIcon />
+      </IconButton>
+    </Dropdown>
+  );
+};
+
+const AuthButton = (props) => {
   const { classes, pathname } = props;
+  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
+  const DownloadMenu = withStyles(downloadMenuStyles)(RenderDownloadMenu);
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
@@ -395,28 +534,6 @@ const AuthButton = (props) => {
     );
   };
 
-  const DownloadMenu = () => {
-    // let menuItems = [];
-
-    if (downloads && downloads.length) {
-      // find a cool way to display every running downloads
-      for (const [key, value] of Object.entries(downloads)) {
-        console.log(key, value);
-        // menuItems.push(<DropdownMenuItem disabled>You have no downloads</DropdownMenuItem>);
-      }
-    }
-
-    return (
-      <DropdownMenu onSelect={(e) => console.log(e)}>
-        {downloads ? (
-          <div>downloads</div>
-        ) : (
-          <DropdownMenuItem disabled>You have no downloads</DropdownMenuItem>
-        )}
-      </DropdownMenu>
-    );
-  };
-
   const RenderLink = () => {
     return (
       <div className={classes.sectionDesktop}>
@@ -429,18 +546,7 @@ const AuthButton = (props) => {
                 }
               />
             </Link>
-            {auth.isLogged ? (
-              <Dropdown
-                trigger={["click"]}
-                overlay={DownloadMenu}
-                animation="slide-up"
-                // onVisibleChange={onVisibleChange}
-              >
-                <IconButton style={{ color: "#fff" }}>
-                  <GetAppIcon />
-                </IconButton>
-              </Dropdown>
-            ) : undefined}
+            <DownloadMenu></DownloadMenu>
             <Link onClick={checkIfLogged} to={"/Profile"}>
               <PersonIcon
                 className={
@@ -485,28 +591,6 @@ const AuthButton = (props) => {
       </div>
     );
   };
-
-  useEffect(() => {
-    if (auth.isLogged) {
-      const socket = socketIOClient("http://127.0.0.1:5000");
-      socket.on("torrentDownloader", (data) => {
-        if (data) {
-          console.log(data);
-          setDownloads(data);
-          if (data.msg) {
-            if (data.success === "progress") {
-              console.log(data.msg + "%");
-            } else if (data.success) {
-              auth.successMessage(data.msg);
-            } else if (!data.success) {
-              auth.errorMessage(data.msg);
-            }
-          }
-        }
-      });
-    }
-    return () => {};
-  }, []);
 
   return (
     <div id={"headerMatcha"} className={classes.grow}>

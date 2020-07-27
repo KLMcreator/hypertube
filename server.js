@@ -1,25 +1,25 @@
 // dependencies
 const mime = require("mime");
+const Jimp = require("jimp");
 const multer = require("multer");
 const crypto = require("crypto");
-const cron = require("node-cron");
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const CronJob = require("cron").CronJob;
 const nodeMailer = require("nodemailer");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-
-//test
-const Jimp = require("jimp");
-
 // files
 const users = require("./api/users");
 const login = require("./api/login");
-const signUp = require("./api/signUp");
 const views = require("./api/views");
+const likes = require("./api/likes");
+const signUp = require("./api/signUp");
 const stream = require("./api/stream");
 const confirm = require("./api/confirm");
+const recover = require("./api/recover");
+const sockets = require("./api/sockets");
 const settings = require("./api/settings");
 const comments = require("./api/comments");
 const torrents = require("./api/torrents");
@@ -55,12 +55,14 @@ const sessionConfig = {
 };
 
 // socket server to track download
-const server = require("http").createServer(app);
-const io = require("./api/sockets").listen(server);
+const server = require("http")
+  .createServer(app)
+  .listen(port, () =>
+    console.log(`Hypertube server + socket listening on port ${port}`)
+  );
 
-server.listen(port, () =>
-  console.log(`Hypertube server + socket listening on port ${port}`)
-);
+const io = require("socket.io").listen(server);
+sockets.initSocket(io);
 
 // allow to use static path for files
 app.use(express.static("client"));
@@ -126,6 +128,24 @@ const sendMail = (receiver, type, random) => {
     }
   });
 };
+
+const job = new CronJob("0 */12 * * *", () => {
+  console.log("Starting cleanup maintenance...");
+  torrents
+    .doCleanUpMaintenance()
+    .then((response) => {
+      if (response.updated) {
+        console.log(`${response.updated} torrents updated. ${response.msg}`);
+      } else {
+        console.log(`${response.updated} torrents updated. ${response.msg}`);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+});
+
+job.start();
 
 // Check if the token is valid, needed for react router
 app.get("/api/checkToken", (req, res) => {
@@ -356,7 +376,7 @@ app.post("/api/torrents/random", (req, res) => {
 
 // Like to dislike torrent
 app.post("/api/torrents/like", (req, res) => {
-  torrents
+  likes
     .likeTorrent({ req: req.body, token: req.cookies._hypertubeAuth })
     .then((response) => {
       res.status(200).send({ torrents: response });
@@ -392,7 +412,7 @@ app.post("/api/views/get", (req, res) => {
 
 // Get user liked movies
 app.post("/api/likes/get", (req, res) => {
-  torrents
+  likes
     .getUserLikes({ req: req.body })
     .then((response) => {
       res.status(200).send({ likes: response });
@@ -570,20 +590,12 @@ app.post("/api/settings/password", (req, res) => {
 //                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
-  users
-    .recoverPwd({ req: req.body })
+  recover
+    .userRecover({ req: req.body })
     .then((response) => {
       if (response.recover) {
-        sendMail(req.body.email, 2, response.random)
+        sendMail(response.email, 2, response.pass)
           .then((result) => {
-            console.log(
-              "Username: " +
-                req.body.login +
-                " email: " +
-                req.body.email +
-                " password: " +
-                response.random
-            );
             if (result) {
               res.status(200).send({ recover: { recover: response.recover } });
             } else {
@@ -599,138 +611,6 @@ app.post("/api/recover", (req, res) => {
         res.status(200).send({
           recover: { msg: "Given informations don't match any users." },
         });
-      }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user message history with clicked user
-app.post("/api/messages/get", (req, res) => {
-  messages
-    .getMessages({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ message: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Send message from logged user to matched user (clicked user)
-app.post("/api/messages/send", (req, res) => {
-  messages
-    .sendMessage({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ message: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Delete message from logged user with matched user (clicked user) based on his id
-app.post("/api/messages/delete", (req, res) => {
-  messages
-    .deleteMessage({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ delete: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Update visit history and user points
-app.post("/api/visits/add", (req, res) => {
-  visits
-    .addVisits({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user visit history
-app.post("/api/visits/get", (req, res) => {
-  visits
-    .getLastVisits({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Get logged user visit list
-app.post("/api/visits/get/list", (req, res) => {
-  visits
-    .getVisitList({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      res.status(200).send({ visit: response });
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Edit user email | with clear cookie and push to signin page
-app.post("/api/settings/email", (req, res) => {
-  settings
-    .editUserEmail({ req: req.body, token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.edit) {
-        sendMail(
-          req.body.verifEmail,
-          1,
-          "http://localhost:3000/confirm?r=" + response.random
-        )
-          .then((result) => {
-            console.log(
-              "http://localhost:3000/confirm?r=" +
-                response.random +
-                "&u=" +
-                response.rows[0].username +
-                "&e=" +
-                req.body.verifEmail
-            );
-            if (result) {
-              res.status(200).clearCookie("_hypertubeAuth", {
-                path: "/",
-              });
-              res.status(200).send({ edit: { edit: response.edit } });
-            } else {
-              res.status(200).send({ edit: { msg: "Unable to send email." } });
-            }
-          })
-          .catch((error) => {
-            res.status(200).send({ edit: { msg: "Unable to send email." } });
-          });
-      } else {
-        res.status(200).send({ edit: { msg: "Unable to edit." } });
-      }
-    })
-    .catch((error) => {
-      res.status(500).send(error);
-    });
-});
-
-// Delete user account and all the related datas
-app.post("/api/settings/delete/user", (req, res) => {
-  settings
-    .deleteUser({ token: req.cookies._hypertubeAuth })
-    .then((response) => {
-      if (response.delete === true) {
-        res.status(200).clearCookie("_hypertubeAuth", {
-          path: "/",
-        });
-        res.send({ delete: true });
-      } else {
-        res.send(result);
       }
     })
     .catch((error) => {

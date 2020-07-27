@@ -3,10 +3,12 @@ import moment from "moment";
 import { useHistory } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 // framework
+import Tab from "@material-ui/core/Tab";
+import Tabs from "@material-ui/core/Tabs";
 import Input from "@material-ui/core/Input";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 // icon
 import SendIcon from "@material-ui/icons/Send";
@@ -70,6 +72,43 @@ const WatchStyles = (theme) => ({
     color: "#FBBA72",
     verticalAlign: "middle",
   },
+  container: {
+    backgroundColor: "#1a1a1a",
+    boxShadow: "none",
+    border: "0.5px solid rgba(41, 41, 41, .5)",
+  },
+  titleAndLeftInfo: {
+    textAlign: "left",
+    marginBottom: 10,
+  },
+  torrentInfos: {
+    padding: 10,
+  },
+  torrentSummary: {
+    flex: 2,
+    color: "#D0D0D0",
+  },
+  rightInfo: {
+    textAlign: "left",
+  },
+  boldInfo: {
+    color: "#EFF1F3",
+    fontWeight: "bold",
+  },
+  contentInfo: {
+    color: "#D0D0D0",
+  },
+  torrentTab: {
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingRight: 10,
+    paddingLeft: 10,
+  },
+  starIcon: {
+    fontSize: 25,
+    color: "#FBBA72",
+    verticalAlign: "middle",
+  },
 });
 
 const commentStyle = (theme) => ({
@@ -88,6 +127,7 @@ const commentStyle = (theme) => ({
   },
   content: {
     padding: 5,
+    wordBreak: "break-word",
   },
 });
 
@@ -146,20 +186,22 @@ const Watch = (props) => {
   const [subs, setSubs] = useState([]);
   const [limit, setLimit] = useState(10);
   const [movie, setMovie] = useState([]);
+  const [torrent, setTorrent] = useState([]);
   const [source, setSource] = useState(false);
   const [comments, setComments] = useState([]);
-  const [torrent, setTorrent] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
+  const [selectedTab, setSelectedTab] = useState(0);
   const [canComment, setCanComment] = useState(true);
 
   const Comments = withStyles(commentStyle)(RenderComment);
 
-  const updateViews = () => {
+  const updateViews = (mv, tr) => {
     fetch("/api/views/set", {
       method: "POST",
       body: JSON.stringify({
-        id: props.props.location.state.movie.id,
+        movie: mv.id,
+        torrent: tr.id,
       }),
       headers: {
         "Content-Type": "application/json",
@@ -195,20 +237,20 @@ const Watch = (props) => {
             if (loadMore) {
               setLimit(limit + 10);
             } else {
-              if (tr.downloaded) {
-                if (tr.path.endsWith(".mp4") || tr.path.endsWith(".webm")) {
-                  setSource(`http://localhost:3000${tr.path}`);
-                } else {
-                  setSource(
-                    `http://localhost:3000/stream/pump?path=${tr.path}`
-                  );
-                }
-              } else {
-                setSource(
-                  `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}`
-                );
-              }
-              updateViews();
+              //   if (tr.downloaded) {
+              //     if (tr.path.endsWith(".mp4") || tr.path.endsWith(".webm")) {
+              //       setSource(`http://localhost:3000${tr.path}`);
+              //     } else {
+              //       setSource(
+              //         `http://localhost:3000/stream/pump?path=${tr.path}&title=${mv.title}`
+              //       );
+              //     }
+              //   } else {
+              //     setSource(
+              //       `http://localhost:3000/stream?movie=${mv.id}&torrent=${tr.id}&magnet=${tr.magnet}&cover=${mv.cover_url}&title=${mv.title}`
+              //     );
+              //   }
+              updateViews(mv, tr);
             }
             for (let i = 0; i < res.comments.comments.length; i++) {
               if (res.comments.comments[i].user_id === auth.loggedId) {
@@ -251,8 +293,46 @@ const Watch = (props) => {
               res.torrents.torrents[0].subtitles.length
             )
               setSubs(JSON.parse(res.torrents.torrents[0].subtitles));
-            setMovie(res.torrents.torrents[0]);
-            let selectedTorrent = JSON.parse(res.torrents.torrents[0].torrents);
+            const parsedTorrents = JSON.parse(
+              res.torrents.torrents[0].torrents
+            );
+            const cast = res.torrents.torrents[0].casts
+              ? JSON.parse(res.torrents.torrents[0].casts)
+              : [];
+            const actors = cast.filter(
+              (el) => el.job.findIndex((e) => e === "actor") > -1
+            );
+            const crew = cast.filter(
+              (el) => el.job.findIndex((e) => e !== "actor") > -1
+            );
+            setMovie({
+              actors: actors,
+              crew: crew,
+              categories: res.torrents.torrents[0].categories
+                ? JSON.parse(res.torrents.torrents[0].categories)
+                : [],
+              cover_url: res.torrents.torrents[0].cover_url,
+              duration: res.torrents.torrents[0].duration,
+              id: res.torrents.torrents[0].id,
+              imdb_code: res.torrents.torrents[0].imdb_code,
+              languages: res.torrents.torrents[0].languages
+                ? JSON.parse(res.torrents.torrents[0].languages)
+                : [],
+              production_year: res.torrents.torrents[0].production_year,
+              rating: res.torrents.torrents[0].rating,
+              subtitles: res.torrents.torrents[0].subtitles
+                ? JSON.parse(res.torrents.torrents[0].subtitles)
+                : [],
+              summary: res.torrents.torrents[0].summary,
+              title: res.torrents.torrents[0].title,
+              torrent9_id: res.torrents.torrents[0].torrent9_id,
+              torrent9_url: res.torrents.torrents[0].torrent9_url,
+              torrents: parsedTorrents,
+              yt_trailer: res.torrents.torrents[0].yt_trailer,
+              yts_id: res.torrents.torrents[0].yts_id,
+              yts_url: res.torrents.torrents[0].yts_url,
+            });
+            let selectedTorrent = parsedTorrents;
             selectedTorrent =
               selectedTorrent[
                 selectedTorrent.findIndex(
@@ -273,7 +353,7 @@ const Watch = (props) => {
 
   const handleSendComment = (e) => {
     e.preventDefault();
-    if (newComment && newComment.length < 1000) {
+    if (newComment && newComment.length <= 1000) {
       fetch("/api/comments/send", {
         method: "POST",
         body: JSON.stringify({
@@ -379,13 +459,131 @@ const Watch = (props) => {
             : undefined}
         </video>
       ) : undefined}
-      <div className={classes.titleContainer}>
-        <span className={classes.titleYear}>({movie.production_year})</span>{" "}
-        <span className={classes.titleName}>
-          {movie.title} - {torrent.quality} - {torrent.language} -{" "}
-          {movie.rating}
-        </span>{" "}
-        <StarRateIcon className={classes.starIcon}></StarRateIcon>
+      <div>
+        <Tabs
+          value={selectedTab}
+          onChange={(e, v) => setSelectedTab(v)}
+          variant="fullWidth"
+        >
+          <Tab label="INFORMATIONS" id="INFO_TAB" />
+          <Tab label="CAST" id="TORRENT_TAB" />
+        </Tabs>
+        <div className={classes.titleAndLeftInfo}>
+          <div className={classes.titleContainer}>
+            <span className={classes.titleYear}>({movie.production_year})</span>{" "}
+            <span className={classes.titleName}>
+              {movie.title} - {torrent.quality} - {torrent.language} -{" "}
+              {movie.rating}
+            </span>{" "}
+            <StarRateIcon className={classes.starIcon}></StarRateIcon>
+          </div>
+        </div>
+        {selectedTab === 0 ? (
+          <div className={classes.torrentInfos}>
+            <div className={classes.titleAndLeftInfo}>
+              {movie.summary ? (
+                <div className={classes.torrentSummary}>{movie.summary}</div>
+              ) : undefined}
+              <div className={classes.rightInfo}>
+                <div>
+                  <span className={classes.boldInfo}>Categories:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {movie.categories.length
+                      ? movie.categories.map((el, i) =>
+                          i < movie.categories.length - 1 ? el + " / " : el
+                        )
+                      : "No informations"}
+                  </span>
+                </div>
+                <div>
+                  <span className={classes.boldInfo}>Languages:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {movie.languages.length
+                      ? movie.languages.map((el, i) =>
+                          i < movie.languages.length - 1 ? el + " / " : el
+                        )
+                      : "No informations"}
+                  </span>
+                </div>
+                {movie.subtitles && movie.subtitles.length ? (
+                  <div>
+                    <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {movie.subtitles.length
+                        ? movie.subtitles.map((el, i) =>
+                            i < movie.subtitles.length - 1
+                              ? el.language + " / "
+                              : el.language
+                          )
+                        : "No informations"}
+                    </span>
+                  </div>
+                ) : undefined}
+                <div>
+                  <span className={classes.boldInfo}>Qualities:</span>{" "}
+                  <span className={classes.contentInfo}>
+                    {movie.qualities.length
+                      ? movie.qualities.map((el, i) =>
+                          i < movie.qualities.length - 1 ? el + " / " : el
+                        )
+                      : "No informations"}
+                  </span>
+                </div>
+                {torrent.duration ? (
+                  <div>
+                    <span className={classes.boldInfo}>Duration:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {torrent.duration}mn
+                    </span>
+                  </div>
+                ) : undefined}
+                {torrent.lastviewed_at ? (
+                  <div>
+                    <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {torrent.lastviewed_at}
+                    </span>
+                  </div>
+                ) : undefined}
+                {torrent.downloaded_at ? (
+                  <div>
+                    <span className={classes.boldInfo}>Last download:</span>{" "}
+                    <span className={classes.contentInfo}>
+                      {torrent.downloaded_at}
+                    </span>
+                  </div>
+                ) : undefined}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className={classes.torrentTab}>
+            {movie.actors && movie.actors.length ? (
+              <div>
+                <span className={classes.boldInfo}>Actors:</span>{" "}
+                <span className={classes.contentInfo}>
+                  {movie.actors.length
+                    ? movie.actors.map((el, i) =>
+                        i < movie.actors.length - 1 ? el.name + " / " : el.name
+                      )
+                    : "No informations"}
+                </span>
+              </div>
+            ) : undefined}
+            {movie.crew && movie.crew.length ? (
+              <div>
+                <span className={classes.boldInfo}>Crew:</span>{" "}
+                <span className={classes.contentInfo}>
+                  {movie.crew.length
+                    ? movie.crew.map((el, i) =>
+                        i < movie.crew.length - 1 ? el.name + " / " : el.name
+                      )
+                    : "No informations"}
+                </span>
+              </div>
+            ) : undefined}
+          </div>
+        )}
       </div>
       <div>
         <div className={classes.titleContainer}>
