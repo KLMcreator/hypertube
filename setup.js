@@ -294,7 +294,6 @@ const populateSettings = () => {
     );
     let totalSubsMovies = 0;
     let totalCastMovies = 0;
-    // let selectedJobs = ["actor", "Director"];
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
@@ -310,14 +309,6 @@ const populateSettings = () => {
         settings.minProductionYear = e.production_year;
       if (e.cast && e.cast.length) {
         totalCastMovies++;
-        // e.cast.map((cast, i) => {
-        //   if (selectedJobs.some((e) => cast.job.includes(e)) && i < 1) {
-        //     settings.cast.push({
-        //       value: cast.name,
-        //       label: cast.name,
-        //     });
-        //   }
-        // });
         e.cast.map((cast) => {
           settings.cast.push(cast.name.trim());
         });

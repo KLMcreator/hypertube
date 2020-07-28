@@ -50,7 +50,9 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "lax",
+    sameSite: "none",
+    secure: "true",
+    domain: "localhost",
   },
 };
 
@@ -66,6 +68,17 @@ sockets.initSocket(io);
 
 // allow to use static path for files
 app.use(express.static("client"));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
 
 // config
 app.use(session(sessionConfig));

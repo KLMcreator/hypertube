@@ -441,6 +441,7 @@ const Watch = (props) => {
           id="videoPlayer"
           crossOrigin="anonymous"
           controls
+          controlsList="nodownload"
           muted
           preload="auto"
           autoPlay
