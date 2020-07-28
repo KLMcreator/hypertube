@@ -2,6 +2,7 @@
 import "rc-slider/assets/index.css";
 // react
 import Range from "rc-slider/lib/Range";
+import { FixedSizeList } from "react-window";
 import { useHistory } from "react-router-dom";
 import Select, { createFilter } from "react-select";
 import React, { useState, useEffect, useRef } from "react";
@@ -1515,6 +1516,23 @@ const RenderTorrents = (props) => {
   );
 };
 
+const RenderSelectMenuList = (props) => {
+  const { options, children, maxHeight, getValue } = props;
+  const [value] = getValue();
+  const initialOffset = options.indexOf(value) * 35;
+
+  return (
+    <FixedSizeList
+      height={maxHeight}
+      itemCount={!children.length || !children ? 0 : children.length}
+      itemSize={35}
+      initialScrollOffset={initialOffset}
+    >
+      {({ index, style }) => <div style={style}> {children[index]} </div>}
+    </FixedSizeList>
+  );
+};
+
 const RenderSearchBar = (props) => {
   const [search, setSearch] = useState(props.search);
   const [selectedCategories, setSelectedCategories] = useState(
@@ -1623,6 +1641,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1663,6 +1684,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1703,6 +1727,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1743,6 +1770,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1897,7 +1927,6 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         if (res.settings.settings) {
           setSettings({
             minProductionYear: res.settings.settings[0].minproductionyear,
