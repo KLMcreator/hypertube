@@ -294,7 +294,7 @@ const populateSettings = () => {
     );
     let totalSubsMovies = 0;
     let totalCastMovies = 0;
-    let selectedJobs = ["actor", "Director"];
+    // let selectedJobs = ["actor", "Director"];
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
@@ -310,13 +310,16 @@ const populateSettings = () => {
         settings.minProductionYear = e.production_year;
       if (e.cast && e.cast.length) {
         totalCastMovies++;
-        e.cast.map((cast, i) => {
-          if (selectedJobs.some((e) => cast.job.includes(e)) && i < 1) {
-            settings.cast.push({
-              value: cast.name,
-              label: cast.name,
-            });
-          }
+        // e.cast.map((cast, i) => {
+        //   if (selectedJobs.some((e) => cast.job.includes(e)) && i < 1) {
+        //     settings.cast.push({
+        //       value: cast.name,
+        //       label: cast.name,
+        //     });
+        //   }
+        // });
+        e.cast.map((cast) => {
+          settings.cast.push(cast.name.trim());
         });
       }
       if (e.subtitles && e.subtitles.length) {
@@ -350,12 +353,8 @@ const populateSettings = () => {
         });
       }
     });
-    settings.cast = settings.cast.filter(
-      (e, i, casts) => i === casts.findIndex((t) => t.label === e.label)
-    );
-    settings.cast = settings.cast.sort((a, b) =>
-      a.value > b.value ? 1 : a.value < b.value ? -1 : 0
-    );
+    settings.cast = [...new Set(settings.cast)];
+    settings.cast = settings.cast.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
     settings.languages = settings.languages.sort((a, b) =>
       a.value > b.value ? 1 : a.value < b.value ? -1 : 0
     );

@@ -1532,6 +1532,7 @@ const RenderSelectMenuList = (props) => {
 };
 
 const RenderSearchBar = (props) => {
+  const [casts, setCasts] = useState([]);
   const [search, setSearch] = useState(props.search);
   const [selectedCategories, setSelectedCategories] = useState(
     props.filters.selectedCategories
@@ -1548,7 +1549,6 @@ const RenderSearchBar = (props) => {
     props.filters.selectedRating
   );
   const { settings, classes } = props;
-  const casts = props.settings.casts;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
   const subtitles = props.settings.subtitles;
@@ -1581,6 +1581,31 @@ const RenderSearchBar = (props) => {
 
   const handleAppendSubs = (subsToAdd) => {
     setSelectedSubs(subsToAdd);
+  };
+
+  const handleSearchCast = (e) => {
+    if (e.length > 2) {
+      fetch("/api/torrents/get/casts", {
+        method: "POST",
+        body: JSON.stringify({
+          name: e,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.casts.casts) {
+            setCasts(res.casts.casts);
+          } else if (res.casts.msg) {
+            props.auth.errorMessage(res.casts.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        })
+        .catch((err) => props.auth.errorMessage(err));
+    }
   };
 
   const handleAppendCasts = (castsToAdd) => {
@@ -1616,6 +1641,7 @@ const RenderSearchBar = (props) => {
             value={selectedCasts}
             className="react-select-container"
             classNamePrefix="react-select"
+            noOptionsMessage={() => "Enter a name, 3 char min."}
             theme={(theme) => ({
               ...theme,
               colors: {
@@ -1650,6 +1676,7 @@ const RenderSearchBar = (props) => {
             isSearchable={true}
             options={casts}
             key={"changeCasts"}
+            onInputChange={handleSearchCast}
             onChange={handleAppendCasts}
             placeholder={"CASTS: ALL"}
           />

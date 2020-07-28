@@ -362,6 +362,18 @@ app.post("/api/torrents/get/settings", (req, res) => {
     });
 });
 
+// Get torrents for search engine
+app.post("/api/torrents/get/casts", (req, res) => {
+  torrents
+    .getCasts({ req: req.body })
+    .then((response) => {
+      res.status(200).send({ casts: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Get home random torrent
 app.post("/api/torrents/random", (req, res) => {
   torrents
