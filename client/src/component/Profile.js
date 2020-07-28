@@ -609,11 +609,18 @@ const Profile = (props) => {
             <div className={classes.torrentInfos}>Like or not like?</div>
             <div className={classes.torrentInfos}>Watch</div>
           </div>
+          <div className={classes.torrentTitle}>
+            La colline a des yeux (2006) 3.4 OO{" "}
+          </div>
+          <div className={classes.torrentDetails}>
+            <div className={classes.torrentInfos}>12.12.12</div>
+            <div className={classes.torrentInfos}>Like</div>
+            <div className={classes.torrentInfos}>Eye</div>
+          </div>
         </div>
       </div>
     );
   };
-  //La Colline a des yeux (2006) 3.4 <<>>
   useEffect(() => {
     document.body.style.overflow = "auto";
     getLoggedUser();
