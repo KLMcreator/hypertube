@@ -1897,6 +1897,7 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((res) => {
+        console.log(res);
         if (res.settings.settings) {
           setSettings({
             minProductionYear: res.settings.settings[0].minproductionyear,

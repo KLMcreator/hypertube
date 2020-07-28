@@ -169,7 +169,7 @@ const getRandomTorrents = (request, response) => {
 const getTorrentSettings = (request, response) => {
   return new Promise((resolve, reject) => {
     pool.pool.query(
-      "SELECT minProductionYear, maxProductionYear, categories, languages, subtitles FROM settings;",
+      "SELECT minProductionYear, maxProductionYear, categories, languages, subtitles, casts FROM settings;",
       (error, results) => {
         if (error) {
           resolve({ msg: error });
