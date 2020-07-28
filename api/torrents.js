@@ -5,7 +5,11 @@ const pool = require("./../pool.js");
 const buildFilter = (filter) => {
   let query = {};
   for (let keys in filter) {
-    if (filter[keys].constructor === Array && filter[keys].length > 0) {
+    if (
+      filter[keys] &&
+      filter[keys].constructor === Array &&
+      filter[keys].length > 0
+    ) {
       query[keys] = filter[keys];
     }
   }
@@ -39,19 +43,32 @@ const getQueryTorrents = (request, response) => {
             if (
               (req.selectedCategories && req.selectedCategories.length) ||
               (req.selectedLanguage && req.selectedLanguage.length) ||
-              (req.selectedSubs && req.selectedSubs.length)
+              (req.selectedSubs && req.selectedSubs.length) ||
+              (req.selectedCasts && req.selectedCasts.length)
             ) {
-              req.selectedLanguage = req.selectedLanguage.map((e) => e.value);
-              req.selectedCategories = req.selectedCategories.map(
-                (e) => e.value
-              );
-              req.selectedSubs = req.selectedSubs.map((e) => e.value);
+              req.selectedLanguage =
+                req.selectedLanguage && req.selectedLanguage.length
+                  ? req.selectedLanguage.map((e) => e.value)
+                  : req.selectedLanguage;
+              req.selectedCategories =
+                req.selectedCategories && req.selectedCategories.length
+                  ? req.selectedCategories.map((e) => e.value)
+                  : req.selectedCategories;
+              req.selectedSubs =
+                req.selectedSubs && req.selectedSubs.length
+                  ? req.selectedSubs.map((e) => e.value)
+                  : req.selectedSubs;
+              req.selectedCasts =
+                req.selectedCasts && req.selectedCasts.length
+                  ? req.selectedCasts.map((e) => e.value)
+                  : req.selectedCasts;
               let torrents = [];
               let i = 0;
               let query = buildFilter({
                 languages: req.selectedLanguage,
                 categories: req.selectedCategories,
                 subtitles: req.selectedSubs,
+                casts: req.selectedCasts,
               });
               while (torrents.length < req.limit && i < results.rowCount) {
                 let isAble = true;
@@ -65,6 +82,12 @@ const getQueryTorrents = (request, response) => {
                     item = JSON.parse(results.rows[i][key]).map(
                       (e) => e.language
                     );
+                  } else if (
+                    key === "casts" &&
+                    results.rows[i] &&
+                    results.rows[i][key]
+                  ) {
+                    item = JSON.parse(results.rows[i][key]).map((e) => e.name);
                   } else {
                     item = JSON.parse(results.rows[i][key]);
                   }
@@ -184,6 +207,32 @@ const getTorrentSettings = (request, response) => {
   });
 };
 
+const getCasts = (request, response) => {
+  const { req } = request;
+  return new Promise((resolve, reject) => {
+    pool.pool.query("SELECT casts FROM settings;", (error, results) => {
+      if (error) {
+        resolve({ msg: error });
+      }
+      if (!results) {
+        resolve({ msg: "Error while fetching torrents settings" });
+      } else {
+        if (results.rowCount) {
+          let casts = [];
+          JSON.parse(results.rows[0].casts).map((el) => {
+            if (el.toLowerCase().includes(req.name.toLowerCase())) {
+              casts.push({ label: el, value: el });
+            }
+          });
+          resolve({ casts: casts });
+        } else {
+          resolve({ casts: [] });
+        }
+      }
+    });
+  });
+};
+
 const getTorrentInfos = (request, response) => {
   const { req } = request;
   return new Promise((resolve, reject) => {
@@ -284,4 +333,5 @@ module.exports = {
   getRandomTorrents,
   getTorrentSettings,
   doCleanUpMaintenance,
+  getCasts,
 };
