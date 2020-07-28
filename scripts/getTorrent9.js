@@ -266,7 +266,8 @@ const getMovieList = async (url) => {
               movies[el].children[0].next.children[1].next.children[0].data
             ) &&
             getSize(movies[el].children[3].children[0].data.toLowerCase()) <
-              10000000000
+              10000000000 &&
+            (quality === "720p" || quality === "1080p" || quality === "360p")
           ) {
             torrent9Infos.movies[isDuplicate].torrents.push({
               id: "t9_" + torrent9Infos.movies[isDuplicate].torrents.length,
@@ -308,7 +309,8 @@ const getMovieList = async (url) => {
               movies[el].children[0].next.children[1].next.children[0].data
             ) &&
             getSize(movies[el].children[3].children[0].data.toLowerCase()) <
-              10000000000
+              10000000000 &&
+            (quality === "720p" || quality === "1080p" || quality === "360p")
           ) {
             torrent9Infos.movies.push({
               yts_id: null,
