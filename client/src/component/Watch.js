@@ -58,6 +58,7 @@ const WatchStyles = (theme) => ({
     flex: 3,
     alignSelf: "center",
     fontWeight: "bold",
+    padding: 10,
   },
   titleYear: {
     fontSize: 20,
@@ -78,11 +79,15 @@ const WatchStyles = (theme) => ({
     border: "0.5px solid rgba(41, 41, 41, .5)",
   },
   titleAndLeftInfo: {
+    display: "flex",
     textAlign: "left",
     marginBottom: 10,
+    [theme.breakpoints.down("xs")]: {
+      display: "block",
+    },
   },
   torrentInfos: {
-    padding: 10,
+    padding: 5,
   },
   torrentSummary: {
     flex: 2,

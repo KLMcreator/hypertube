@@ -2,6 +2,7 @@
 import "rc-slider/assets/index.css";
 // react
 import Range from "rc-slider/lib/Range";
+import { FixedSizeList } from "react-window";
 import { useHistory } from "react-router-dom";
 import Select, { createFilter } from "react-select";
 import React, { useState, useEffect, useRef } from "react";
@@ -1515,7 +1516,25 @@ const RenderTorrents = (props) => {
   );
 };
 
+const RenderSelectMenuList = (props) => {
+  const { options, children, maxHeight, getValue } = props;
+  const [value] = getValue();
+  const initialOffset = options.indexOf(value) * 35;
+
+  return (
+    <FixedSizeList
+      height={maxHeight}
+      itemCount={!children.length || !children ? 0 : children.length}
+      itemSize={35}
+      initialScrollOffset={initialOffset}
+    >
+      {({ index, style }) => <div style={style}> {children[index]} </div>}
+    </FixedSizeList>
+  );
+};
+
 const RenderSearchBar = (props) => {
+  const [casts, setCasts] = useState([]);
   const [search, setSearch] = useState(props.search);
   const [selectedCategories, setSelectedCategories] = useState(
     props.filters.selectedCategories
@@ -1532,7 +1551,6 @@ const RenderSearchBar = (props) => {
     props.filters.selectedRating
   );
   const { settings, classes } = props;
-  const casts = props.settings.casts;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
   const subtitles = props.settings.subtitles;
@@ -1565,6 +1583,31 @@ const RenderSearchBar = (props) => {
 
   const handleAppendSubs = (subsToAdd) => {
     setSelectedSubs(subsToAdd);
+  };
+
+  const handleSearchCast = (e) => {
+    if (e.length > 2) {
+      fetch("/api/torrents/get/casts", {
+        method: "POST",
+        body: JSON.stringify({
+          name: e,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.casts.casts) {
+            setCasts(res.casts.casts);
+          } else if (res.casts.msg) {
+            props.auth.errorMessage(res.casts.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        })
+        .catch((err) => props.auth.errorMessage(err));
+    }
   };
 
   const handleAppendCasts = (castsToAdd) => {
@@ -1600,6 +1643,7 @@ const RenderSearchBar = (props) => {
             value={selectedCasts}
             className="react-select-container"
             classNamePrefix="react-select"
+            noOptionsMessage={() => "Enter a name, 3 char min."}
             theme={(theme) => ({
               ...theme,
               colors: {
@@ -1623,6 +1667,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1631,6 +1678,7 @@ const RenderSearchBar = (props) => {
             isSearchable={true}
             options={casts}
             key={"changeCasts"}
+            onInputChange={handleSearchCast}
             onChange={handleAppendCasts}
             placeholder={"CASTS: ALL"}
           />
@@ -1663,6 +1711,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1703,6 +1754,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1743,6 +1797,9 @@ const RenderSearchBar = (props) => {
                 neutral90: "#EFF1F3",
               },
             })}
+            components={{
+              RenderSelectMenuList,
+            }}
             closeMenuOnSelect={false}
             isMulti
             filterOption={createFilter({
@@ -1897,7 +1954,6 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((res) => {
-        console.log(res);
         if (res.settings.settings) {
           setSettings({
             minProductionYear: res.settings.settings[0].minproductionyear,

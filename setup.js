@@ -294,6 +294,7 @@ const populateSettings = () => {
     );
     let totalSubsMovies = 0;
     let totalCastMovies = 0;
+    // let selectedJobs = ["actor", "Director"];
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
@@ -309,11 +310,16 @@ const populateSettings = () => {
         settings.minProductionYear = e.production_year;
       if (e.cast && e.cast.length) {
         totalCastMovies++;
+        // e.cast.map((cast, i) => {
+        //   if (selectedJobs.some((e) => cast.job.includes(e)) && i < 1) {
+        //     settings.cast.push({
+        //       value: cast.name,
+        //       label: cast.name,
+        //     });
+        //   }
+        // });
         e.cast.map((cast) => {
-          settings.cast.push({
-            value: cast.name,
-            label: cast.name,
-          });
+          settings.cast.push(cast.name.trim());
         });
       }
       if (e.subtitles && e.subtitles.length) {
@@ -347,8 +353,16 @@ const populateSettings = () => {
         });
       }
     });
-    settings.cast = settings.cast.filter(
-      (e, i, casts) => i === casts.findIndex((t) => t.label === e.label)
+    settings.cast = [...new Set(settings.cast)];
+    settings.cast = settings.cast.sort((a, b) => (a > b ? 1 : a < b ? -1 : 0));
+    settings.languages = settings.languages.sort((a, b) =>
+      a.value > b.value ? 1 : a.value < b.value ? -1 : 0
+    );
+    settings.categories = settings.categories.sort((a, b) =>
+      a.value > b.value ? 1 : a.value < b.value ? -1 : 0
+    );
+    settings.subtitles = settings.subtitles.sort((a, b) =>
+      a.value > b.value ? 1 : a.value < b.value ? -1 : 0
     );
     pool.query(
       "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts) VALUES($1, $2, $3, $4, $5, $6)",
