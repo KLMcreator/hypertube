@@ -115,88 +115,10 @@ const SignIn = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  //   const get42Infos = async (token) => {
-  //     console.log(token);
-  //     return fetch(`https://api.intra.42.fr/v2/me?access_token=${token}`, {
-  //       headers: {
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //         "cache-control": "no-cache",
-  //       },
-  //     })
-  //       .then((res) => res.json())
-  //       .then((res) => {
-  //         console.log("inside res", res);
-  //         return res;
-  //       })
-  //       .catch((err) => props.auth.errorMessage(err));
-  //   };
-
-  //   const register42 = (code) => {
-  //     fetch("https://api.intra.42.fr/oauth/token", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //         "cache-control": "no-cache",
-  //       },
-  //       body: new URLSearchParams({
-  //         code,
-  //         client_id:
-  //           "d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590",
-  //         client_secret:
-  //           "6139c30558a59688cdd9c816721841625bf3298377dad7383ae5654921fb7874",
-  //         grant_type: "authorization_code",
-  //         redirect_uri: "http://localhost:3000/SignIn",
-  //       }).toString(),
-  //     })
-  //       .then((res) => res.json())
-  //       .then(async (res) => {
-  //         console.log(res);
-  //         if (res.access_token) {
-  //           const user = await get42Infos(res.access_token);
-  //           console.log(user);
-  //           setIsLoading(false);
-  //         } else {
-  //           setIsLoading(false);
-  //           props.auth.errorMessage(
-  //             "Error with your token, it might be revoked. Check your authorization on 42's website."
-  //           );
-  //         }
-  //         //   if (res.login && res.id) {
-  //         //     props.auth.setLogged(res);
-  //         //     props.props.history.push("/");
-  //         //   } else if (res.login === false) {
-  //         //     props.auth.errorMessage("Invalid credentials");
-  //         //   } else {
-  //         //     props.auth.errorMessage(res.login.msg);
-  //         //   }
-  //       })
-  //       .catch((err) => props.auth.errorMessage(err));
-  //   };
-
-  //   const registerGithub = (code) => {};
-  //   const registerGoogle = (code) => {};
-  //   const registerFacebook = (code) => {};
-
-  //   const checkOauthCode = () => {
-  //     const site = props.props.location.search
-  //       .split("?site=")[1]
-  //       .split("&code=")[0];
-  //     const code = props.props.location.search.split("&code=")[1];
-  //     if (site === "42") {
-  //       register42(code);
-  //     } else if (site === "Github") {
-  //       registerGithub(code);
-  //     } else if (site === "Google") {
-  //       registerGoogle(code);
-  //     } else if (site === "Facebook") {
-  //       registerFacebook(code);
-  //     }
-  //   };
-
   const handleOauth = (e) => {
     if (e === "42") {
       window.location.href =
-        "https://api.intra.42.fr/oauth/authorize?client_id=d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth%2F42&response_type=code";
+        "https://api.intra.42.fr/oauth/authorize?client_id=d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Foauth%2F42&response_type=code";
     } else if (e === "Github") {
       window.location.href =
         "https://github.com/login/oauth/authorize?client_id=fe47f59188aa4d142c6a&redirect_uri=http://localhost:3000/oauth/callback/github&state=test&scope=user email";
