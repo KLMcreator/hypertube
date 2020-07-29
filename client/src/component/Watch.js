@@ -514,16 +514,6 @@ const Watch = (props) => {
                     </span>
                   </div>
                 ) : undefined}
-                <div>
-                  <span className={classes.boldInfo}>Qualities:</span>{" "}
-                  <span className={classes.contentInfo}>
-                    {movie.qualities.length
-                      ? movie.qualities.map((el, i) =>
-                          i < movie.qualities.length - 1 ? el + " / " : el
-                        )
-                      : "No informations"}
-                  </span>
-                </div>
                 {torrent.duration ? (
                   <div>
                     <span className={classes.boldInfo}>Duration:</span>{" "}

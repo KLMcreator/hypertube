@@ -26,7 +26,8 @@ const userRecover = (request, response) => {
           if (!results.rowCount) {
             resolve({ msg: "Error while fetching mail" });
           } else {
-            bcrypt.hash(random_password(), 10, function (err, hash) {
+            let tmp = random_password();
+            bcrypt.hash(tmp, 10, function (err, hash) {
               if (hash) {
                 pool.pool.query(
                   "UPDATE users SET password = $1 WHERE email = $2 AND username = $3",
@@ -40,7 +41,7 @@ const userRecover = (request, response) => {
                     } else {
                       resolve({
                         recover: true,
-                        pass: newpwd,
+                        pass: tmp,
                         email: results.rows[0].email,
                       });
                     }

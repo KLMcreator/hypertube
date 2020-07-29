@@ -1,4 +1,5 @@
 // React
+import moment from "moment";
 import React, { useState, useEffect } from "react";
 import Select, { createFilter } from "react-select";
 
@@ -13,9 +14,14 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 // Icons
 import Button from "@material-ui/core/Button";
 import VpnKey from "@material-ui/icons/VpnKey";
+import StarIcon from "@material-ui/icons/Star";
 import ErrorIcon from "@material-ui/icons/Error";
+
 import IconButton from "@material-ui/core/IconButton";
+import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
+
 import AccountCircle from "@material-ui/icons/AccountCircle";
+import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
 import EditRoundedIcon from "@material-ui/icons/EditRounded";
 import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
@@ -37,6 +43,9 @@ const profileStyles = (theme) => ({
     [theme.breakpoints.down("xs")]: {
       display: "block",
     },
+    border: "1px solid rgba(41, 41, 41, .5)",
+    padding: 10,
+    borderRadius: 4,
   },
   userPhoto: {
     flex: 2,
@@ -66,7 +75,7 @@ const profileStyles = (theme) => ({
     height: "100%",
   },
   userImage: {
-    border: "1px solid #9A1300",
+    border: "1px solid #D0D0D0",
     borderRadius: "4px",
     padding: "5px",
     height: "auto",
@@ -84,7 +93,8 @@ const profileStyles = (theme) => ({
     width: 20,
     padding: "2%",
     height: 20,
-    border: "1px solid #E63946",
+    color: "#D0D0D0",
+    border: "1px solid #D0D0D0",
     position: "absolute",
     borderRadius: "50%",
     backgroundColor: "#1a1a1a",
@@ -129,26 +139,26 @@ const profileStyles = (theme) => ({
     },
   },
   sendIcon: {
-    color: "#9A1300",
+    color: "rgba(90, 90, 91)",
   },
   inputColor: {
     backgroundColor: "#373737",
     color: "#fff",
   },
   switchAccount: {
-    color: "#9A1300",
+    color: "#D0D0D0",
   },
   toggleAccount: {
     justifyContent: "center",
   },
   submitBtn: {
-    color: "#9A1300",
+    color: "#D0D0D0",
   },
   submitSpecialFormBtn: {
     margin: 0,
     padding: 0,
     textAlign: "center",
-    color: "#9A1300",
+    color: "#D0D0D0",
   },
   select: {
     width: "100%",
@@ -163,32 +173,89 @@ const profileStyles = (theme) => ({
 
   // Render torrent
   torrentsContainerList: {
-    display: "flex",
+    paddingTop: 15,
   },
   torrentsContainer: {
-    display: "flex",
-    border: "1px solid #9A1300",
-    flex: 1,
     [theme.breakpoints.down("xs")]: {
       display: "block",
-      marginRight: 0,
-      textAlign: "center",
+    },
+    display: "flex",
+    borderBottom: "1px solid rgba(41, 41, 41, 1)",
+    borderRadius: "4px",
+    margin: 5,
+  },
+  torrentsCategories: {
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+    display: "flex",
+    textAlign: "center",
+    borderBottom: "0.5px solid #f50057",
+    fontSize: "18px",
+  },
+  torrentTitle_cate: {
+    flex: 1,
+    alignSelf: "center",
+    color: "#A3A3A3",
+  },
+  torrentDetails_cate: {
+    display: "flex",
+    flex: 1,
+    color: "#A3A3A3",
+  },
+  torrentInfos_cate: {
+    flex: 1,
+    padding: 10,
+  },
+  torrentDescr: {
+    display: "flex",
+    color: "#D0D0D0",
+  },
+  torrentImg: {
+    maxWidth: "-webkit-fill-available",
+    flex: "2",
+    [theme.breakpoints.down("xs")]: {
+      alignSelf: "center",
     },
   },
   torrentTitle: {
-    flex: 6,
+    flex: 1,
+    display: "flex",
+  },
+  ratingIcon: {
+    verticalAlign: "middle",
+    color: "#FBBA72",
+    marginBottom: "6px",
+  },
+  titleDetails: {
+    flex: "10",
     alignSelf: "center",
+    [theme.breakpoints.down("xs")]: {
+      textAlign: "center",
+    },
+    verticalAlign: "middle",
   },
   torrentDetails: {
     display: "flex",
-    flex: 6,
+    flex: 1,
+    alignSelf: "center",
+    textAlign: "center",
   },
-  torrentInfos: { flex: 1, padding: 10 },
+  torrentInfos: {
+    flex: 1,
+    padding: 10,
+    alignSelf: "center",
+    textAlign: "center",
+  },
+  likedIcon: {
+    color: "rgba(154, 19, 0)",
+  },
 });
 
 const Profile = (props) => {
   const [email, setEmail] = useState("");
   const [photo, setPhoto] = useState("");
+  const [torrents, setTorrents] = useState([]);
   const [username, setUsername] = useState("");
   const [lastname, setLastname] = useState("");
   const [language, setLanguage] = useState("");
@@ -598,32 +665,28 @@ const Profile = (props) => {
   };
 
   // Render of torrents viewed / liked
-
-  const RenderHistoryTorrents = () => {
-    return (
-      <div className={classes.torrentsContainerList}>
-        <div className={classes.torrentsContainer}>
-          <div className={classes.torrentTitle}>Film title</div>
-          <div className={classes.torrentDetails}>
-            <div className={classes.torrentInfos}>Watched at</div>
-            <div className={classes.torrentInfos}>Like or not like?</div>
-            <div className={classes.torrentInfos}>Watch</div>
-          </div>
-          <div className={classes.torrentTitle}>
-            La colline a des yeux (2006) 3.4 OO{" "}
-          </div>
-          <div className={classes.torrentDetails}>
-            <div className={classes.torrentInfos}>12.12.12</div>
-            <div className={classes.torrentInfos}>Like</div>
-            <div className={classes.torrentInfos}>Eye</div>
-          </div>
-        </div>
-      </div>
-    );
+  const getTorrentsUser = () => {
+    fetch("/api/users/get/torrents", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.torrents) {
+          setTorrents(res.torrents);
+          setIsLoading(false);
+        } else if (res.torrents.msg) {
+          props.auth.errorMessage(res.torrents.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
   };
+
   useEffect(() => {
     document.body.style.overflow = "auto";
     getLoggedUser();
+    getTorrentsUser();
     return () => {
       setIsLoading(true);
     };
@@ -977,7 +1040,61 @@ const Profile = (props) => {
           </div>
         </div>
       </div>
-      <RenderHistoryTorrents></RenderHistoryTorrents>
+      <div className={classes.torrentsContainerList}>
+        <div className={classes.torrentsCategories}>
+          <div className={classes.torrentTitle_cate}>Film title</div>
+          <div className={classes.torrentDetails_cate}>
+            <div className={classes.torrentInfos_cate}>Watched at</div>
+            <div className={classes.torrentInfos_cate}>Liked or not liked?</div>
+            <div className={classes.torrentInfos_cate}>Comment</div>
+          </div>
+        </div>
+        {torrents && torrents.length ? (
+          <div>
+            {torrents.map((el) => (
+              <div key={el.id} className={classes.torrentsContainer}>
+                <div className={classes.torrentTitle}>
+                  <div className={classes.torrentImg}>
+                    <img
+                      alt={el.cover_url}
+                      style={{ width: "50px" }}
+                      src={el.cover_url}
+                    ></img>
+                  </div>
+
+                  <div className={classes.titleDetails}>
+                    {el.title} - {"(" + el.production_year + ")"} - {el.rating}{" "}
+                    <StarIcon className={classes.ratingIcon} />
+                  </div>
+                </div>
+                <div className={classes.torrentDetails}>
+                  <div className={classes.torrentInfos}>
+                    {el.viewed_at
+                      ? moment(el.viewed_at).format("DD MMM, YYYY")
+                      : undefined}
+                  </div>
+                  <div className={classes.torrentInfos}>
+                    {el.liked ? (
+                      <div className={classes.likedIcon}>
+                        <ThumbUpAltIcon />
+                      </div>
+                    ) : el.liked === false ? (
+                      <div className={classes.likedIcon}>
+                        <ThumbDownAltIcon />
+                      </div>
+                    ) : undefined}
+                  </div>
+                  <div className={classes.torrentInfos}>
+                    {el.comment
+                      ? el.comment.substring(0, 50) + "..."
+                      : undefined}{" "}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : undefined}
+      </div>
     </div>
   );
 };

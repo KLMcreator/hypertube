@@ -587,6 +587,18 @@ app.post("/api/settings/password", (req, res) => {
     });
 });
 
+// Get torrents infos for profile page
+app.post("/api/users/get/torrents", (req, res) => {
+  users
+    .getUserTorrents({ token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 //                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
