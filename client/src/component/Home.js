@@ -772,8 +772,6 @@ const RenderTorrent = (props) => {
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? torrent.summary : [];
 
-  console.log(torrent);
-
   const handleSetLiked = (isLiked) => {
     fetch("/api/torrents/like", {
       method: "POST",

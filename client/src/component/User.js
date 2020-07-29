@@ -131,8 +131,6 @@ const User = (props) => {
     );
   }
 
-  console.log(user, views, likes);
-
   return (
     <div className={classes.root}>
       <img

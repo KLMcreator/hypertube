@@ -359,7 +359,7 @@ const Watch = (props) => {
 
   const handleSendComment = (e) => {
     e.preventDefault();
-    if (newComment && newComment.length <= 1000) {
+    if (newComment && newComment.length < 1000) {
       fetch("/api/comments/send", {
         method: "POST",
         body: JSON.stringify({
@@ -380,7 +380,7 @@ const Watch = (props) => {
         })
         .catch((err) => props.auth.errorMessage(err));
     } else {
-      props.auth.errorMessage("Comment max length is 1000 char.");
+      props.auth.errorMessage("Comment max length is 999 char.");
     }
   };
 
@@ -447,6 +447,7 @@ const Watch = (props) => {
           id="videoPlayer"
           crossOrigin="anonymous"
           controls
+          controlsList="nodownload"
           muted
           preload="auto"
           autoPlay
@@ -634,7 +635,7 @@ const Watch = (props) => {
           </span>{" "}
           {props.auth.isLogged && props.auth.loggedId ? (
             <span className={classes.titleYear}>
-              {newComment ? newComment.length + "/1000" : undefined}
+              {newComment ? newComment.length + "/999" : undefined}
             </span>
           ) : undefined}
         </div>

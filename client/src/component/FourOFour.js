@@ -11,6 +11,7 @@ const FourOFour = (props) => {
   const { classes } = props;
 
   useEffect(() => {
+    console.log(props);
     return () => {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
