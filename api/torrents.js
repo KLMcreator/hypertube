@@ -127,7 +127,7 @@ const getRandomTorrents = (request, response) => {
   const { req } = request;
   return new Promise((resolve, reject) => {
     pool.pool.query(
-      "SELECT * FROM (SELECT json_array_elements(categories::json)->>'label' as category FROM settings) as parseCategories ORDER BY random() LIMIT 2;",
+      "SELECT * FROM (SELECT json_array_elements(categoriesDetailed::json)->>'category' as category, json_array_elements(categoriesDetailed::json)->>'french' as french, json_array_elements(categoriesDetailed::json)->>'english' as english FROM settings) as parseCategories WHERE french::int > 0 AND english::int > 0 ORDER BY random() LIMIT 2;",
       (error, resRandomCategories) => {
         if (error) {
           resolve({

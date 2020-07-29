@@ -1,4 +1,5 @@
 // dependencies
+const cors = require("cors");
 const mime = require("mime");
 const Jimp = require("jimp");
 const multer = require("multer");
@@ -15,6 +16,7 @@ const users = require("./api/users");
 const login = require("./api/login");
 const views = require("./api/views");
 const likes = require("./api/likes");
+const oauth = require("./api/oauth");
 const signUp = require("./api/signUp");
 const stream = require("./api/stream");
 const confirm = require("./api/confirm");
@@ -50,7 +52,7 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "lax",
+    secure: "true",
   },
 };
 
@@ -69,6 +71,9 @@ app.use(express.static("client"));
 
 // config
 app.use(session(sessionConfig));
+
+// cors
+app.use(cors());
 
 // avoid xss
 app.disable("x-powered-by");
@@ -146,6 +151,51 @@ const job = new CronJob("0 */12 * * *", () => {
 });
 
 job.start();
+
+// Get oauth (42, fb, github, google)
+app.get("/oauth/42", async (req, res) => {
+  if (req.query.code) {
+    const status = await oauth.oauth42(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
+});
+
+app.get("/oauth/facebook", (req, res) => {
+  if (req.query.code) return oauth.oauth42(res, req.query.code);
+  res.redirect("http://localhost:3000/SignUp");
+});
+
+app.get("/oauth/github", (req, res) => {
+  if (req.query.code) return oauth.oauth42(res, req.query.code);
+  res.redirect("http://localhost:3000/SignUp");
+});
+
+app.get("/oauth/google", (req, res) => {
+  if (req.query.code) return oauth.oauth42(res, req.query.code);
+  res.redirect("http://localhost:3000/SignUp");
+});
 
 // Check if the token is valid, needed for react router
 app.get("/api/checkToken", (req, res) => {
