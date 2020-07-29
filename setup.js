@@ -52,7 +52,7 @@ const setupTorrents = async () => {
 const setupSettings = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL,casts VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, categoriesDetailed VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL,casts VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -298,6 +298,7 @@ const populateSettings = () => {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
       categories: [],
+      categoriesDetailed: [],
       languages: [],
       subtitles: [],
       cast: [],
@@ -332,6 +333,16 @@ const populateSettings = () => {
           let pos = settings.categories.map((e) => e.value).indexOf(category);
           if (pos === -1) {
             settings.categories.push({ value: category, label: category });
+            settings.categoriesDetailed.push({
+              category: category,
+              french: e.languages.includes("French") ? 1 : 0,
+              english: e.languages.includes("English") ? 1 : 0,
+            });
+          } else {
+            if (e.languages.includes("French"))
+              settings.categoriesDetailed[pos].french++;
+            if (e.languages.includes("English"))
+              settings.categoriesDetailed[pos].english++;
           }
         });
       }
@@ -356,7 +367,7 @@ const populateSettings = () => {
       a.value > b.value ? 1 : a.value < b.value ? -1 : 0
     );
     pool.query(
-      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts) VALUES($1, $2, $3, $4, $5, $6)",
+      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts, categoriesDetailed) VALUES($1, $2, $3, $4, $5, $6, $7)",
       [
         settings.minProductionYear,
         settings.maxProductionYear,
@@ -364,6 +375,7 @@ const populateSettings = () => {
         JSON.stringify(settings.languages),
         JSON.stringify(settings.subtitles),
         JSON.stringify(settings.cast),
+        JSON.stringify(settings.categoriesDetailed),
       ],
       (error, results) => {
         if (error) {

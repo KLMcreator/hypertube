@@ -1,4 +1,5 @@
 // dependencies
+const cors = require("cors");
 const mime = require("mime");
 const Jimp = require("jimp");
 const multer = require("multer");
@@ -50,9 +51,7 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "none",
     secure: "true",
-    domain: "localhost",
   },
 };
 
@@ -69,19 +68,11 @@ sockets.initSocket(io);
 // allow to use static path for files
 app.use(express.static("client"));
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
-  );
-  next();
-});
-
 // config
 app.use(session(sessionConfig));
+
+// cors
+app.use(cors());
 
 // avoid xss
 app.disable("x-powered-by");
@@ -385,6 +376,17 @@ app.post("/api/torrents/get/casts", (req, res) => {
     .catch((error) => {
       res.status(500).send(error);
     });
+});
+
+// Get oauth 42
+app.get("/oauth/42", (req, res) => {
+  console.log(req, res);
+  //   res.redirect("http://localhost:300/api/oauth/42/cb?code=" + req.query.code);
+});
+
+app.get("/oauth/42/cb", (req, res) => {
+  console.log(req, res);
+  return res.json();
 });
 
 // Get home random torrent
