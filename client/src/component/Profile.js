@@ -1,6 +1,6 @@
 // React
 import moment from "moment";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Select, { createFilter } from "react-select";
 
 // Framework
@@ -253,6 +253,7 @@ const profileStyles = (theme) => ({
 });
 
 const Profile = (props) => {
+  const ref = useRef(false);
   const [email, setEmail] = useState("");
   const [photo, setPhoto] = useState("");
   const [torrents, setTorrents] = useState([]);
@@ -295,21 +296,44 @@ const Profile = (props) => {
     { label: "French", value: "French" },
   ];
 
+  // Render of torrents viewed / liked
+  const getTorrentsUser = () => {
+    fetch("/api/users/get/torrents", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (ref.current) {
+          if (res.torrents) {
+            setTorrents(res.torrents);
+            setIsLoading(false);
+          } else if (res.torrents.msg) {
+            props.auth.errorMessage(res.torrents.msg);
+          } else {
+            props.auth.errorMessage("Error while fetching database.");
+          }
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   const getLoggedUser = async () => {
     fetch("/api/profile")
       .then((res) => res.json())
       .then((res) => {
-        setFirstname(res.user[0].firstname);
-        setLastname(res.user[0].lastname);
-        setEmail(res.user[0].email);
-        setLanguage(res.user[0].language);
-        setPhoto(res.user[0].photos);
-        setUsername(res.user[0].username);
-        setSelectedLanguage({
-          label: res.user[0].language,
-          value: res.user[0].language,
-        });
-        setIsLoading(false);
+        if (ref.current) {
+          setFirstname(res.user[0].firstname);
+          setLastname(res.user[0].lastname);
+          setEmail(res.user[0].email);
+          setLanguage(res.user[0].language);
+          setPhoto(res.user[0].photos);
+          setUsername(res.user[0].username);
+          setSelectedLanguage({
+            label: res.user[0].language,
+            value: res.user[0].language,
+          });
+          getTorrentsUser();
+        }
       })
       .catch((err) => props.auth.errorMessage(err));
   };
@@ -664,30 +688,12 @@ const Profile = (props) => {
     );
   };
 
-  // Render of torrents viewed / liked
-  const getTorrentsUser = () => {
-    fetch("/api/users/get/torrents", {
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.torrents) {
-          setTorrents(res.torrents);
-          setIsLoading(false);
-        } else if (res.torrents.msg) {
-          props.auth.errorMessage(res.torrents.msg);
-        } else {
-          props.auth.errorMessage("Error while fetching database.");
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
-  };
-
   useEffect(() => {
+    ref.current = true;
     document.body.style.overflow = "auto";
     getLoggedUser();
-    getTorrentsUser();
     return () => {
+      ref.current = false;
       setIsLoading(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
