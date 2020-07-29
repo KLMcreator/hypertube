@@ -154,7 +154,7 @@ const editUserLastname = (request, response) => {
         req.lastname &&
         req.lastname.length === req.lastname.replace(/\s/g, "").length &&
         checkSpecChar.test(req.lastname) &&
-        req.lastname.length < 103
+        req.lastname.length < 256
       ) {
         let lastName = req.lastname.toUpperCase();
         pool.pool.query(
@@ -199,7 +199,7 @@ const editUserFirstname = (request, response) => {
         req.firstname &&
         req.firstname.length === req.firstname.replace(/\s/g, "").length &&
         checkSpecChar.test(req.firstname) &&
-        req.firstname.length < 103
+        req.firstname.length < 256
       ) {
         pool.pool.query(
           "UPDATE users SET firstname = $1 WHERE connected_token = $2",
@@ -240,8 +240,7 @@ const checkPassword = (req, token) => {
       req.currentPassword !== req.newPassword &&
       req.newPassword.length === req.newPassword.replace(/\s/g, "").length &&
       req.newPassword === req.confirmedPassword &&
-      checkNewPwd.test(req.newPassword) &&
-      req.newPassword.length < 150
+      checkNewPwd.test(req.newPassword)
     ) {
       pool.pool.query(
         "SELECT password FROM users WHERE connected_token = $1",
