@@ -28,7 +28,7 @@ const getUserInfos = (request, response) => {
   const { req } = request;
   return new Promise((resolve, reject) => {
     pool.pool.query(
-      "SELECT id, username, firstname, lastname, connected, last_connection, language, photos FROM users WHERE id = $1;",
+      "SELECT username, firstname, lastname, connected, last_connection, language, photos FROM users WHERE id = $1;",
       [req.id],
       (error, results) => {
         if (error) {
