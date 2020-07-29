@@ -1,5 +1,6 @@
 // react
 import moment from "moment";
+import localization from "moment/locale/fr";
 import { useHistory } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
 // framework
@@ -152,7 +153,7 @@ const RenderComment = (props) => {
       </div>
       <div className={classes.main}>
         <div className={classes.content}>
-          From{" "}
+          {auth.language === "English" ? " From: " : " De: "}
           <b
             style={{ cursor: "pointer" }}
             onClick={() => {
@@ -166,7 +167,12 @@ const RenderComment = (props) => {
           >
             {comment.username}
           </b>
-          , {moment(comment.created_at).format("DD/MM/YYYY HH:mm:ss ")}
+          ,
+          {auth.language === "English"
+            ? moment(comment.created_at).locale("en").format("DD MMM, YYYY")
+            : moment(comment.created_at)
+                .locale("fr", localization)
+                .format("DD/MM/YYYY HH:mm:ss ")}
         </div>
         <div className={classes.content}>{comment.comment}</div>
       </div>
@@ -466,7 +472,10 @@ const Watch = (props) => {
           variant="fullWidth"
         >
           <Tab label="INFORMATIONS" id="INFO_TAB" />
-          <Tab label="CAST" id="TORRENT_TAB" />
+          <Tab
+            label={auth.language === "English" ? "CAST" : "CASTING"}
+            id="TORRENT_TAB"
+          />
         </Tabs>
         <div className={classes.titleAndLeftInfo}>
           <div className={classes.titleContainer}>
@@ -486,28 +495,45 @@ const Watch = (props) => {
               ) : undefined}
               <div className={classes.rightInfo}>
                 <div>
-                  <span className={classes.boldInfo}>Categories:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {" "}
+                    {auth.language === "English"
+                      ? "Categories:"
+                      : "Catégories:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {movie.categories.length
                       ? movie.categories.map((el, i) =>
                           i < movie.categories.length - 1 ? el + " / " : el
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
                 <div>
-                  <span className={classes.boldInfo}>Languages:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {" "}
+                    {auth.language === "English" ? "Languages:" : "Langages:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {movie.languages.length
                       ? movie.languages.map((el, i) =>
                           i < movie.languages.length - 1 ? el + " / " : el
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
                 {movie.subtitles && movie.subtitles.length ? (
                   <div>
-                    <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English"
+                        ? "Subtitles:"
+                        : "Sous-titres:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {movie.subtitles.length
                         ? movie.subtitles.map((el, i) =>
@@ -515,13 +541,18 @@ const Watch = (props) => {
                               ? el.language + " / "
                               : el.language
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                 ) : undefined}
                 {torrent.duration ? (
                   <div>
-                    <span className={classes.boldInfo}>Duration:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English" ? "Duration:" : "Durée:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {torrent.duration}mn
                     </span>
@@ -529,7 +560,12 @@ const Watch = (props) => {
                 ) : undefined}
                 {torrent.lastviewed_at ? (
                   <div>
-                    <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English"
+                        ? "Last viewed:"
+                        : "Dernier visionnage:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {torrent.lastviewed_at}
                     </span>
@@ -537,7 +573,12 @@ const Watch = (props) => {
                 ) : undefined}
                 {torrent.downloaded_at ? (
                   <div>
-                    <span className={classes.boldInfo}>Last download:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English"
+                        ? "Last download:"
+                        : "Dernier téléchargement:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {torrent.downloaded_at}
                     </span>
@@ -550,25 +591,34 @@ const Watch = (props) => {
           <div className={classes.torrentTab}>
             {movie.actors && movie.actors.length ? (
               <div>
-                <span className={classes.boldInfo}>Actors:</span>{" "}
+                <span className={classes.boldInfo}>
+                  {" "}
+                  {auth.language === "English" ? "Actors:" : "Acteurs:"}
+                </span>{" "}
                 <span className={classes.contentInfo}>
                   {movie.actors.length
                     ? movie.actors.map((el, i) =>
                         i < movie.actors.length - 1 ? el.name + " / " : el.name
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
             ) : undefined}
             {movie.crew && movie.crew.length ? (
               <div>
-                <span className={classes.boldInfo}>Crew:</span>{" "}
+                <span className={classes.boldInfo}>
+                  {auth.language === "English" ? "Crew:" : "Équipe:"}
+                </span>{" "}
                 <span className={classes.contentInfo}>
                   {movie.crew.length
                     ? movie.crew.map((el, i) =>
                         i < movie.crew.length - 1 ? el.name + " / " : el.name
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
             ) : undefined}
@@ -577,7 +627,11 @@ const Watch = (props) => {
       </div>
       <div>
         <div className={classes.titleContainer}>
-          <span className={classes.titleName}>Comment section</span>{" "}
+          <span className={classes.titleName}>
+            {auth.language === "English"
+              ? "Comment section:"
+              : "Section commentaires:"}
+          </span>{" "}
           {props.auth.isLogged && props.auth.loggedId ? (
             <span className={classes.titleYear}>
               {newComment ? newComment.length + "/1000" : undefined}
@@ -594,7 +648,11 @@ const Watch = (props) => {
                   underline: classes.borderBottom,
                 }}
                 type="text"
-                placeholder="Write a comment about the movie..."
+                placeholder={
+                  auth.language === "English"
+                    ? "Write a comment about the movie..."
+                    : "Écrivez un commentaire au sujet de ce film..."
+                }
                 value={newComment}
                 required
                 onChange={(e) => setNewComment(e.target.value)}
@@ -605,7 +663,11 @@ const Watch = (props) => {
             </form>
           ) : !props.auth.isLogged && !props.auth.loggedId && !canComment ? (
             <div>
-              <div>You must be logged to post a new comment</div>
+              <div>
+                {auth.language === "English"
+                  ? "You must be logged to post a new comment"
+                  : "Vous devez être identifié pour poster un nouveau commentaire."}
+              </div>
             </div>
           ) : undefined}
         </div>
@@ -622,7 +684,12 @@ const Watch = (props) => {
               ></Comments>
             ))
           ) : (
-            <div>No comments, be the first to post one</div>
+            <div>
+              {" "}
+              {auth.language === "English"
+                ? "No comments, be the first to post one"
+                : "Aucun commentaire, soyez le premier à en poster un"}
+            </div>
           )}
         </div>
       </div>

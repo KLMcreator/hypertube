@@ -214,6 +214,7 @@ const downloadMenuStyles = (theme) => ({
 const auth = {
   isLogged: false,
   loggedId: false,
+  language: false,
   errorMessage(msg) {
     toast.error(msg, {
       position: "bottom-right",
@@ -243,11 +244,13 @@ const auth = {
   setLogged(userId) {
     auth.isLogged = userId.login;
     auth.loggedId = userId.id;
+    auth.language = userId.language;
     this.successMessage("You are now logged in!");
   },
   setLoggedOut(cb) {
     auth.isLogged = false;
     auth.loggedId = false;
+    auth.language = false;
     this.successMessage("You are now logged out!");
     cb();
   },
@@ -635,6 +638,7 @@ const App = (props) => {
       .then((resLogged) => {
         auth.isLogged = !resLogged.status ? false : true;
         auth.loggedId = !resLogged.status ? false : resLogged.id;
+        auth.language = !resLogged.status ? false : resLogged.language;
         setIsLoading(false);
       });
     return () => {};

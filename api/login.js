@@ -108,7 +108,7 @@ const checkToken = (request, response) => {
   return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
-        "SELECT id, connected_token FROM users WHERE connected_token = $1;",
+        "SELECT id, connected_token, language FROM users WHERE connected_token = $1;",
         [token],
         (error, results) => {
           if (error) {
@@ -117,7 +117,11 @@ const checkToken = (request, response) => {
           if (!results.rowCount) {
             resolve({ token: false });
           } else {
-            resolve({ token: true, id: results.rows[0].id });
+            resolve({
+              token: true,
+              id: results.rows[0].id,
+              language: results.rows[0].language,
+            });
           }
         }
       );

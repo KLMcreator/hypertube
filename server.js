@@ -163,7 +163,11 @@ app.get("/api/checkToken", (req, res) => {
           })
           .then((response) => {
             if (response.token === true) {
-              res.send({ status: true, id: response.id });
+              res.send({
+                status: true,
+                id: response.id,
+                language: response.language,
+              });
             } else {
               res.send({ status: false });
             }
