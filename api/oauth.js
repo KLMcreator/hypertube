@@ -54,6 +54,61 @@ const oauth42 = async (code) => {
   }
 };
 
+const getGithubUser = async (token) => {
+  try {
+    return got("https://api.github.com/user", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+        "cache-control": "no-cache",
+      },
+      responseType: "json",
+      resolveBodyOnly: true,
+    })
+      .then((res) => ({ user: res, status: true }))
+      .catch((err) => ({ user: null, status: false, msg: err }));
+  } catch (err) {
+    return { user: null, status: false, msg: err };
+  }
+};
+
+const oauthGithub = async (code) => {
+  try {
+    return got
+      .post("https://github.com/login/oauth/access_token", {
+        searchParams: {
+          code: code,
+          client_id: "f8244955678d6fde727c",
+          client_secret: "105ebe5ff14303a3a20cca4bdc35215d6efdc463",
+          grant_type: "authorization_code",
+          state: "test",
+          redirect_uri: `http://localhost:5000/oauth/github`,
+        },
+        headers: { "Content-Type": "application/json" },
+        responseType: "json",
+        resolveBodyOnly: true,
+      })
+      .then(async (result) => {
+        const user = await getGithubUser(`Bearer ${result.access_token}`);
+        if (!user.user.name) user.user.name = user.user.login;
+        if (!user.user.email) user.user.email = `${user.user.login}@github.com`;
+        return user.status
+          ? await signUp.oauthSignUp({
+              username: user.user.login,
+              firstname: user.user.login,
+              lastname: user.user.name,
+              email: user.user.email,
+              photos: user.user.avatar_url,
+            })
+          : { status: false, msg: user.msg };
+      })
+      .catch((err) => ({ status: false, msg: err }));
+  } catch (err) {
+    return { status: false, msg: err };
+  }
+};
+
 module.exports = {
   oauth42,
+  oauthGithub,
 };

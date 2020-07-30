@@ -121,7 +121,7 @@ const SignIn = (props) => {
         "https://api.intra.42.fr/oauth/authorize?client_id=d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Foauth%2F42&response_type=code";
     } else if (e === "Github") {
       window.location.href =
-        "https://github.com/login/oauth/authorize?client_id=fe47f59188aa4d142c6a&redirect_uri=http://localhost:3000/oauth/callback/github&state=test&scope=user email";
+        "https://github.com/login/oauth/authorize?client_id=f8244955678d6fde727c&redirect_uri=http://localhost:5000/oauth/github&state=test&scope=user email";
     } else if (e === "Google") {
       window.location.href =
         "https://accounts.google.com/o/oauth2/v2/auth?client_id=742615774585-e4ruhgb9mse90a5cjvc20mgue7pgamsa.apps.googleusercontent.com&response_type=code&redirect_uri=http://127.0.0.1:3000/oauth/callback/google&scope=openid%20email%20profile&prompt=consent";

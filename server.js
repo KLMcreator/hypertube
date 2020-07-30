@@ -182,17 +182,41 @@ app.get("/oauth/42", async (req, res) => {
   }
 });
 
-app.get("/oauth/facebook", (req, res) => {
+app.get("/oauth/facebook", async (req, res) => {
   if (req.query.code) return oauth.oauth42(res, req.query.code);
   res.redirect("http://localhost:3000/SignUp");
 });
 
-app.get("/oauth/github", (req, res) => {
-  if (req.query.code) return oauth.oauth42(res, req.query.code);
-  res.redirect("http://localhost:3000/SignUp");
+app.get("/oauth/github", async (req, res) => {
+  if (req.query.code) {
+    const status = await oauth.oauthGithub(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
 });
 
-app.get("/oauth/google", (req, res) => {
+app.get("/oauth/google", async (req, res) => {
   if (req.query.code) return oauth.oauth42(res, req.query.code);
   res.redirect("http://localhost:3000/SignUp");
 });
