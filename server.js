@@ -152,7 +152,7 @@ const job = new CronJob("0 */12 * * *", () => {
 
 job.start();
 
-// Get oauth (42, fb, github, google)
+// Get oauth (42, github, google)
 app.get("/oauth/42", async (req, res) => {
   if (req.query.code) {
     const status = await oauth.oauth42(req.query.code);
@@ -180,11 +180,6 @@ app.get("/oauth/42", async (req, res) => {
   } else {
     return res.redirect("http://localhost:3000/SignUp");
   }
-});
-
-app.get("/oauth/facebook", async (req, res) => {
-  if (req.query.code) return oauth.oauth42(res, req.query.code);
-  res.redirect("http://localhost:3000/SignUp");
 });
 
 app.get("/oauth/github", async (req, res) => {
@@ -217,8 +212,32 @@ app.get("/oauth/github", async (req, res) => {
 });
 
 app.get("/oauth/google", async (req, res) => {
-  if (req.query.code) return oauth.oauth42(res, req.query.code);
-  res.redirect("http://localhost:3000/SignUp");
+  if (req.query.code) {
+    const status = await oauth.oauthGoogle(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
 });
 
 // Check if the token is valid, needed for react router
@@ -355,8 +374,10 @@ app.post("/api/signUp", (req, res) => {
                         .quality(80)
                         .write(uploadedImg);
                     })
-                    .catch(function (err) {
-                      console.error(err);
+                    .catch((err) => {
+                      res
+                        .status(200)
+                        .send({ signup: { msg: "Unable to send email." } });
                     });
                   res.status(200).send({ signup: { signup: response.signup } });
                 } else {
@@ -371,9 +392,7 @@ app.post("/api/signUp", (req, res) => {
                   .send({ signup: { msg: "Unable to send email." } });
               });
           } else {
-            res
-              .status(200)
-              .send({ signup: { msg: "Unable to create account." } });
+            res.status(200).send({ signup: { msg: response.msg } });
           }
         })
         .catch((error) => {
@@ -714,7 +733,7 @@ app.post("/api/recover", (req, res) => {
           });
       } else {
         res.status(200).send({
-          recover: { msg: "Given informations don't match any users." },
+          recover: { msg: response.msg },
         });
       }
     })

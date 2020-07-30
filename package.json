@@ -27,6 +27,7 @@
     "faker": "^4.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "get-video-duration": "^3.0.0",
+    "google-auth-library": "^6.0.6",
     "got": "^11.3.0",
     "jimp": "^0.14.0",
     "jsonwebtoken": "^8.5.1",

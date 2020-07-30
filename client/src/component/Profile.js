@@ -738,6 +738,7 @@ const Profile = (props) => {
               alt={photo}
               className={classes.userImage}
               src={
+                photo === "./src/assets/img/nophotos.png" ||
                 photo.startsWith("https://")
                   ? photo
                   : "./src/assets/photos/" + photo

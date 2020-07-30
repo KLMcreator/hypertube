@@ -124,10 +124,7 @@ const SignIn = (props) => {
         "https://github.com/login/oauth/authorize?client_id=f8244955678d6fde727c&redirect_uri=http://localhost:5000/oauth/github&state=test&scope=user email";
     } else if (e === "Google") {
       window.location.href =
-        "https://accounts.google.com/o/oauth2/v2/auth?client_id=742615774585-e4ruhgb9mse90a5cjvc20mgue7pgamsa.apps.googleusercontent.com&response_type=code&redirect_uri=http://127.0.0.1:3000/oauth/callback/google&scope=openid%20email%20profile&prompt=consent";
-    } else if (e === "Facebook") {
-      window.location.href =
-        "https://www.facebook.com/v3.2/dialog/oauth?client_id=776061746097569&redirect_uri=http://localhost:3000/oauth/callback/facebook&scope=email%2Cpublic_profile";
+        "https://accounts.google.com/o/oauth2/v2/auth?client_id=1088737867239-ktmhvi9m7p8a54srikk2hl0n0qcn9cdn.apps.googleusercontent.com&response_type=code&redirect_uri=http://localhost:5000/oauth/google&scope=openid%20email%20profile&prompt=consent";
     }
   };
 
@@ -244,17 +241,6 @@ const SignIn = (props) => {
                 className={classes.submitButton}
               >
                 Sign in with Google
-              </Button>
-              <Button
-                variant="outlined"
-                style={{
-                  color: "#3B5998",
-                  border: "1px solid #3B5998",
-                }}
-                onClick={() => handleOauth("Facebook")}
-                className={classes.submitButton}
-              >
-                Sign in with Facebook
               </Button>
             </Grid>
           </Grid>

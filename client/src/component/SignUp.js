@@ -260,6 +260,7 @@ const SignUp = (props) => {
           props.props.history.push("/SignIn");
         } else {
           props.auth.errorMessage(res.signup.msg);
+          setQueryLoading(false);
         }
       })
       .catch((err) => props.auth.errorMessage(err));

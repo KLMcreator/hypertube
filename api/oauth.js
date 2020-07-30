@@ -1,5 +1,16 @@
 const got = require("got");
 const signUp = require("./signUp");
+const { OAuth2Client } = require("google-auth-library");
+
+const GOOGLE_CLIENT_ID =
+  "1088737867239-ktmhvi9m7p8a54srikk2hl0n0qcn9cdn.apps.googleusercontent.com";
+const GOOGLE_SECRET_ID = "FtaPjYhMPDkWxsfCmDbU_CvB";
+const FT_CLIENT_ID =
+  "d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590";
+const FT_SECRET_ID =
+  "6139c30558a59688cdd9c816721841625bf3298377dad7383ae5654921fb7874";
+const GITHUB_CLIENT_ID = "f8244955678d6fde727c";
+const GITHUB_SECRET_ID = "105ebe5ff14303a3a20cca4bdc35215d6efdc463";
 
 const get42User = async (token) => {
   try {
@@ -25,10 +36,8 @@ const oauth42 = async (code) => {
       .post("https://api.intra.42.fr/oauth/token", {
         searchParams: {
           code: code,
-          client_id:
-            "d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590",
-          client_secret:
-            "6139c30558a59688cdd9c816721841625bf3298377dad7383ae5654921fb7874",
+          client_id: FT_CLIENT_ID,
+          client_secret: FT_SECRET_ID,
           grant_type: "authorization_code",
           redirect_uri: `http://localhost:5000/oauth/42`,
         },
@@ -78,8 +87,8 @@ const oauthGithub = async (code) => {
       .post("https://github.com/login/oauth/access_token", {
         searchParams: {
           code: code,
-          client_id: "f8244955678d6fde727c",
-          client_secret: "105ebe5ff14303a3a20cca4bdc35215d6efdc463",
+          client_id: GITHUB_CLIENT_ID,
+          client_secret: GITHUB_SECRET_ID,
           grant_type: "authorization_code",
           state: "test",
           redirect_uri: `http://localhost:5000/oauth/github`,
@@ -108,7 +117,51 @@ const oauthGithub = async (code) => {
   }
 };
 
+const getGoogleUser = async (token) => {
+  const ticket = await new OAuth2Client(GOOGLE_CLIENT_ID).verifyIdToken({
+    idToken: token,
+    audience: GOOGLE_CLIENT_ID,
+  });
+  return ticket.getPayload()
+    ? { user: ticket.getPayload(), status: true }
+    : { user: null, status: false, msg: "Unable to get user payload" };
+};
+
+const oauthGoogle = async (code) => {
+  try {
+    return got
+      .post("https://www.googleapis.com/oauth2/v4/token", {
+        searchParams: {
+          code: code,
+          client_id: GOOGLE_CLIENT_ID,
+          client_secret: GOOGLE_SECRET_ID,
+          grant_type: "authorization_code",
+          redirect_uri: `http://localhost:5000/oauth/google`,
+        },
+        headers: { "Content-Type": "application/json" },
+        responseType: "json",
+        resolveBodyOnly: true,
+      })
+      .then(async (result) => {
+        const user = await getGoogleUser(result.id_token);
+        return user.status
+          ? await signUp.oauthSignUp({
+              username: `${user.user.given_name}-${user.user.family_name}`,
+              firstname: user.user.given_name,
+              lastname: user.user.family_name,
+              email: user.user.email,
+              photos: "./src/assets/img/nophotos.png",
+            })
+          : { status: false, msg: user.msg };
+      })
+      .catch((err) => ({ status: false, msg: err }));
+  } catch (err) {
+    return { status: false, msg: err };
+  }
+};
+
 module.exports = {
+  oauthGoogle,
   oauth42,
   oauthGithub,
 };
