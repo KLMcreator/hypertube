@@ -521,7 +521,9 @@ const RenderShowMore = (props) => {
                     ? categories.map((el, i) =>
                         i < categories.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               <div>
@@ -533,7 +535,9 @@ const RenderShowMore = (props) => {
                     ? languages.map((el, i) =>
                         i < languages.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               {subtitles && subtitles.length ? (
@@ -550,7 +554,9 @@ const RenderShowMore = (props) => {
                             ? el.language + " / "
                             : el.language
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
@@ -563,7 +569,9 @@ const RenderShowMore = (props) => {
                     ? qualities.map((el, i) =>
                         i < qualities.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               {torrent.duration ? (
@@ -586,7 +594,9 @@ const RenderShowMore = (props) => {
                       ? actors.map((el, i) =>
                           i < actors.length - 1 ? el.name + " / " : el.name
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
@@ -600,7 +610,9 @@ const RenderShowMore = (props) => {
                       ? crew.map((el, i) =>
                           i < crew.length - 1 ? el.name + " / " : el.name
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
@@ -1071,7 +1083,9 @@ const RenderTorrent = (props) => {
                         ? categories.map((el, i) =>
                             i < categories.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   <div>
@@ -1084,7 +1098,9 @@ const RenderTorrent = (props) => {
                         ? languages.map((el, i) =>
                             i < languages.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   {subtitles && subtitles.length ? (
@@ -1102,7 +1118,9 @@ const RenderTorrent = (props) => {
                                 ? el.language + " / "
                                 : el.language
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
@@ -1116,7 +1134,9 @@ const RenderTorrent = (props) => {
                         ? qualities.map((el, i) =>
                             i < qualities.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   {torrent.duration ? (
@@ -1141,7 +1161,9 @@ const RenderTorrent = (props) => {
                           ? actors.map((el, i) =>
                               i < actors.length - 1 ? el.name + " / " : el.name
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
@@ -1156,7 +1178,9 @@ const RenderTorrent = (props) => {
                           ? crew.map((el, i) =>
                               i < crew.length - 1 ? el.name + " / " : el.name
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
@@ -1206,7 +1230,13 @@ const RenderTorrent = (props) => {
                         <div key={el.magnet + i} className={classes.source}>
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
-                              {el.language}
+                              {auth.language === "English"
+                                ? el.language === "English"
+                                  ? "English"
+                                  : "French"
+                                : el.language === "English"
+                                ? "Anglais"
+                                : "Français"}
                             </div>
                             <div className={classes.sourceContent}>
                               <span className={classes.boldInfo}>
@@ -1304,7 +1334,13 @@ const RenderTorrent = (props) => {
                         <div key={el.magnet + i} className={classes.source}>
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
-                              {el.language}
+                              {auth.language === "English"
+                                ? el.language === "English"
+                                  ? "English"
+                                  : "French"
+                                : el.language === "English"
+                                ? "Anglais"
+                                : "Français"}
                             </div>
                             <div className={classes.sourceContent}>
                               <span className={classes.boldInfo}>
@@ -1523,11 +1559,11 @@ const TorrentList = (props) => {
         ]
       : [
           { label: "NOM CROIS.", value: "ascname" },
-          { label: "NOM DECROIS.", value: "descname" },
+          { label: "NOM DÉCROIS.", value: "descname" },
           { label: "NOTE CROIS..", value: "ascrating" },
-          { label: "NOTE DECROIS.", value: "descrating" },
+          { label: "NOTE DÉCROIS.", value: "descrating" },
           { label: "ANNÉE CROIS.", value: "ascyear" },
-          { label: "ANNÉE DECROIS.", value: "descyear" },
+          { label: "ANNÉE DÉCROIS.", value: "descyear" },
         ];
 
   const handleSortList = (el) => {
