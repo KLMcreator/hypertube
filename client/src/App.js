@@ -215,6 +215,7 @@ const auth = {
   isLogged: false,
   loggedId: false,
   language: false,
+  isoauth: false,
   errorMessage(msg) {
     toast.error(msg, {
       position: "bottom-right",
@@ -245,12 +246,14 @@ const auth = {
     auth.isLogged = userId.login;
     auth.loggedId = userId.id;
     auth.language = userId.language;
+    auth.isoauth = userId.isoauth;
     this.successMessage("You are now logged in!");
   },
   setLoggedOut(cb) {
     auth.isLogged = false;
     auth.loggedId = false;
     auth.language = false;
+    auth.isoauth = false;
     this.successMessage("You are now logged out!");
     cb();
   },
@@ -415,7 +418,10 @@ const AuthButton = (props) => {
     fetch("/api/checkToken")
       .then((resLogged) => resLogged.json())
       .then((resLogged) => {
-        auth.isLogged = resLogged.status === false ? false : true;
+        auth.isLogged = !resLogged.status ? false : true;
+        auth.loggedId = !resLogged.status ? false : resLogged.id;
+        auth.language = !resLogged.status ? false : resLogged.language;
+        auth.isoauth = !resLogged.status ? false : resLogged.isoauth;
       });
   };
 
@@ -639,6 +645,7 @@ const App = (props) => {
         auth.isLogged = !resLogged.status ? false : true;
         auth.loggedId = !resLogged.status ? false : resLogged.id;
         auth.language = !resLogged.status ? false : resLogged.language;
+        auth.isoauth = !resLogged.status ? false : resLogged.isoauth;
         setIsLoading(false);
       });
     return () => {};

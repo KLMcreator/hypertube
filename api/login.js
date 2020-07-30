@@ -9,8 +9,8 @@ const setLoggedUser = (request, response) => {
     if (token && login) {
       pool.pool.query(
         type === 1
-          ? "UPDATE users SET connected = $1, last_connection = $2, connected_token = $3 WHERE username = $4"
-          : "UPDATE users SET connected = $1, last_connection = $2, connected_token = $3 WHERE email = $4",
+          ? "UPDATE users SET connected = $1, last_connection = $2, connected_token = $3 WHERE username = $4 returning id, language, isoauth"
+          : "UPDATE users SET connected = $1, last_connection = $2, connected_token = $3 WHERE email = $4 returning id, language, isoauth",
         [isLogged, moment().format("DD/MM/YYYY hh:mm:ss"), token, login],
         (error, results) => {
           if (error) {
@@ -19,7 +19,12 @@ const setLoggedUser = (request, response) => {
           if (!results.rowCount) {
             resolve({ msg: "Unable to update user connected state" });
           } else {
-            resolve({ login: true });
+            resolve({
+              login: true,
+              id: results.rows[0].id,
+              language: results.rows[0].language,
+              isoauth: results.rows[0].isoauth,
+            });
           }
         }
       );
@@ -108,7 +113,7 @@ const checkToken = (request, response) => {
   return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
-        "SELECT id, connected_token, language FROM users WHERE connected_token = $1;",
+        "SELECT id, connected_token, language, isoauth FROM users WHERE connected_token = $1;",
         [token],
         (error, results) => {
           if (error) {
@@ -121,6 +126,7 @@ const checkToken = (request, response) => {
               token: true,
               id: results.rows[0].id,
               language: results.rows[0].language,
+              isoauth: results.rows[0].isoauth,
             });
           }
         }

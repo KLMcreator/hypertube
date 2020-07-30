@@ -827,44 +827,9 @@ const Profile = (props) => {
               </form>
             </div>
           </div>
-          <div className={classes.userDetailsContainer}>
-            <div className={classes.userDetailsChild}>
-              <Input
-                classes={{
-                  root: classes.rootSend,
-                  input: classes.inputColor,
-                  underline: classes.borderBottom,
-                }}
-                inputProps={{
-                  style: inputSelectedStyles,
-                }}
-                id="emailTextfield"
-                type="email"
-                placeholder={
-                  auth.language === "English"
-                    ? "Current mail: " + email
-                    : "Email actuel: " + email
-                }
-                value={newEmail}
-                required
-                onChange={handleChangeEmail}
-                startAdornment={
-                  <AlternateEmailIcon
-                    className={classes.sendIcon}
-                  ></AlternateEmailIcon>
-                }
-              />
-              {emailWhiteSpaces === false ? (
-                <p className={classes.errorCheck}>
-                  <ErrorIcon className={classes.iconsMessage} />
-                  {auth.language === "English"
-                    ? "Email must not contain white space"
-                    : "L'adresse mail ne doit pas contenir d'espace"}
-                </p>
-              ) : undefined}
-            </div>
-            <div className={classes.userDetailsChild}>
-              <form encType="multipart/form-data" onSubmit={editNewMail}>
+          {!auth.isoauth ? (
+            <div className={classes.userDetailsContainer}>
+              <div className={classes.userDetailsChild}>
                 <Input
                   classes={{
                     root: classes.rootSend,
@@ -874,42 +839,79 @@ const Profile = (props) => {
                   inputProps={{
                     style: inputSelectedStyles,
                   }}
-                  id="confirmedMail"
+                  id="emailTextfield"
                   type="email"
                   placeholder={
                     auth.language === "English"
-                      ? "Confirmed new mail"
-                      : "Confirmation de mail"
+                      ? "Current mail: " + email
+                      : "Email actuel: " + email
                   }
-                  value={confirmedEmail}
+                  value={newEmail}
                   required
-                  onChange={handleChangeConfirmedEmail}
+                  onChange={handleChangeEmail}
                   startAdornment={
                     <AlternateEmailIcon
                       className={classes.sendIcon}
                     ></AlternateEmailIcon>
                   }
-                  endAdornment={
-                    <IconButton
-                      type="submit"
-                      aria-label="send"
-                      className={classes.submitBtn}
-                    >
-                      <EditRoundedIcon fontSize="small" />
-                    </IconButton>
-                  }
                 />
-                {emailMatches === false ? (
+                {emailWhiteSpaces === false ? (
                   <p className={classes.errorCheck}>
                     <ErrorIcon className={classes.iconsMessage} />
                     {auth.language === "English"
-                      ? "Emails don't match"
-                      : "Les adresses mails ne sont pas identiques"}
+                      ? "Email must not contain white space"
+                      : "L'adresse mail ne doit pas contenir d'espace"}
                   </p>
                 ) : undefined}
-              </form>
+              </div>
+              <div className={classes.userDetailsChild}>
+                <form encType="multipart/form-data" onSubmit={editNewMail}>
+                  <Input
+                    classes={{
+                      root: classes.rootSend,
+                      input: classes.inputColor,
+                      underline: classes.borderBottom,
+                    }}
+                    inputProps={{
+                      style: inputSelectedStyles,
+                    }}
+                    id="confirmedMail"
+                    type="email"
+                    placeholder={
+                      auth.language === "English"
+                        ? "Confirmed new mail"
+                        : "Confirmation de mail"
+                    }
+                    value={confirmedEmail}
+                    required
+                    onChange={handleChangeConfirmedEmail}
+                    startAdornment={
+                      <AlternateEmailIcon
+                        className={classes.sendIcon}
+                      ></AlternateEmailIcon>
+                    }
+                    endAdornment={
+                      <IconButton
+                        type="submit"
+                        aria-label="send"
+                        className={classes.submitBtn}
+                      >
+                        <EditRoundedIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  />
+                  {emailMatches === false ? (
+                    <p className={classes.errorCheck}>
+                      <ErrorIcon className={classes.iconsMessage} />
+                      {auth.language === "English"
+                        ? "Emails don't match"
+                        : "Les adresses mails ne sont pas identiques"}
+                    </p>
+                  ) : undefined}
+                </form>
+              </div>
             </div>
-          </div>
+          ) : undefined}
           <div className={classes.userDetailsContainer}>
             <div className={classes.userDetailsChild}>
               <form encType="multipart/form-data" onSubmit={editLastname}>
@@ -980,58 +982,9 @@ const Profile = (props) => {
               </form>
             </div>
           </div>
-          <div className={classes.userDetailsContainer}>
-            <div className={classes.userDetailsChild}>
-              <Input
-                classes={{
-                  root: classes.rootSend,
-                  input: classes.inputColor,
-                  underline: classes.borderBottom,
-                }}
-                inputProps={{
-                  style: inputSelectedStyles,
-                }}
-                id="currentPasswordTextfield"
-                type="password"
-                placeholder={
-                  auth.language === "English"
-                    ? "Current password"
-                    : "Mot de passe actuel"
-                }
-                value={currentPassword}
-                required
-                onChange={handleCurrentPassword}
-                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
-              />
-            </div>
-            <div className={classes.userDetailsChild}>
-              <Input
-                classes={{
-                  root: classes.rootSend,
-                  input: classes.inputColor,
-                  underline: classes.borderBottom,
-                }}
-                inputProps={{
-                  style: inputSelectedStyles,
-                }}
-                id="newPasswordTextfield"
-                type="password"
-                placeholder={
-                  auth.language === "English"
-                    ? "New password"
-                    : "Nouveau mot de passe"
-                }
-                value={newPassword}
-                required
-                onChange={handleChangePassword}
-                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
-              />
-              {newPassword.length ? (
-                <RenderPasswordRegex></RenderPasswordRegex>
-              ) : undefined}
-            </div>
-            <div className={classes.userDetailsChild}>
-              <form encType="multipart/form-data" onSubmit={editPassword}>
+          {!auth.isoauth ? (
+            <div className={classes.userDetailsContainer}>
+              <div className={classes.userDetailsChild}>
                 <Input
                   classes={{
                     root: classes.rootSend,
@@ -1041,40 +994,95 @@ const Profile = (props) => {
                   inputProps={{
                     style: inputSelectedStyles,
                   }}
-                  id="confirmedPasswordTextfield"
+                  id="currentPasswordTextfield"
                   type="password"
                   placeholder={
                     auth.language === "English"
-                      ? "Confirmed password"
-                      : "Confirmation de mot de passe"
+                      ? "Current password"
+                      : "Mot de passe actuel"
                   }
-                  value={confirmedPassword}
+                  value={currentPassword}
                   required
-                  onChange={handleChangeConfirmedPassword}
+                  onChange={handleCurrentPassword}
                   startAdornment={
                     <VpnKey className={classes.sendIcon}></VpnKey>
                   }
-                  endAdornment={
-                    <IconButton
-                      type="submit"
-                      aria-label="send"
-                      className={classes.submitBtn}
-                    >
-                      <EditRoundedIcon fontSize="small" />
-                    </IconButton>
+                />
+              </div>
+              <div className={classes.userDetailsChild}>
+                <Input
+                  classes={{
+                    root: classes.rootSend,
+                    input: classes.inputColor,
+                    underline: classes.borderBottom,
+                  }}
+                  inputProps={{
+                    style: inputSelectedStyles,
+                  }}
+                  id="newPasswordTextfield"
+                  type="password"
+                  placeholder={
+                    auth.language === "English"
+                      ? "New password"
+                      : "Nouveau mot de passe"
+                  }
+                  value={newPassword}
+                  required
+                  onChange={handleChangePassword}
+                  startAdornment={
+                    <VpnKey className={classes.sendIcon}></VpnKey>
                   }
                 />
-                {pwdMatches === false ? (
-                  <p className={classes.errorCheck}>
-                    <ErrorIcon className={classes.iconsMessage} />
-                    {auth.language === "English"
-                      ? "Passwords don't match"
-                      : "Les mots de passe ne sont pas identiques"}
-                  </p>
+                {newPassword.length ? (
+                  <RenderPasswordRegex></RenderPasswordRegex>
                 ) : undefined}
-              </form>
+              </div>
+              <div className={classes.userDetailsChild}>
+                <form encType="multipart/form-data" onSubmit={editPassword}>
+                  <Input
+                    classes={{
+                      root: classes.rootSend,
+                      input: classes.inputColor,
+                      underline: classes.borderBottom,
+                    }}
+                    inputProps={{
+                      style: inputSelectedStyles,
+                    }}
+                    id="confirmedPasswordTextfield"
+                    type="password"
+                    placeholder={
+                      auth.language === "English"
+                        ? "Confirmed password"
+                        : "Confirmation de mot de passe"
+                    }
+                    value={confirmedPassword}
+                    required
+                    onChange={handleChangeConfirmedPassword}
+                    startAdornment={
+                      <VpnKey className={classes.sendIcon}></VpnKey>
+                    }
+                    endAdornment={
+                      <IconButton
+                        type="submit"
+                        aria-label="send"
+                        className={classes.submitBtn}
+                      >
+                        <EditRoundedIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  />
+                  {pwdMatches === false ? (
+                    <p className={classes.errorCheck}>
+                      <ErrorIcon className={classes.iconsMessage} />
+                      {auth.language === "English"
+                        ? "Passwords don't match"
+                        : "Les mots de passe ne sont pas identiques"}
+                    </p>
+                  ) : undefined}
+                </form>
+              </div>
             </div>
-          </div>
+          ) : undefined}
         </div>
       </div>
       <div className={classes.torrentsContainerList}>

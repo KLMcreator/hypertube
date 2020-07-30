@@ -217,6 +217,7 @@ app.get("/api/checkToken", (req, res) => {
                 status: true,
                 id: response.id,
                 language: response.language,
+                isoauth: response.isoauth === "true" ? true : false,
               });
             } else {
               res.send({ status: false });
@@ -272,7 +273,9 @@ app.post("/api/login", (req, res) => {
               res.cookie("_hypertubeAuth", token, { httpOnly: true });
               res.send({
                 login: true,
-                id: response.id,
+                id: setLogged.id,
+                language: setLogged.language,
+                isoauth: setLogged.isoauth === "true" ? true : false,
               });
             } else {
               res.send(setLogged);
