@@ -1517,17 +1517,6 @@ const TorrentSlider = React.memo((props) => {
   );
 });
 
-// const languagesOption = (props ) => [
-//     {
-//       label: auth.language === "English" ? "English" : "Anglais",
-//       value: "English",
-//     },
-//     {
-//       label: auth.language === "English" ? "French" : "Français",
-//       value: "French",
-//     },
-//   ];
-
 const TorrentList = (props) => {
   const { torrents, isRandom, history, auth, classes } = props;
   const [sortBy, setSortBy] = useState(
