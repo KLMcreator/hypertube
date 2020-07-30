@@ -41,7 +41,7 @@ import SignIn from "./component/SignIn";
 import Recover from "./component/Recover";
 import Profile from "./component/Profile";
 import Confirm from "./component/Confirm";
-// import FourOFour from "./component/FourOFour";
+import FourOFour from "./component/FourOFour";
 // files
 import "rc-dropdown/assets/index.css";
 import { initiateSocket, disconnectSocket, getDownloads } from "./Socket";
@@ -701,7 +701,7 @@ const App = (props) => {
             path="/Confirm"
             component={(props) => <Confirm props={props} auth={auth} />}
           />
-          {/* <PublicRoute component={FourOFour} /> */}
+          <PublicRoute component={FourOFour} />
         </Switch>
       </div>
     </BrowserRouter>
