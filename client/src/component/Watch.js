@@ -167,7 +167,7 @@ const RenderComment = (props) => {
           >
             {comment.username}
           </b>
-          ,
+          ,{" "}
           {auth.language === "English"
             ? moment(comment.created_at).locale("en").format("DD MMM, YYYY")
             : moment(comment.created_at)
