@@ -1084,7 +1084,7 @@ const Profile = (props) => {
           </div>
           <div className={classes.torrentDetails_cate}>
             <div className={classes.torrentInfos_cate}>
-              {auth.language === "English" ? "Watched at" : "Regardé le"}
+              {auth.language === "English" ? "Watched at" : "Visionné le"}
             </div>
             <div className={classes.torrentInfos_cate}>
               {auth.language === "English"
