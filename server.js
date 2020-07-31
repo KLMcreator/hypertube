@@ -1,4 +1,5 @@
 // dependencies
+const fs = require("fs");
 const cors = require("cors");
 const mime = require("mime");
 const Jimp = require("jimp");
@@ -599,6 +600,10 @@ app.post("/api/settings/edit/photo", (req, res) => {
           token: req.cookies._hypertubeAuth,
         })
         .then((response) => {
+          let path = "./client/src/assets/photos/" + req.body.oldFile;
+          if (!req.body.oldFile.startsWith("https://")) {
+            if (fs.existsSync(path)) fs.unlinkSync(path);
+          }
           res.status(200).send({ edit: response });
         })
         .catch((error) => {
