@@ -1,14 +1,12 @@
 // React
 import moment from "moment";
 import localization from "moment/locale/fr";
-import React, { useState, useEffect, useRef } from "react";
 import Select, { createFilter } from "react-select";
-
+import React, { useState, useEffect, useRef } from "react";
 // Framework
 import Input from "@material-ui/core/Input";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
-
 // Icons
 import Button from "@material-ui/core/Button";
 import VpnKey from "@material-ui/icons/VpnKey";
@@ -17,8 +15,8 @@ import ErrorIcon from "@material-ui/icons/Error";
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
 import EditRoundedIcon from "@material-ui/icons/EditRounded";
+import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
 import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 
@@ -264,6 +262,8 @@ const Profile = (props) => {
   const [pwdRegLen, setPwdRegLen] = useState(false);
   const [pwdMatches, setPwdMatches] = useState(true);
   const [newPassword, setNewPassword] = useState("");
+  const [newLastname, setNewLastname] = useState("");
+  const [newFirstname, setNewFirstname] = useState("");
   const [emailMatches, setEmailMatches] = useState(true);
   const [newFilePhoto, setNewFilePhoto] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState("");
@@ -354,6 +354,7 @@ const Profile = (props) => {
     e.preventDefault();
     let formData = new FormData();
     formData.append("file", newFilePhoto);
+    formData.append("oldFile", photo);
     fetch("/api/settings/edit/photo", {
       method: "POST",
       body: formData,
@@ -458,7 +459,7 @@ const Profile = (props) => {
     fetch("/api/settings/lastname", {
       method: "POST",
       body: JSON.stringify({
-        lastname: lastname,
+        lastname: newLastname,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -495,7 +496,7 @@ const Profile = (props) => {
   };
 
   const handleChangeLastname = (e) => {
-    setLastname(e.target.value);
+    setNewLastname(e.target.value);
     checkLastnameLength(e.target.value);
     checkRegexLastname(e.target.value);
   };
@@ -529,7 +530,7 @@ const Profile = (props) => {
     fetch("/api/settings/firstname", {
       method: "POST",
       body: JSON.stringify({
-        firstname: firstname,
+        firstname: newFirstname,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -545,7 +546,7 @@ const Profile = (props) => {
   };
 
   const handleChangeFirstname = (e) => {
-    setFirstname(e.target.value);
+    setNewFirstname(e.target.value);
     checkRegexFirstname(e.target.value);
     checkFirstnameLength(e.target.value);
   };
@@ -763,15 +764,17 @@ const Profile = (props) => {
                 onChange={handleUploadPic}
               />
             </div>
-            <Button
-              className={classes.submitSpecialFormBtn}
-              name="submitBtnPhoto"
-              type="submit"
-            >
-              {auth.language === "English"
-                ? "Confirm new picture"
-                : "Modifier la photo"}
-            </Button>
+            {newFilePhoto ? (
+              <Button
+                className={classes.submitSpecialFormBtn}
+                name="submitBtnPhoto"
+                type="submit"
+              >
+                {auth.language === "English"
+                  ? "Confirm new picture"
+                  : "Modifier la photo"}
+              </Button>
+            ) : undefined}
           </form>
         </div>
         <div className={classes.userDetails}>
@@ -927,7 +930,12 @@ const Profile = (props) => {
                   }}
                   id="lastnameTextfield"
                   type="text"
-                  value={lastname}
+                  placeholder={
+                    auth.language === "English"
+                      ? "Actual Last name: " + lastname
+                      : "Nom actuel: " + lastname
+                  }
+                  value={newLastname}
                   required
                   onChange={handleChangeLastname}
                   startAdornment={
@@ -961,8 +969,13 @@ const Profile = (props) => {
                   }}
                   id="firstnameTextfield"
                   type="text"
-                  value={firstname}
+                  value={newFirstname}
                   required
+                  placeholder={
+                    auth.language === "English"
+                      ? "Actual First name: " + firstname
+                      : "Prénom actuel: " + firstname
+                  }
                   onChange={handleChangeFirstname}
                   startAdornment={
                     <AccountCircle className={classes.sendIcon}></AccountCircle>

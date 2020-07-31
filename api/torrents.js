@@ -1,4 +1,5 @@
 const fs = require("fs");
+const chalk = require("chalk");
 const moment = require("moment");
 const pool = require("./../pool.js");
 
@@ -327,7 +328,156 @@ const doCleanUpMaintenance = (request, response) => {
   });
 };
 
+const getMaintenanceTorrents = () => {
+  return new Promise((resolve, reject) => {
+    pool.pool.query("SELECT * FROM torrents;", (error, results) => {
+      if (error) {
+        resolve({
+          state: false,
+          msg: "Error while getting torrents",
+        });
+      }
+      if (results.rowCount) {
+        let movies = [];
+        let i = 0;
+        while (i < results.rows.length) {
+          movies.push({
+            id: results.rows[i].id,
+            yts_id: results.rows[i].yts_id,
+            torrent9_id: results.rows[i].torrent9_id,
+            title: results.rows[i].title,
+            production_year: results.rows[i].production_year,
+            rating: results.rows[i].rating,
+            yts_url: results.rows[i].yts_url,
+            torrent9_url: results.rows[i].torrent9_url,
+            cover_url: results.rows[i].cover_url,
+            summary: results.rows[i].summary,
+            cast:
+              results.rows[i].casts && results.rows[i].casts.length
+                ? JSON.parse(results.rows[i].casts)
+                : [],
+            duration: results.rows[i].duration,
+            imdb_code: results.rows[i].imdb_code,
+            yt_trailer: results.rows[i].yt_trailer,
+            categories:
+              results.rows[i].categories && results.rows[i].categories.length
+                ? JSON.parse(results.rows[i].categories)
+                : [],
+            languages:
+              results.rows[i].languages && results.rows[i].languages.length
+                ? JSON.parse(results.rows[i].languages)
+                : [],
+            subtitles:
+              results.rows[i].subtitles && results.rows[i].subtitles.length
+                ? JSON.parse(results.rows[i].subtitles)
+                : [],
+            torrents: JSON.parse(results.rows[i].torrents),
+          });
+          i++;
+        }
+        resolve({
+          state: true,
+          torrents: movies,
+        });
+      } else {
+        resolve({ status: false, msg: "Unable to get torrent infos" });
+      }
+    });
+  });
+};
+
+const insertIntoTorrents = (torrent) => {
+  return new Promise((resolve, reject) => {
+    pool.pool.query(
+      "INSERT INTO torrents (search_vector, yts_id, torrent9_id, title, production_year, rating, yts_url, torrent9_url, cover_url, categories, languages, torrents, summary, imdb_code, yt_trailer, subtitles, duration, casts) VALUES(to_tsvector($1), $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)",
+      [
+        torrent.title ? torrent.title : null,
+        torrent.yts_id ? torrent.yts_id : null,
+        torrent.torrent9_id ? torrent.torrent9_id : null,
+        torrent.title ? torrent.title : null,
+        torrent.production_year ? torrent.production_year : null,
+        torrent.rating ? torrent.rating : 0,
+        torrent.yts_url ? torrent.yts_url : null,
+        torrent.torrent9_url ? torrent.torrent9_url : null,
+        torrent.cover_url ? torrent.cover_url : null,
+        torrent.categories ? JSON.stringify(torrent.categories) : null,
+        torrent.languages ? JSON.stringify(torrent.languages) : null,
+        torrent.torrents ? JSON.stringify(torrent.torrents) : null,
+        torrent.summary ? torrent.summary : null,
+        torrent.imdb_code ? torrent.imdb_code : null,
+        torrent.yt_trailer ? torrent.yt_trailer : null,
+        torrent.subtitles ? JSON.stringify(torrent.subtitles) : null,
+        torrent.duration ? torrent.duration : null,
+        torrent.cast ? JSON.stringify(torrent.cast) : null,
+      ],
+      (error, results) => {
+        if (error) {
+          resolve(error);
+        } else {
+          resolve(0);
+        }
+      }
+    );
+  });
+};
+
+const updateIntoTorrents = (torrent) => {
+  return new Promise((resolve, reject) => {
+    pool.pool.query(
+      "UPDATE torrents SET subtitles = $1, languages = $2, torrents = $3 WHERE id = $4",
+      [
+        torrent.subtitles ? JSON.stringify(torrent.subtitles) : null,
+        torrent.languages ? JSON.stringify(torrent.languages) : null,
+        torrent.torrents ? JSON.stringify(torrent.torrents) : null,
+        torrent.id,
+      ],
+      (error, results) => {
+        if (error) {
+          resolve(error);
+        } else {
+          resolve(0);
+        }
+      }
+    );
+  });
+};
+
+const addMaintenanceTorrents = (updatedTorrents) => {
+  return new Promise((resolve, reject) => {
+    Promise.all(updatedTorrents.new.map((e) => insertIntoTorrents(e)))
+      .then((res) => {
+        console.log(
+          chalk.yellow(updatedTorrents.new.length),
+          "TORRENTS HAVE BEEN ADDED TO TABLE torrents."
+        );
+        resolve({ status: true });
+      })
+      .catch((e) => {
+        resolve({ status: false, msg: e });
+      });
+  });
+};
+
+const updateMaintenceTorrents = (updatedTorrents) => {
+  return new Promise((resolve, reject) => {
+    Promise.all(updatedTorrents.updated.map((e) => updateIntoTorrents(e)))
+      .then((res) => {
+        console.log(
+          chalk.yellow(updatedTorrents.updated.length),
+          "TORRENTS HAVE BEEN UPDATED IN TABLE torrents."
+        );
+        resolve({ status: true });
+      })
+      .catch((e) => {
+        resolve({ status: false, msg: e });
+      });
+  });
+};
+
 module.exports = {
+  addMaintenanceTorrents,
+  updateMaintenceTorrents,
+  getMaintenanceTorrents,
   getQueryTorrents,
   getTorrentInfos,
   getRandomTorrents,

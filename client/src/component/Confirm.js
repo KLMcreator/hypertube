@@ -1,7 +1,7 @@
 // react
 import React, { useState, useEffect } from "react";
 // framework
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 const ConfirmStyles = (theme) => ({
