@@ -11,6 +11,7 @@ let searched = [];
 let ytsInfos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let torrent9Infos = { fetched_at: 0, number_of_pages: 0, movies: [] };
 let finalTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
+let oldTorrents = { fetched_at: 0, number_of_movies: 0, movies: [] };
 
 const hydrateImageBank = async () => {
   let i = 0;
@@ -222,181 +223,151 @@ const purifyAllTorrents = async () => {
   finalTorrents.number_of_movies = finalTorrents.movies.length;
 };
 
-const purifyMaintenanceTorrents = async (differencies, oldTorrents) => {
-  let i = 0;
-  oldTorrents.fetched_at = finalTorrents.fetched_at;
-  while (i < differencies.length) {
-    oldTorrents.movies.push(differencies[i]);
-    i++;
-  }
-  i = 0;
-  while (i < oldTorrents.movies.length) {
-    let j = i + 1;
-    let occurences = [i];
-    while (j < oldTorrents.movies.length) {
-      if (oldTorrents.movies[i].title === oldTorrents.movies[j].title) {
-        occurences.push(j);
-      }
-      j++;
-    }
-    if (occurences.length > 1) {
-      let k = 0;
-      let infos = {
-        yts_id: null,
-        torrent9_id: null,
-        title: null,
-        production_year: null,
-        rating: null,
-        yts_url: null,
-        torrent9_url: null,
-        cover_url: null,
-        summary: [],
-        duration: null,
-        imdb_code: null,
-        yt_trailer: null,
-        categories: [],
-        languages: [],
-        subtitles: [],
-        torrents: [],
-      };
-      while (k < occurences.length) {
-        infos = {
-          yts_id: oldTorrents.movies[occurences[k]].yts_id
-            ? oldTorrents.movies[occurences[k]].yts_id
-            : infos.yts_id,
-          torrent9_id: oldTorrents.movies[occurences[k]].torrent9_id
-            ? oldTorrents.movies[occurences[k]].torrent9_id
-            : infos.torrent9_id,
-          title: oldTorrents.movies[occurences[k]].title
-            ? oldTorrents.movies[occurences[k]].title
-            : infos.title,
-          production_year: oldTorrents.movies[occurences[k]].production_year
-            ? oldTorrents.movies[occurences[k]].production_year
-            : infos.production_year,
-          rating: oldTorrents.movies[occurences[k]].rating
-            ? oldTorrents.movies[occurences[k]].rating
-            : infos.rating,
-          yts_url: oldTorrents.movies[occurences[k]].yts_url
-            ? oldTorrents.movies[occurences[k]].yts_url
-            : infos.yts_url,
-          torrent9_url: oldTorrents.movies[occurences[k]].torrent9_url
-            ? oldTorrents.movies[occurences[k]].torrent9_url
-            : infos.torrent9_url,
-          cover_url: oldTorrents.movies[occurences[k]].cover_url
-            ? oldTorrents.movies[occurences[k]].cover_url
-            : infos.cover_url,
-          summary: oldTorrents.movies[occurences[k]].summary
-            ? oldTorrents.movies[occurences[k]].summary
-            : infos.summary,
-          duration: infos.runtime ? infos.runtime : null,
-          imdb_code: oldTorrents.movies[occurences[k]].imdb_code
-            ? oldTorrents.movies[occurences[k]].imdb_code
-            : infos.imdb_code,
-          yt_trailer: oldTorrents.movies[occurences[k]].yt_trailer
-            ? oldTorrents.movies[occurences[k]].yt_trailer
-            : infos.yt_trailer,
-          categories: infos.categories.length ? infos.categories : [],
-          languages: infos.languages.length ? infos.languages : [],
-          subtitles: infos.subtitles.length ? infos.subtitles : [],
-          torrents: infos.torrents.length ? infos.torrents : [],
-        };
-
-        if (oldTorrents.movies[occurences[k]].languages) {
-          oldTorrents.movies[occurences[k]].languages.map((ele) => {
-            infos.languages.push(ele);
-          });
-        }
-        if (oldTorrents.movies[occurences[k]].subtitles) {
-          oldTorrents.movies[occurences[k]].subtitles.map((ele) => {
-            infos.subtitles.push(ele);
-          });
-        }
-        if (oldTorrents.movies[occurences[k]].categories) {
-          oldTorrents.movies[occurences[k]].categories.map((ele) => {
-            infos.categories.push(ele);
-          });
-        }
-        if (oldTorrents.movies[occurences[k]].torrents) {
-          oldTorrents.movies[occurences[k]].torrents.map((ele) => {
-            infos.torrents.push(ele);
-          });
-        }
-        k++;
-      }
-      k = 0;
-      while (k < occurences.length) {
-        oldTorrents.movies.splice(occurences[k] - k, 1);
-        k++;
-      }
-      oldTorrents.movies.push(infos);
-      i = -1;
-    }
-    i++;
-  }
-  oldTorrents.number_of_movies = oldTorrents.movies.length;
+const groupAndCompare = async (databaseTorrents) => {
+  oldTorrents.movies = databaseTorrents;
   console.log(
-    oldTorrents.number_of_movies,
-    "movies in total after last purify!",
-    "Saving it to",
-    chalk.green("finalTorrents.json")
+    parseInt(torrent9Infos.movies.length + ytsInfos.movies.length, 10),
+    "movies in total before purify!"
   );
-  fs.writeFile(
-    "./scripts/finalTorrents.json",
-    JSON.stringify(oldTorrents),
-    (err) => {
-      if (err) throw err;
-      console.log(chalk.green("finalTorrents.json saved!"));
-    }
+  await purifyAllTorrents();
+  console.log(
+    finalTorrents.number_of_movies,
+    "movies in total after last purify!"
   );
-};
+  console.log(
+    "Comparing old results in",
+    chalk.green("finalTorrents.json"),
+    "with the new scrapped data"
+  );
 
-const groupAndCompare = async () => {
-  console.log("Getting old file...", chalk.green("finalTorrents.json"));
-  if (fs.existsSync("./scripts/finalTorrents.json")) {
-    let oldTorrents = JSON.parse(
-      fs.readFileSync("./scripts/finalTorrents.json")
-    );
-    console.log(
-      "Creating one big final list for every movies before checking if there's new movies"
-    );
-    console.log(
-      parseInt(torrent9Infos.movies.length + ytsInfos.movies.length, 10),
-      "movies in total before purify!"
-    );
-    await purifyAllTorrents();
-    console.log(
-      finalTorrents.number_of_movies,
-      "movies in total after last purify!"
-    );
-    console.log(
-      "Comparing old results in",
-      chalk.green("finalTorrents.json"),
-      "with the new scrapped data"
-    );
-    let differencies = finalTorrents.movies.filter((obj) => {
-      return !oldTorrents.movies.some((obj2) => {
-        return (
-          obj.title === obj2.title &&
-          obj.torrents.length === obj2.torrents.length
-        );
-      });
-    });
-    if (differencies && differencies.length) {
-      console.log("There's", differencies.length, "new movies!");
-      purifyMaintenanceTorrents(differencies, oldTorrents);
-      return true;
-    } else {
-      console.log("No changes or new movies detected, see you tomorrow!");
-      return false;
+  let i = 0;
+  let newMovies = 0;
+  let finalMovies = { updated: [], new: [] };
+  let updatedMovies = 0;
+  while (i < finalTorrents.movies.length) {
+    let j = 0;
+    let movieFound = false;
+    if (finalTorrents.movies[i].title) {
+      while (j < oldTorrents.movies.length) {
+        if (oldTorrents.movies[j].title) {
+          if (finalTorrents.movies[i].title === oldTorrents.movies[j].title) {
+            let si = 0;
+            while (si < finalTorrents.movies[i].subtitles.length) {
+              let sj = 0;
+              let subsFound = false;
+              while (sj < oldTorrents.movies[j].subtitles.length) {
+                if (
+                  !oldTorrents.movies[j].subtitles[sj].downloaded &&
+                  finalTorrents.movies[i].subtitles[si].language ===
+                    oldTorrents.movies[j].subtitles[sj].language
+                ) {
+                  oldTorrents.movies[j].subtitles[sj].url =
+                    finalTorrents.movies[i].subtitles[si].url;
+                  subsFound = true;
+                  break;
+                }
+
+                sj++;
+              }
+              if (!subsFound) {
+                oldTorrents.movies[j].subtitles.push(
+                  finalTorrents.movies[i].subtitles[si]
+                );
+              }
+              si++;
+            }
+            let ti = 0;
+            while (ti < finalTorrents.movies[i].torrents.length) {
+              let tj = 0;
+              let torFound = false;
+              while (tj < oldTorrents.movies[j].torrents.length) {
+                if (
+                  finalTorrents.movies[i].torrents[ti].magnet ===
+                  oldTorrents.movies[j].torrents[tj].magnet
+                ) {
+                  oldTorrents.movies[j].torrents[tj].seeds =
+                    finalTorrents.movies[i].torrents[ti].seeds;
+                  oldTorrents.movies[j].torrents[tj].peers =
+                    finalTorrents.movies[i].torrents[ti].peers;
+                  torFound = true;
+                  break;
+                }
+
+                tj++;
+              }
+              if (!torFound) {
+                oldTorrents.movies[j].torrents.push(
+                  finalTorrents.movies[i].torrents[ti]
+                );
+              }
+              ti++;
+            }
+            ti = 0;
+            oldTorrents.movies[j].languages = [];
+            while (oldTorrents.movies[j].torrents[ti]) {
+              if (
+                oldTorrents.movies[j].languages.findIndex(
+                  (e) => e === oldTorrents.movies[j].torrents[ti].language
+                ) === -1
+              ) {
+                oldTorrents.movies[j].languages.push(
+                  oldTorrents.movies[j].torrents[ti].language
+                );
+              }
+              ti++;
+            }
+            updatedMovies++;
+            movieFound = true;
+            finalMovies.updated.push(oldTorrents.movies[j]);
+            break;
+          }
+        }
+        j++;
+      }
     }
+    if (!movieFound) {
+      newMovies++;
+      finalMovies.new.push(finalTorrents.movies[i]);
+      oldTorrents.movies.push(finalTorrents.movies[i]);
+    }
+
+    i++;
+  }
+
+  if (!newMovies && !updatedMovies) {
+    return { status: false, msg: "Maintenance finished, no updates needed" };
   } else {
     console.log(
-      "Missing old",
-      chalk.green("finalTorrents.json"),
-      "file, so there's nothing to compare"
+      finalTorrents.number_of_movies,
+      "movies from new seed, saving it to",
+      chalk.green("finalTorrents.json")
     );
-    await groupAndSave();
-    return false;
+    fs.writeFile(
+      "./scripts/finalTorrents.json",
+      JSON.stringify(finalTorrents),
+      (err) => {
+        if (err) throw err;
+        console.log(chalk.green("finalTorrents.json saved!"));
+      }
+    );
+    oldTorrents.fetched_at = finalTorrents.fetched_at;
+    oldTorrents.number_of_movies = oldTorrents.movies.length;
+    finalTorrents = oldTorrents;
+    oldTorrents = null;
+    console.log(
+      "Torrent list updated, there was",
+      newMovies,
+      "new movies and",
+      updatedMovies,
+      "updated movies, total is:",
+      finalTorrents.number_of_movies,
+      "movies."
+    );
+    return {
+      status: true,
+      torrents: finalMovies,
+      msg: "Sending it to database",
+    };
   }
 };
 
@@ -442,7 +413,7 @@ const getMovies = async () => {
   );
 };
 
-const doMaintenance = async () => {
+const doUpdateMaintenance = async (databaseMaintenance) => {
   console.time("initScraping");
   console.log("Starting new scrap at", chalk.yellow(moment().format()));
   await getMovies();
@@ -450,13 +421,9 @@ const doMaintenance = async () => {
     torrent9Infos.movies.length + ytsInfos.movies.length,
     "total movies found before group"
   );
-  const status = await groupAndCompare();
-  if (status) {
-    console.timeEnd("initScraping");
-    return true;
-  }
+  const status = await groupAndCompare(databaseMaintenance);
   console.timeEnd("initScraping");
-  return false;
+  return status;
 };
 
 const searchInTorrent = async (q) => {
@@ -499,6 +466,6 @@ const initScraping = async (withImages) => {
 module.exports = {
   initScraping,
   searchInTorrent,
-  doMaintenance,
+  doUpdateMaintenance,
   torrents: finalTorrents,
 };

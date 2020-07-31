@@ -26,7 +26,7 @@ const sockets = require("./api/sockets");
 const settings = require("./api/settings");
 const comments = require("./api/comments");
 const torrents = require("./api/torrents");
-const scrap_machine = require("./scripts/search");
+const maintenance = require("./scripts/search");
 
 // const
 const app = express();
@@ -135,23 +135,62 @@ const sendMail = (receiver, type, random) => {
   });
 };
 
-const job = new CronJob("0 */12 * * *", () => {
+// check for unused torrents (30 days no views) and delete them from the server
+const cleanupJob = new CronJob("0 */12 * * *", () => {
   console.log("Starting cleanup maintenance...");
   torrents
     .doCleanUpMaintenance()
-    .then((response) => {
-      if (response.updated) {
-        console.log(`${response.updated} torrents updated. ${response.msg}`);
-      } else {
-        console.log(`${response.updated} torrents updated. ${response.msg}`);
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+    .then((response) =>
+      console.log(`${response.updated} torrents updated. ${response.msg}`)
+    )
+    .catch((error) => console.log(error));
 });
 
-job.start();
+// check every day at 4am if there's new movies and scrape them
+const maintenanceJob = new CronJob("0 1 * * *", async () => {
+  console.log("Starting update maintenance...");
+  torrents
+    .getMaintenanceTorrents()
+    .then(async (response) => {
+      if (response.state) {
+        const status = await maintenance.doUpdateMaintenance(response.torrents);
+        if (status.status) {
+          console.log(
+            "Updating movie database... I found",
+            status.torrents.new.length,
+            "new movies and",
+            status.torrents.updated.length,
+            "movies I have to update"
+          );
+          torrents
+            .addMaintenanceTorrents(status.torrents)
+            .then((response) => {
+              if (response.status) {
+                torrents
+                  .updateMaintenceTorrents(status.torrents)
+                  .then((response) => {
+                    if (response.status) {
+                      console.log("Maintenance finished, see you tomorrow");
+                    } else {
+                      console.log(response.msg);
+                    }
+                  })
+                  .catch((error) => console.log(error));
+              } else {
+                console.log(response.msg);
+              }
+            })
+            .catch((error) => console.log(error));
+        }
+      } else {
+        console.log(response.msg);
+      }
+    })
+    .catch((error) => console.log(error));
+});
+
+cleanupJob.start();
+maintenanceJob.start();
 
 // Get oauth (42, github, google)
 app.get("/oauth/42", async (req, res) => {
@@ -716,7 +755,6 @@ app.post("/api/users/get/torrents", (req, res) => {
     });
 });
 
-//                  not checked, from matcha
 // Recover user password
 app.post("/api/recover", (req, res) => {
   recover
