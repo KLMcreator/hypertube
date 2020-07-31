@@ -255,65 +255,8 @@ const User = (props) => {
   const history = useHistory();
   const { classes } = props;
   const [user, setUser] = useState([]);
-  //const [photo, setPhoto] = useState("");
-  //   const [username, setUsername] = useState("");
-  //   const [lastname, setLastname] = useState("");
-  //   const [language, setLanguage] = useState("");
-  //   const [newEmail, setNewEmail] = useState("");
-  //   const [firstname, setFirstname] = useState("");
   const [torrents, setTorrents] = useState([]);
-  //   const [selectedLanguage, setSelectedLanguage] = useState({});
-  const [views, setViews] = useState([]);
-  const [likes, setLikes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const getViewedMovies = () => {
-    fetch("/api/views/get", {
-      method: "POST",
-      body: JSON.stringify({
-        id: props.props.location.state.user,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.views) {
-          setViews(res.views);
-          setIsLoading(false);
-        } else if (res.views.msg) {
-          props.auth.errorMessage(res.views.msg);
-        } else {
-          props.auth.errorMessage("Error while fetching database.");
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
-  };
-
-  const getLikedMovies = () => {
-    fetch("/api/likes/get", {
-      method: "POST",
-      body: JSON.stringify({
-        id: props.props.location.state.user,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.likes) {
-          setLikes(res.likes);
-          getViewedMovies();
-        } else if (res.likes.msg) {
-          props.auth.errorMessage(res.likes.msg);
-        } else {
-          props.auth.errorMessage("Error while fetching database.");
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
-  };
 
   const getUserInfos = () => {
     fetch("/api/users/get", {
@@ -336,18 +279,7 @@ const User = (props) => {
             username: res.users[0].username,
             last_connection: res.users[0].last_connection,
             connected: res.users[0].connected,
-            // if (ref.current) {
-            //   if (res.users) {
-            //     setUser(res.users[0]);
-            // getLikedMovies();
-            //} else if (res.users.msg) {
-            //     props.auth.errorMessage(res.users.msg);
-            //   } else {
-            //     props.auth.errorMessage("Error while fetching database.");
-            //   }
-            // }
           });
-          getLikedMovies();
         }
         setIsLoading(false);
       })
@@ -355,7 +287,7 @@ const User = (props) => {
   };
 
   const getTorrentsUser = () => {
-    fetch("/api/users/get/torrents", {
+    fetch("/api/users/get/torrentscom", {
       method: "POST",
     })
       .then((res) => res.json())
@@ -411,22 +343,14 @@ const User = (props) => {
             src={user.photo}
           ></img>
         </div>
-        {/* <img
-          alt={user.photos}
-          className={classes.userImage}
-          src={
-            user.photos.startsWith("https://")
-              ? user.photos
-              : "./src/assets/photos/" + user.photos
-          }
-        ></img> */}
+
         <div className={classes.userDetails} style={{ marginTop: "2%" }}>
           <div className={classes.userDetailsContainer}>
             <div>
-              <span className={classes.userInfo}>First Name : </span>
-              {user.firstname} <br /> <br />
               <span className={classes.userInfo}>Username: </span>{" "}
               {user.username} <br /> <br />
+              <span className={classes.userInfo}>First Name : </span>
+              {user.firstname} <br /> <br />
               <span className={classes.userInfo}>Last Name : </span>
               {user.lastname} <br /> <br />
               <span className={classes.userInfo}>Langage : </span>
