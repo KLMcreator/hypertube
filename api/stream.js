@@ -216,11 +216,14 @@ router.get("/", (req, res) => {
       const loadedChunks = new Map();
       const allowedExts = [".mp4", ".mkv", ".webm", ".avi"];
       const engine = torrentStream(magnet, config);
-      if (!engine.files.length) {
-        emmitToFront(false, "This file might be corrupted, no torrents found");
-        res.sendStatus(200);
-      }
       engine.on("ready", async () => {
+        if (!engine.files.length) {
+          emmitToFront(
+            false,
+            "This file might be corrupted, no torrents found"
+          );
+          res.sendStatus(200);
+        }
         const file = engine.files.find(({ name }) =>
           allowedExts.some((ext) => name.endsWith(ext))
         );

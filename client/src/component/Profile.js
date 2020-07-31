@@ -1,14 +1,12 @@
 // React
 import moment from "moment";
 import localization from "moment/locale/fr";
-import React, { useState, useEffect, useRef } from "react";
 import Select, { createFilter } from "react-select";
-
+import React, { useState, useEffect, useRef } from "react";
 // Framework
 import Input from "@material-ui/core/Input";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
-
 // Icons
 import Button from "@material-ui/core/Button";
 import VpnKey from "@material-ui/icons/VpnKey";
@@ -17,8 +15,8 @@ import ErrorIcon from "@material-ui/icons/Error";
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
 import EditRoundedIcon from "@material-ui/icons/EditRounded";
+import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
 import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 

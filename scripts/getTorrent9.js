@@ -60,6 +60,7 @@ const getTitle = (title) => {
     "hdts",
     "md",
     "hdrip",
+    "hdcam",
   ];
 
   purify.map((el) => {

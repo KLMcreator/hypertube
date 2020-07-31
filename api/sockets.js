@@ -7,11 +7,7 @@ const initSocket = (server) => {
   });
 };
 
-const emmitToFront = (data) => {
-  if (data && io) {
-    io.emit("torrentDownloader", data);
-  }
-};
+const emmitToFront = (data) => io.emit("torrentDownloader", data);
 
 module.exports = {
   initSocket,
