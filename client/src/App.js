@@ -701,7 +701,7 @@ const App = (props) => {
             path="/Confirm"
             component={(props) => <Confirm props={props} auth={auth} />}
           />
-          <PublicRoute component={FourOFour} />
+          <Route component={FourOFour} />
         </Switch>
       </div>
     </BrowserRouter>

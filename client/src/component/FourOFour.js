@@ -1,5 +1,5 @@
 // react
-import React, { useEffect } from "react";
+import React from "react";
 // framework
 import withStyles from "@material-ui/core/styles/withStyles";
 
@@ -10,13 +10,15 @@ const FourOFourStyles = (theme) => ({
 const FourOFour = (props) => {
   const { classes } = props;
 
-  useEffect(() => {
-    console.log(props);
-    return () => {};
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return <div className={classes.root}>There's nothing here</div>;
+  return (
+    <div className={classes.root}>
+      <img
+        src={"./src/assets/img/404.png"}
+        alt="404"
+        style={{ width: "100%" }}
+      ></img>
+    </div>
+  );
 };
 
 export default withStyles(FourOFourStyles)(FourOFour);
