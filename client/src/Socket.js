@@ -10,7 +10,6 @@ export const disconnectSocket = () => {
 };
 
 export const getDownloads = (cb) => {
-  console.log("socket is called", socket, socket.connected);
   if (!socket && !socket.connected) return true;
   socket.on("torrentDownloader", (msg) => {
     return cb(null, msg);
