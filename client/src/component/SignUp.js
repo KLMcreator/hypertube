@@ -124,6 +124,7 @@ const SignUp = (props) => {
   const [pwdRegDig, setPwdRegDig] = useState(false);
   const [pwdRegLen, setPwdRegLen] = useState(false);
   const [pwdMatches, setPwdMatches] = useState(true);
+  const [queryLoading, setQueryLoading] = useState(false);
   const [usernameRegex, setUsernameRegex] = useState(true);
   const [lastNameRegExp, setLastnameRegExp] = useState(true);
   const [newFilePicture, setNewFilePicture] = useState(null);
@@ -239,6 +240,7 @@ const SignUp = (props) => {
 
   const createUser = (e) => {
     e.preventDefault();
+    setQueryLoading(true);
     let formData = new FormData();
     formData.append("file", newFilePicture);
     formData.append("username", username);
@@ -258,6 +260,7 @@ const SignUp = (props) => {
           props.props.history.push("/SignIn");
         } else {
           props.auth.errorMessage(res.signup.msg);
+          setQueryLoading(false);
         }
       })
       .catch((err) => props.auth.errorMessage(err));
@@ -567,6 +570,7 @@ const SignUp = (props) => {
             <Grid item xs={12}>
               <Button
                 variant="outlined"
+                disabled={queryLoading}
                 style={{
                   color: "#FBBA72",
                   border: "1px solid #FBBA72",
@@ -574,7 +578,11 @@ const SignUp = (props) => {
                 type="submit"
                 className={classes.submitButton}
               >
-                Register
+                {queryLoading ? (
+                  <CircularProgress className={classes.loadingLogo} />
+                ) : (
+                  "Register"
+                )}
               </Button>
             </Grid>
           </Grid>

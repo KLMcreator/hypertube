@@ -52,7 +52,7 @@ const setupTorrents = async () => {
 const setupSettings = async () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL,casts VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS settings (id SERIAL, minProductionYear INTEGER DEFAULT NULL, maxProductionYear INTEGER DEFAULT NULL, categories VARCHAR DEFAULT NULL, categoriesDetailed VARCHAR DEFAULT NULL, languages VARCHAR DEFAULT NULL,subtitles VARCHAR DEFAULT NULL,casts VARCHAR DEFAULT NULL, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -116,7 +116,7 @@ const setupLikes = () => {
 const setupUsers = () => {
   return new Promise((resolve, reject) => {
     pool.query(
-      "CREATE TABLE IF NOT EXISTS users (id SERIAL, username VARCHAR(64) NOT NULL UNIQUE, password VARCHAR(255) NOT NULL, firstname VARCHAR(255) NOT NULL, lastname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL UNIQUE, photos varchar(1000) NOT NULL DEFAULT NULL, connected BOOLEAN DEFAULT FALSE, connected_token VARCHAR(255) NULL DEFAULT NULL,last_connection VARCHAR NULL DEFAULT NULL, verified BOOLEAN DEFAULT FALSE, verified_value VARCHAR(255) NULL DEFAULT NULL,language VARCHAR(7) NULL DEFAULT 'English', PRIMARY KEY (id));",
+      "CREATE TABLE IF NOT EXISTS users (id SERIAL, username VARCHAR(64) NOT NULL UNIQUE, password VARCHAR(255) DEFAULT NULL, firstname VARCHAR(255) NOT NULL, lastname VARCHAR(255) NOT NULL, email VARCHAR(255) NOT NULL UNIQUE, photos varchar(1000) NOT NULL DEFAULT NULL, connected BOOLEAN DEFAULT FALSE, connected_token VARCHAR(255) NULL DEFAULT NULL,last_connection VARCHAR NULL DEFAULT NULL, verified BOOLEAN DEFAULT FALSE, verified_value VARCHAR(255) NULL DEFAULT NULL,language VARCHAR(255) NULL DEFAULT 'English', isOauth VARCHAR(255) NULL DEFAULT false, PRIMARY KEY (id));",
       (error, res) => {
         if (error) {
           resolve(error);
@@ -294,11 +294,11 @@ const populateSettings = () => {
     );
     let totalSubsMovies = 0;
     let totalCastMovies = 0;
-    // let selectedJobs = ["actor", "Director"];
     let settings = {
       minProductionYear: Number.POSITIVE_INFINITY,
       maxProductionYear: 0,
       categories: [],
+      categoriesDetailed: [],
       languages: [],
       subtitles: [],
       cast: [],
@@ -310,14 +310,6 @@ const populateSettings = () => {
         settings.minProductionYear = e.production_year;
       if (e.cast && e.cast.length) {
         totalCastMovies++;
-        // e.cast.map((cast, i) => {
-        //   if (selectedJobs.some((e) => cast.job.includes(e)) && i < 1) {
-        //     settings.cast.push({
-        //       value: cast.name,
-        //       label: cast.name,
-        //     });
-        //   }
-        // });
         e.cast.map((cast) => {
           settings.cast.push(cast.name.trim());
         });
@@ -341,6 +333,16 @@ const populateSettings = () => {
           let pos = settings.categories.map((e) => e.value).indexOf(category);
           if (pos === -1) {
             settings.categories.push({ value: category, label: category });
+            settings.categoriesDetailed.push({
+              category: category,
+              french: e.languages.includes("French") ? 1 : 0,
+              english: e.languages.includes("English") ? 1 : 0,
+            });
+          } else {
+            if (e.languages.includes("French"))
+              settings.categoriesDetailed[pos].french++;
+            if (e.languages.includes("English"))
+              settings.categoriesDetailed[pos].english++;
           }
         });
       }
@@ -365,7 +367,7 @@ const populateSettings = () => {
       a.value > b.value ? 1 : a.value < b.value ? -1 : 0
     );
     pool.query(
-      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts) VALUES($1, $2, $3, $4, $5, $6)",
+      "INSERT INTO settings (minProductionYear, maxProductionYear, categories, languages, subtitles, casts, categoriesDetailed) VALUES($1, $2, $3, $4, $5, $6, $7)",
       [
         settings.minProductionYear,
         settings.maxProductionYear,
@@ -373,6 +375,7 @@ const populateSettings = () => {
         JSON.stringify(settings.languages),
         JSON.stringify(settings.subtitles),
         JSON.stringify(settings.cast),
+        JSON.stringify(settings.categoriesDetailed),
       ],
       (error, results) => {
         if (error) {

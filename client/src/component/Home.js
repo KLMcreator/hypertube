@@ -513,28 +513,40 @@ const RenderShowMore = (props) => {
             ) : undefined}
             <div className={classes.rightInfo}>
               <div>
-                <span className={classes.boldInfo}>Categories:</span>{" "}
+                <span className={classes.boldInfo}>
+                  {auth.language === "English" ? "Categories:" : "Catégories:"}
+                </span>{" "}
                 <span className={classes.contentInfo}>
                   {categories.length
                     ? categories.map((el, i) =>
                         i < categories.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               <div>
-                <span className={classes.boldInfo}>Languages:</span>{" "}
+                <span className={classes.boldInfo}>
+                  {auth.language === "English" ? "Languages:" : "Langues:"}
+                </span>{" "}
                 <span className={classes.contentInfo}>
                   {languages.length
                     ? languages.map((el, i) =>
                         i < languages.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               {subtitles && subtitles.length ? (
                 <div>
-                  <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English"
+                      ? "Subtitles:"
+                      : "Sous-titres:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {subtitles.length
                       ? subtitles.map((el, i) =>
@@ -542,23 +554,31 @@ const RenderShowMore = (props) => {
                             ? el.language + " / "
                             : el.language
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
               <div>
-                <span className={classes.boldInfo}>Qualities:</span>{" "}
+                <span className={classes.boldInfo}>
+                  {auth.language === "English" ? "Qualities:" : "Qualités:"}
+                </span>{" "}
                 <span className={classes.contentInfo}>
                   {qualities.length
                     ? qualities.map((el, i) =>
                         i < qualities.length - 1 ? el + " / " : el
                       )
-                    : "No informations"}
+                    : auth.language === "English"
+                    ? "No informations"
+                    : "Aucune information"}
                 </span>
               </div>
               {torrent.duration ? (
                 <div>
-                  <span className={classes.boldInfo}>Duration:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English" ? "Duration:" : "Durée:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {torrent.duration}mn
                   </span>
@@ -566,31 +586,43 @@ const RenderShowMore = (props) => {
               ) : undefined}
               {actors && actors.length ? (
                 <div>
-                  <span className={classes.boldInfo}>Actors:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English" ? "Actors:" : "Acteurs:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {actors.length
                       ? actors.map((el, i) =>
                           i < actors.length - 1 ? el.name + " / " : el.name
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
               {crew && crew.length ? (
                 <div>
-                  <span className={classes.boldInfo}>Crew:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English" ? "Crew:" : "Équipe:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {crew.length
                       ? crew.map((el, i) =>
                           i < crew.length - 1 ? el.name + " / " : el.name
                         )
-                      : "No informations"}
+                      : auth.language === "English"
+                      ? "No informations"
+                      : "Aucune information"}
                   </span>
                 </div>
               ) : undefined}
               {torrent.lastviewed_at ? (
                 <div>
-                  <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English"
+                      ? "Last viewed:"
+                      : "Dernier visionnage:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {torrent.lastviewed_at}
                   </span>
@@ -598,7 +630,11 @@ const RenderShowMore = (props) => {
               ) : undefined}
               {torrent.downloaded_at ? (
                 <div>
-                  <span className={classes.boldInfo}>Last download:</span>{" "}
+                  <span className={classes.boldInfo}>
+                    {auth.language === "English"
+                      ? "Last download:"
+                      : "Dernier téléchargement:"}
+                  </span>{" "}
                   <span className={classes.contentInfo}>
                     {torrent.downloaded_at}
                   </span>
@@ -624,31 +660,59 @@ const RenderShowMore = (props) => {
                 {yts_torrents.map((el, i) => (
                   <div key={el.magnet + i} className={classes.source}>
                     <div className={classes.sourceSection}>
-                      <div className={classes.sourceContent}>{el.language}</div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Quality:</span>{" "}
+                        {auth.language === "English"
+                          ? el.language === "English"
+                            ? "English"
+                            : "French"
+                          : el.language === "English"
+                          ? "Anglais"
+                          : "Français"}
+                      </div>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English"
+                            ? "Quality:"
+                            : "Qualité:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>
                           {el.quality}
                         </span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Size:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Size:" : "Taille:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.size}</span>
                       </div>
                     </div>
                     <div className={classes.sourceSection}>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Downloaded:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English"
+                            ? "Downloaded:"
+                            : "Téléchargé:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>
-                          {el.downloaded ? "Yes" : "No"}
+                          {el.downloaded
+                            ? auth.language === "English"
+                              ? "Yes"
+                              : "Oui"
+                            : auth.language === "English"
+                            ? "No"
+                            : "Non"}
                         </span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Seeds:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Seeds:" : "Seeds:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.seeds}</span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Peers:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Peers:" : "Pairs:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.peers}</span>
                       </div>
                     </div>
@@ -664,7 +728,7 @@ const RenderShowMore = (props) => {
                             })
                           }
                         >
-                          WATCH
+                          {auth.language === "English" ? "WATCH" : "VISIONNER"}
                         </Button>
                       </div>
                     </div>
@@ -688,31 +752,59 @@ const RenderShowMore = (props) => {
                 {t9_torrents.map((el, i) => (
                   <div key={el.magnet + i} className={classes.source}>
                     <div className={classes.sourceSection}>
-                      <div className={classes.sourceContent}>{el.language}</div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Quality:</span>{" "}
+                        {auth.language === "English"
+                          ? el.language === "English"
+                            ? "English"
+                            : "French"
+                          : el.language === "English"
+                          ? "Anglais"
+                          : "Français"}
+                      </div>
+                      <div className={classes.sourceContent}>
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English"
+                            ? "Quality:"
+                            : "Qualité:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>
                           {el.quality}
                         </span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Size:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Size:" : "Taille:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.size}</span>
                       </div>
                     </div>
                     <div className={classes.sourceSection}>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Downloaded:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English"
+                            ? "Downloaded:"
+                            : "Téléchargé:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>
-                          {el.downloaded ? "Yes" : "No"}
+                          {el.downloaded
+                            ? auth.language === "English"
+                              ? "Yes"
+                              : "Oui"
+                            : auth.language === "English"
+                            ? "No"
+                            : "Non"}
                         </span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Seeds:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Seeds:" : "Seeds:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.seeds}</span>
                       </div>
                       <div className={classes.sourceContent}>
-                        <span className={classes.boldInfo}>Peers:</span>{" "}
+                        <span className={classes.boldInfo}>
+                          {auth.language === "English" ? "Peers:" : "Pairs:"}
+                        </span>{" "}
                         <span className={classes.contentInfo}>{el.peers}</span>
                       </div>
                     </div>
@@ -728,7 +820,7 @@ const RenderShowMore = (props) => {
                             })
                           }
                         >
-                          WATCH
+                          {auth.language === "English" ? "WATCH" : "VISIONNER"}
                         </Button>
                       </div>
                     </div>
@@ -771,8 +863,6 @@ const RenderTorrent = (props) => {
 
   const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? torrent.summary : [];
-
-  console.log(torrent);
 
   const handleSetLiked = (isLiked) => {
     fetch("/api/torrents/like", {
@@ -983,28 +1073,44 @@ const RenderTorrent = (props) => {
                 </div>
                 <div className={classes.rightInfo}>
                   <div>
-                    <span className={classes.boldInfo}>Categories:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {auth.language === "English"
+                        ? "Categories:"
+                        : " Catégories:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {categories.length
                         ? categories.map((el, i) =>
                             i < categories.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   <div>
-                    <span className={classes.boldInfo}>Languages:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English" ? "Languages:" : "Langues:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {languages.length
                         ? languages.map((el, i) =>
                             i < languages.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   {subtitles && subtitles.length ? (
                     <div>
-                      <span className={classes.boldInfo}>Subtitles:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English"
+                          ? "Subtitles:"
+                          : "Sous-titres:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {subtitles.length
                           ? subtitles.map((el, i) =>
@@ -1012,23 +1118,33 @@ const RenderTorrent = (props) => {
                                 ? el.language + " / "
                                 : el.language
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
                   <div>
-                    <span className={classes.boldInfo}>Qualities:</span>{" "}
+                    <span className={classes.boldInfo}>
+                      {" "}
+                      {auth.language === "English" ? "Qualities:" : "Qualités:"}
+                    </span>{" "}
                     <span className={classes.contentInfo}>
                       {qualities.length
                         ? qualities.map((el, i) =>
                             i < qualities.length - 1 ? el + " / " : el
                           )
-                        : "No informations"}
+                        : auth.language === "English"
+                        ? "No informations"
+                        : "Aucune information"}
                     </span>
                   </div>
                   {torrent.duration ? (
                     <div>
-                      <span className={classes.boldInfo}>Duration:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English" ? "Duration:" : "Durée:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {torrent.duration}mn
                       </span>
@@ -1036,31 +1152,46 @@ const RenderTorrent = (props) => {
                   ) : undefined}
                   {actors && actors.length ? (
                     <div>
-                      <span className={classes.boldInfo}>Actors:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English" ? "Actors:" : "Acteurs:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {actors.length
                           ? actors.map((el, i) =>
                               i < actors.length - 1 ? el.name + " / " : el.name
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
                   {crew && crew.length ? (
                     <div>
-                      <span className={classes.boldInfo}>Crew:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English" ? "Crew:" : "Équipe:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {crew.length
                           ? crew.map((el, i) =>
                               i < crew.length - 1 ? el.name + " / " : el.name
                             )
-                          : "No informations"}
+                          : auth.language === "English"
+                          ? "No informations"
+                          : "Aucune information"}
                       </span>
                     </div>
                   ) : undefined}
                   {torrent.lastviewed_at ? (
                     <div>
-                      <span className={classes.boldInfo}>Last viewed:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English"
+                          ? "Last viewed:"
+                          : "Dernier visionnage:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {torrent.lastviewed_at}
                       </span>
@@ -1068,7 +1199,12 @@ const RenderTorrent = (props) => {
                   ) : undefined}
                   {torrent.downloaded_at ? (
                     <div>
-                      <span className={classes.boldInfo}>Last download:</span>{" "}
+                      <span className={classes.boldInfo}>
+                        {" "}
+                        {auth.language === "English"
+                          ? "Last download:"
+                          : "Dernier téléchargement:"}
+                      </span>{" "}
                       <span className={classes.contentInfo}>
                         {torrent.downloaded_at}
                       </span>
@@ -1094,16 +1230,32 @@ const RenderTorrent = (props) => {
                         <div key={el.magnet + i} className={classes.source}>
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
-                              {el.language}
+                              {auth.language === "English"
+                                ? el.language === "English"
+                                  ? "English"
+                                  : "French"
+                                : el.language === "English"
+                                ? "Anglais"
+                                : "Français"}
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Quality:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {" "}
+                                {auth.language === "English"
+                                  ? "Quality:"
+                                  : "Qualité:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.quality}
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Size:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {" "}
+                                {auth.language === "English"
+                                  ? "Size:"
+                                  : "Taille:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.size}
                               </span>
@@ -1112,10 +1264,18 @@ const RenderTorrent = (props) => {
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
                               <span className={classes.boldInfo}>
-                                Downloaded:
+                                {auth.language === "English"
+                                  ? "Downloaded:"
+                                  : "Téléchargé:"}
                               </span>{" "}
                               <span className={classes.contentInfo}>
-                                {el.downloaded ? "Yes" : "No"}
+                                {el.downloaded
+                                  ? auth.language === "English"
+                                    ? "Yes"
+                                    : "Oui"
+                                  : auth.language === "English"
+                                  ? "No"
+                                  : "Non"}
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
@@ -1125,7 +1285,11 @@ const RenderTorrent = (props) => {
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Peers:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {auth.language === "English"
+                                  ? "Peers:"
+                                  : "Pairs:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.peers}
                               </span>
@@ -1143,7 +1307,9 @@ const RenderTorrent = (props) => {
                                   })
                                 }
                               >
-                                WATCH
+                                {auth.language === "English"
+                                  ? "WATCH"
+                                  : "VISIONNER"}
                               </Button>
                             </div>
                           </div>
@@ -1168,16 +1334,31 @@ const RenderTorrent = (props) => {
                         <div key={el.magnet + i} className={classes.source}>
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
-                              {el.language}
+                              {auth.language === "English"
+                                ? el.language === "English"
+                                  ? "English"
+                                  : "French"
+                                : el.language === "English"
+                                ? "Anglais"
+                                : "Français"}
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Quality:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {" "}
+                                {auth.language === "English"
+                                  ? "Quality:"
+                                  : "Qualité:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.quality}
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Size:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {auth.language === "English"
+                                  ? "Size:"
+                                  : "Taille:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.size}
                               </span>
@@ -1186,10 +1367,18 @@ const RenderTorrent = (props) => {
                           <div className={classes.sourceSection}>
                             <div className={classes.sourceContent}>
                               <span className={classes.boldInfo}>
-                                Downloaded:
+                                {auth.language === "English"
+                                  ? "Downloaded:"
+                                  : "Téléchargé:"}
                               </span>{" "}
                               <span className={classes.contentInfo}>
-                                {el.downloaded ? "Yes" : "No"}
+                                {el.downloaded
+                                  ? auth.language === "English"
+                                    ? "Yes"
+                                    : "Oui"
+                                  : auth.language === "English"
+                                  ? "No"
+                                  : "Non"}
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
@@ -1199,7 +1388,12 @@ const RenderTorrent = (props) => {
                               </span>
                             </div>
                             <div className={classes.sourceContent}>
-                              <span className={classes.boldInfo}>Peers:</span>{" "}
+                              <span className={classes.boldInfo}>
+                                {" "}
+                                {auth.language === "English"
+                                  ? "Peers:"
+                                  : "Pairs:"}
+                              </span>{" "}
                               <span className={classes.contentInfo}>
                                 {el.peers}
                               </span>
@@ -1217,7 +1411,9 @@ const RenderTorrent = (props) => {
                                   })
                                 }
                               >
-                                WATCH
+                                {auth.language === "English"
+                                  ? "WATCH"
+                                  : "VISIONNER"}{" "}
                               </Button>
                             </div>
                           </div>
@@ -1323,19 +1519,41 @@ const TorrentSlider = React.memo((props) => {
 
 const TorrentList = (props) => {
   const { torrents, isRandom, history, auth, classes } = props;
-  const [sortBy, setSortBy] = useState({
-    label: "ASC. NAME",
-    value: "ascname",
-  });
+  const [sortBy, setSortBy] = useState(
+    auth.language === "English"
+      ? {
+          label: "ASC. NAME",
+          value: "ascname",
+        }
+      : {
+          label: "NOM CROIS.",
+          value: "ascname",
+        }
+  );
 
-  const sortOptions = [
-    { label: "ASC. NAME", value: "ascname" },
-    { label: "DESC. NAME", value: "descname" },
-    { label: "ASC. RATING", value: "ascrating" },
-    { label: "DESC. RATING", value: "descrating" },
-    { label: "ASC. YEAR", value: "ascyear" },
-    { label: "DESC. YEAR", value: "descyear" },
-  ];
+  //   const [sortBy, setSortBy] = useState({
+  //     label: "ASC. NAME",
+  //     value: "ascname",
+  //   });
+
+  const sortOptions =
+    auth.language === "English"
+      ? [
+          { label: "ASC. NAME", value: "ascname" },
+          { label: "DESC. NAME", value: "descname" },
+          { label: "ASC. RATING", value: "ascrating" },
+          { label: "DESC. RATING", value: "descrating" },
+          { label: "ASC. YEAR", value: "ascyear" },
+          { label: "DESC. YEAR", value: "descyear" },
+        ]
+      : [
+          { label: "NOM CROIS.", value: "ascname" },
+          { label: "NOM DÉCROIS.", value: "descname" },
+          { label: "NOTE CROIS..", value: "ascrating" },
+          { label: "NOTE DÉCROIS.", value: "descrating" },
+          { label: "ANNÉE CROIS.", value: "ascyear" },
+          { label: "ANNÉE DÉCROIS.", value: "descyear" },
+        ];
 
   const handleSortList = (el) => {
     setSortBy(el);
@@ -1379,7 +1597,11 @@ const TorrentList = (props) => {
   return (
     <div>
       <div className={classes.container}>
-        <div className={classes.available}>AVAILABLE TORRENTS</div>
+        <div className={classes.available}>
+          {auth.language === "English"
+            ? "AVAILABLE TORRENTS"
+            : "TORRENTS DISPONIBLES"}
+        </div>
         <div className={classes.filter}>
           <Select
             value={sortBy}
@@ -1414,7 +1636,11 @@ const TorrentList = (props) => {
             options={sortOptions}
             key={"sortList"}
             onChange={handleSortList}
-            placeholder={"SORT BY: " + sortBy.label}
+            placeholder={
+              auth.language === "English"
+                ? "SORT BY: " + sortBy.label
+                : "TRIER PAR: " + sortBy.label
+            }
           />
         </div>
       </div>
@@ -1550,7 +1776,7 @@ const RenderSearchBar = (props) => {
   const [selectedRating, setSelectedRating] = useState(
     props.filters.selectedRating
   );
-  const { settings, classes } = props;
+  const { settings, classes, auth } = props;
   const categories = props.settings.categories;
   const languages = props.settings.languages;
   const subtitles = props.settings.subtitles;
@@ -1631,7 +1857,11 @@ const RenderSearchBar = (props) => {
           underline: classes.borderBottom,
         }}
         type="text"
-        placeholder="Search torrent"
+        placeholder={
+          auth.language === "English"
+            ? "Search torrent"
+            : "Rechercher un torrent"
+        }
         value={search}
         required
         onChange={(e) => setSearch(e.target.value)}
@@ -1643,7 +1873,11 @@ const RenderSearchBar = (props) => {
             value={selectedCasts}
             className="react-select-container"
             classNamePrefix="react-select"
-            noOptionsMessage={() => "Enter a name, 3 char min."}
+            noOptionsMessage={() =>
+              auth.language === "English"
+                ? "Enter a name, 3 char min."
+                : "Entrez un nom, 3 lettres min."
+            }
             theme={(theme) => ({
               ...theme,
               colors: {
@@ -1680,7 +1914,9 @@ const RenderSearchBar = (props) => {
             key={"changeCasts"}
             onInputChange={handleSearchCast}
             onChange={handleAppendCasts}
-            placeholder={"CASTS: ALL"}
+            placeholder={
+              auth.language === "English" ? "CASTS: ALL" : "ÉQUIPES: TOUTES"
+            }
           />
         </div>
         <div className={classes.selectDivider}>
@@ -1723,7 +1959,11 @@ const RenderSearchBar = (props) => {
             options={categories}
             key={"changeCategories"}
             onChange={handleAppendCategories}
-            placeholder={"CATEGORIES: ALL"}
+            placeholder={
+              auth.language === "English"
+                ? "CATEGORIES: ALL"
+                : "CATÉGORIES: TOUTES"
+            }
           />
         </div>
         <div className={classes.selectDivider}>
@@ -1766,7 +2006,9 @@ const RenderSearchBar = (props) => {
             options={languages}
             key={"changeLanguage"}
             onChange={handleAppendLanguage}
-            placeholder={"LANGUAGES: ALL"}
+            placeholder={
+              auth.language === "English" ? "LANGUAGES: ALL" : "LANGUES: TOUTES"
+            }
           />
         </div>
         <div className={classes.selectDivider}>
@@ -1809,13 +2051,18 @@ const RenderSearchBar = (props) => {
             options={subtitles}
             key={"changeSubs"}
             onChange={handleAppendSubs}
-            placeholder={"SUBTITLES: ALL"}
+            placeholder={
+              auth.language === "English"
+                ? "SUBTITLES: ALL"
+                : "SOUS-TITRES: TOUS"
+            }
           />
         </div>
       </div>
       <div className={classes.selectContainer}>
         <div className={classes.rangeContainer}>
-          Year: {selectedYear[0] + " - " + selectedYear[1]}
+          {auth.language === "English" ? "Year: " : "Année: "}
+          {selectedYear[0] + " - " + selectedYear[1]}
           <Range
             className={classes.fullWidth}
             trackStyle={[{ backgroundColor: "#9A1300" }]}
@@ -1837,7 +2084,8 @@ const RenderSearchBar = (props) => {
           />
         </div>
         <div className={classes.rangeContainer}>
-          Rating: {selectedRating[0] + " - " + selectedRating[1]}
+          {auth.language === "English" ? "Rating: " : "Note: "}{" "}
+          {selectedRating[0] + " - " + selectedRating[1]}
           <Range
             className={classes.fullWidth}
             trackStyle={[{ backgroundColor: "#9A1300" }]}
@@ -1868,7 +2116,9 @@ const RenderSearchBar = (props) => {
             type="submit"
             onClick={handleResetSearch}
           >
-            RESET SEARCH
+            {auth.language === "English"
+              ? "RESET SEARCH"
+              : "RÉINITIALISER LA RECHERCHE"}
           </Button>
         </div>
         <div className={classes.selectDivider}>
@@ -1882,7 +2132,9 @@ const RenderSearchBar = (props) => {
             type="submit"
             onClick={handleSearchTorrent}
           >
-            SEARCH TORRENTS
+            {auth.language === "English"
+              ? "SEARCH TORRENTS"
+              : "RECHERCHER DES TORRENTS"}
           </Button>
         </div>
       </div>
@@ -2083,7 +2335,7 @@ const Home = (props) => {
             );
           }}
         >
-          LOAD MORE
+          {auth.language === "English" ? "LOAD MORE" : "CHARGER PLUS"}
         </Button>
       );
     } else if (
@@ -2101,7 +2353,9 @@ const Home = (props) => {
             getRandomTorrents(true);
           }}
         >
-          GIMME MORE RANDOM MOVIES
+          {auth.language === "English"
+            ? "GIMME MORE RANDOM MOVIES"
+            : "CHARGER PLUS DE FILMS ALÉATOIRES"}
         </Button>
       );
     } else {
@@ -2131,6 +2385,7 @@ const Home = (props) => {
     <div className={classes.root}>
       <SearchBar
         settings={settings}
+        auth={auth}
         search={search}
         filters={filters}
         handleResetSearch={handleResetSearch}
@@ -2148,14 +2403,18 @@ const Home = (props) => {
         <div className={classes.loading}>
           <div style={{ color: "#9A1300", fontSize: 30 }}>:(</div>
           <div style={{ fontSize: 15, color: "#D0D0D0" }}>
-            Nothing match this query
+            {auth.language === "English"
+              ? "Nothing match this query"
+              : "Aucun résultat"}
           </div>
           <div style={{ color: "#9A1300", fontSize: 30 }}>:(</div>
         </div>
       )}
       <RenderLoadMore />
       <div style={{ textAlign: "center", padding: 30 }}>
-        Hypertube made by cvannica, eozimek and mmany.
+        {auth.language === "English"
+          ? "Hypertube made by cvannica, eozimek and mmany."
+          : "Hypertube créé par cvannica, eozimek et mmany."}
       </div>
     </div>
   );

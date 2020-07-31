@@ -2,15 +2,16 @@ import io from "socket.io-client";
 let socket;
 
 export const initiateSocket = () => {
-  socket = io("http://localhost:5000");
+  if (!socket) socket = io("http://localhost:5000");
 };
 
 export const disconnectSocket = () => {
-  if (socket) socket.disconnect();
+  if (socket && socket.connected) socket.disconnect();
 };
 
 export const getDownloads = (cb) => {
-  if (!socket) return true;
+  console.log("socket is called", socket, socket.connected);
+  if (!socket && !socket.connected) return true;
   socket.on("torrentDownloader", (msg) => {
     return cb(null, msg);
   });

@@ -204,7 +204,7 @@ const getCast = async (code) => {
         }
         if (res.credits.crew && res.credits.crew.length) {
           res.credits.crew.map((el) => {
-            if (nbCrew < 5) {
+            if (nbCrew < 10) {
               let found = cast.findIndex((e) => e.name === el.name);
               if (found > -1) {
                 cast[found].job.push(el.job);

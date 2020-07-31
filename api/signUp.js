@@ -1,5 +1,6 @@
 const pool = require("./../pool.js");
 const bcrypt = require("bcrypt");
+const { response } = require("express");
 
 // Check if mail is already existing AND if user did not put space in the field
 const checkMail = (request, response) => {
@@ -193,4 +194,69 @@ const userSignUp = (request, response) => {
   });
 };
 
-module.exports = { userSignUp };
+const oauthSignUp = async (user) => {
+  return new Promise((resolve, reject) => {
+    pool.pool.query(
+      "SELECT id, isoauth, username, email FROM users WHERE username = $1 OR email = $2",
+      [user.username, user.email],
+      (error, results) => {
+        if (error) {
+          resolve({ status: false, msg: error });
+        }
+        if (!results.rowCount) {
+          pool.pool.query(
+            "INSERT INTO users (username, firstname, lastname, email, photos, verified, verified_value, isoauth) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) returning id",
+            [
+              user.username,
+              user.firstname,
+              user.lastname,
+              user.email,
+              user.photos,
+              true,
+              1,
+              true,
+            ],
+            (error, resultsCreate) => {
+              if (error) {
+                resolve({ status: false, msg: error });
+              }
+              if (resultsCreate.rowCount) {
+                resolve({
+                  status: true,
+                  id: {
+                    login: user.email,
+                    id: resultsCreate.rows[0].id,
+                  },
+                  msg: "User created",
+                });
+              } else {
+                resolve({ status: false, msg: "Unable to create user" });
+              }
+            }
+          );
+        } else {
+          if (results.rows[0].isoauth === "true") {
+            resolve({
+              status: true,
+              id: {
+                login:
+                  user.username === results.rows[0].username
+                    ? user.username
+                    : user.email,
+                id: results.rows[0].id,
+              },
+              msg: "User already exists",
+            });
+          } else {
+            resolve({
+              status: false,
+              msg: "Username or email already in use",
+            });
+          }
+        }
+      }
+    );
+  });
+};
+
+module.exports = { userSignUp, oauthSignUp };

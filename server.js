@@ -1,4 +1,5 @@
 // dependencies
+const cors = require("cors");
 const mime = require("mime");
 const Jimp = require("jimp");
 const multer = require("multer");
@@ -15,6 +16,7 @@ const users = require("./api/users");
 const login = require("./api/login");
 const views = require("./api/views");
 const likes = require("./api/likes");
+const oauth = require("./api/oauth");
 const signUp = require("./api/signUp");
 const stream = require("./api/stream");
 const confirm = require("./api/confirm");
@@ -50,7 +52,7 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   cookie: {
-    sameSite: "lax",
+    secure: "true",
   },
 };
 
@@ -69,6 +71,9 @@ app.use(express.static("client"));
 
 // config
 app.use(session(sessionConfig));
+
+// cors
+app.use(cors());
 
 // avoid xss
 app.disable("x-powered-by");
@@ -147,6 +152,94 @@ const job = new CronJob("0 */12 * * *", () => {
 
 job.start();
 
+// Get oauth (42, github, google)
+app.get("/oauth/42", async (req, res) => {
+  if (req.query.code) {
+    const status = await oauth.oauth42(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
+});
+
+app.get("/oauth/github", async (req, res) => {
+  if (req.query.code) {
+    const status = await oauth.oauthGithub(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
+});
+
+app.get("/oauth/google", async (req, res) => {
+  if (req.query.code) {
+    const status = await oauth.oauthGoogle(req.query.code);
+    if (status.status) {
+      const token = jwt.sign({ login }, sessionConfig.secret, {
+        expiresIn: "24h",
+      });
+      login
+        .setLoggedUser({
+          login: status.id.login,
+          isLogged: true,
+          token: token,
+        })
+        .then((setLogged) => {
+          if (setLogged.login) {
+            res.cookie("_hypertubeAuth", token, { httpOnly: true });
+            return res.redirect(`http://localhost:3000/SignIn?token=${token}`);
+          } else {
+            return res.redirect("http://localhost:3000/SignUp");
+          }
+        });
+    } else {
+      return res.redirect("http://localhost:3000/SignUp");
+    }
+  } else {
+    return res.redirect("http://localhost:3000/SignUp");
+  }
+});
+
 // Check if the token is valid, needed for react router
 app.get("/api/checkToken", (req, res) => {
   const token = req.cookies._hypertubeAuth;
@@ -163,7 +256,12 @@ app.get("/api/checkToken", (req, res) => {
           })
           .then((response) => {
             if (response.token === true) {
-              res.send({ status: true, id: response.id });
+              res.send({
+                status: true,
+                id: response.id,
+                language: response.language,
+                isoauth: response.isoauth === "true" ? true : false,
+              });
             } else {
               res.send({ status: false });
             }
@@ -218,7 +316,9 @@ app.post("/api/login", (req, res) => {
               res.cookie("_hypertubeAuth", token, { httpOnly: true });
               res.send({
                 login: true,
-                id: response.id,
+                id: setLogged.id,
+                language: setLogged.language,
+                isoauth: setLogged.isoauth === "true" ? true : false,
               });
             } else {
               res.send(setLogged);
@@ -274,8 +374,10 @@ app.post("/api/signUp", (req, res) => {
                         .quality(80)
                         .write(uploadedImg);
                     })
-                    .catch(function (err) {
-                      console.error(err);
+                    .catch((err) => {
+                      res
+                        .status(200)
+                        .send({ signup: { msg: "Unable to send email." } });
                     });
                   res.status(200).send({ signup: { signup: response.signup } });
                 } else {
@@ -290,9 +392,7 @@ app.post("/api/signUp", (req, res) => {
                   .send({ signup: { msg: "Unable to send email." } });
               });
           } else {
-            res
-              .status(200)
-              .send({ signup: { msg: "Unable to create account." } });
+            res.status(200).send({ signup: { msg: response.msg } });
           }
         })
         .catch((error) => {
@@ -633,7 +733,7 @@ app.post("/api/recover", (req, res) => {
           });
       } else {
         res.status(200).send({
-          recover: { msg: "Given informations don't match any users." },
+          recover: { msg: response.msg },
         });
       }
     })
