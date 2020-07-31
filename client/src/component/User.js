@@ -271,6 +271,7 @@ const User = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.users) {
+          console.log(res.users[0].language);
           setUser({
             firstname: res.users[0].firstname,
             lastname: res.users[0].lastname,
@@ -347,16 +348,35 @@ const User = (props) => {
         <div className={classes.userDetails} style={{ marginTop: "2%" }}>
           <div className={classes.userDetailsContainer}>
             <div>
-              <span className={classes.userInfo}>Username: </span>{" "}
+              <span className={classes.userInfo}>
+                {user.language === "English" ? "Username:" : "Utilisateur :"}
+              </span>{" "}
               {user.username} <br /> <br />
-              <span className={classes.userInfo}>First Name : </span>
+              <span className={classes.userInfo}>
+                {" "}
+                {user.language === "English" ? "First Name:" : "Prénom :"}
+              </span>{" "}
               {user.firstname} <br /> <br />
-              <span className={classes.userInfo}>Last Name : </span>
+              <span className={classes.userInfo}>
+                {user.language === "English" ? "Last Name:" : "Nom :"}
+              </span>{" "}
               {user.lastname} <br /> <br />
-              <span className={classes.userInfo}>Langage : </span>
-              {user.language} <br /> <br />
-              <span className={classes.userInfo}>Last Connected : </span>
-              {user.connected ? "Now" : user.last_connection}
+              <span className={classes.userInfo}>
+                {user.language === "English" ? "Language:" : "Langue :"}
+              </span>{" "}
+              <span>
+                {" "}
+                {user.language === "English" ? " English" : "Français"}
+              </span>{" "}
+              <br /> <br />
+              <span className={classes.userInfo}>
+                {user.language === "English" ? "Last Connected:" : "Connecté :"}
+              </span>{" "}
+              {user.connected
+                ? user.language === "English"
+                  ? "Online"
+                  : "En Ligne"
+                : user.last_connection}
             </div>
           </div>
         </div>
@@ -364,18 +384,41 @@ const User = (props) => {
       <div>
         <div>
           <br />
-          <span className={classes.headerView}>Viewed movies</span>
+          <span className={classes.headerView}>
+            {" "}
+            {user.language === "English" ? "Viewed Movies" : "Films vus"}
+          </span>{" "}
         </div>
 
         <div className={classes.torrentsContainerList}>
           <div className={classes.torrentsCategories}>
-            <div className={classes.torrentTitle_cate}>Film title</div>
+            <div className={classes.torrentTitle_cate}>
+              <span>
+                {" "}
+                {user.language === "English" ? "Title" : "Titre du Film"}
+              </span>{" "}
+            </div>
             <div className={classes.torrentDetails_cate}>
-              <div className={classes.torrentInfos_cate}>Watched at</div>
               <div className={classes.torrentInfos_cate}>
-                Liked or not liked?
+                <span>
+                  {" "}
+                  {user.language === "English" ? " Watched at" : "Visionné le"}
+                </span>{" "}
               </div>
-              <div className={classes.torrentInfos_cate}>Comment</div>
+              <div className={classes.torrentInfos_cate}>
+                <span>
+                  {" "}
+                  {user.language === "English"
+                    ? " Liked or not liked?"
+                    : "Apprécié ou non ? "}
+                </span>{" "}
+              </div>
+              <div className={classes.torrentInfos_cate}>
+                <span>
+                  {" "}
+                  {user.language === "English" ? " Comments" : "Commentaires"}
+                </span>{" "}
+              </div>
             </div>
           </div>
           {torrents && torrents.length ? (
