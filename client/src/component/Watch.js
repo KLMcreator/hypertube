@@ -499,8 +499,15 @@ const Watch = (props) => {
           <div className={classes.titleContainer}>
             <span className={classes.titleYear}>({movie.production_year})</span>{" "}
             <span className={classes.titleName}>
-              {movie.title} - {torrent.quality} - {torrent.language} -{" "}
-              {movie.rating}
+              {movie.title} - {torrent.quality} -{" "}
+              {torrent.language === "English"
+                ? auth.language === "English"
+                  ? "English"
+                  : "Anglais"
+                : auth.language === "English"
+                ? "French"
+                : "Français"}{" "}
+              - {movie.rating}
             </span>{" "}
             <StarRateIcon className={classes.starIcon}></StarRateIcon>
           </div>
@@ -709,6 +716,11 @@ const Watch = (props) => {
                 : "Aucun commentaire, soyez le premier à en poster un"}
             </div>
           )}
+        </div>
+        <div style={{ textAlign: "center", padding: 30 }}>
+          {auth.language === "English"
+            ? "Hypertube made by cvannica, eozimek and mmany."
+            : "Hypertube créé par cvannica, eozimek et mmany."}
         </div>
       </div>
     </div>
