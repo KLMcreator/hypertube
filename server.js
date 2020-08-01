@@ -757,7 +757,7 @@ app.post("/api/users/get/torrents", (req, res) => {
 
 app.post("/api/users/get/torrentscom", (req, res) => {
   users
-    .getCommentTorrents({ token: req.cookies._hypertubeAuth })
+    .getCommentTorrents({ token: req.body })
     .then((response) => {
       res.status(200).send({ torrents: response });
     })

@@ -1,22 +1,28 @@
 // React
 import moment from "moment";
-import localization from "moment/locale/fr";
+import React, { useState, useEffect } from "react";
 import Select, { createFilter } from "react-select";
-import React, { useState, useEffect, useRef } from "react";
+
 // Framework
 import Input from "@material-ui/core/Input";
-import withStyles from "@material-ui/core/styles/withStyles";
+import Switch from "@material-ui/core/Switch";
+import FormGroup from "@material-ui/core/FormGroup";
+import { withStyles } from "@material-ui/core/styles";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+
 // Icons
 import Button from "@material-ui/core/Button";
 import VpnKey from "@material-ui/icons/VpnKey";
 import StarIcon from "@material-ui/icons/Star";
 import ErrorIcon from "@material-ui/icons/Error";
+
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
+
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import EditRoundedIcon from "@material-ui/icons/EditRounded";
 import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
+import EditRoundedIcon from "@material-ui/icons/EditRounded";
 import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 
@@ -61,11 +67,6 @@ const profileStyles = (theme) => ({
   userDetailsChild: {
     flex: 1,
     padding: 10,
-  },
-  userDetailsSelect: {
-    flex: 1,
-    padding: 10,
-    maxWidth: "max-content",
   },
   // Profile picture and uploading button
   containerImg: {
@@ -143,6 +144,12 @@ const profileStyles = (theme) => ({
   inputColor: {
     backgroundColor: "#373737",
     color: "#fff",
+  },
+  switchAccount: {
+    color: "#D0D0D0",
+  },
+  toggleAccount: {
+    justifyContent: "center",
   },
   submitBtn: {
     color: "#D0D0D0",
@@ -246,7 +253,6 @@ const profileStyles = (theme) => ({
 });
 
 const Profile = (props) => {
-  const ref = useRef(false);
   const [email, setEmail] = useState("");
   const [photo, setPhoto] = useState("");
   const [torrents, setTorrents] = useState([]);
@@ -262,14 +268,13 @@ const Profile = (props) => {
   const [pwdRegLen, setPwdRegLen] = useState(false);
   const [pwdMatches, setPwdMatches] = useState(true);
   const [newPassword, setNewPassword] = useState("");
-  const [newLastname, setNewLastname] = useState("");
-  const [newFirstname, setNewFirstname] = useState("");
   const [emailMatches, setEmailMatches] = useState(true);
   const [newFilePhoto, setNewFilePhoto] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState("");
   const [pwdWhiteSpaces, setPwdWhiteSpaces] = useState(true);
   const [currentPassword, setCurrentPassword] = useState("");
   const [lastNameRegExp, setLastnameRegExp] = useState(true);
+  const [switchPosition, setSwitchPosition] = useState(false);
   const [firstNameRegExp, setFirstnameRegExp] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState({});
   const [emailWhiteSpaces, setEmailWhiteSpaces] = useState(true);
@@ -277,68 +282,34 @@ const Profile = (props) => {
   const [lastNameWhiteSpaces, setLastNameWhiteSpaces] = useState(true);
   const [firstNameWhiteSpaces, setFirstNameWhiteSpaces] = useState(true);
 
-  const { classes, auth } = props;
+  const { classes } = props;
   const inputSelectedStyles = {
     WebkitBoxShadow: "0 0 0 1000px #1A1A1A inset",
     WebkitTextFillColor: "#EFF1F3",
     padding: 10,
   };
 
+  // Select languages options
   const languagesOption = [
-    {
-      label: auth.language === "English" ? "English" : "Anglais",
-      value: "English",
-    },
-    {
-      label: auth.language === "English" ? "French" : "Français",
-      value: "French",
-    },
+    { label: "English", value: "English" },
+    { label: "French", value: "French" },
   ];
-
-  // Render of torrents viewed / liked
-  const getTorrentsUser = () => {
-    fetch("/api/users/get/torrents", {
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (ref.current) {
-          if (res.torrents) {
-            setTorrents(res.torrents);
-            setIsLoading(false);
-          } else if (res.torrents.msg) {
-            props.auth.errorMessage(res.torrents.msg);
-          } else {
-            props.auth.errorMessage("Error while fetching database.");
-          }
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
-  };
 
   const getLoggedUser = async () => {
     fetch("/api/profile")
       .then((res) => res.json())
       .then((res) => {
-        if (ref.current) {
-          setFirstname(res.user[0].firstname);
-          setLastname(res.user[0].lastname);
-          setEmail(res.user[0].email);
-          setLanguage(res.user[0].language);
-          setPhoto(res.user[0].photos);
-          setUsername(res.user[0].username);
-          auth.language === "English"
-            ? setSelectedLanguage({
-                label: res.user[0].language,
-                value: res.user[0].language,
-              })
-            : setSelectedLanguage({
-                label:
-                  res.user[0].language === "English" ? "Anglais" : "Français",
-                value: res.user[0].language,
-              });
-          getTorrentsUser();
-        }
+        setFirstname(res.user[0].firstname);
+        setLastname(res.user[0].lastname);
+        setEmail(res.user[0].email);
+        setLanguage(res.user[0].language);
+        setPhoto(res.user[0].photos);
+        setUsername(res.user[0].username);
+        setSelectedLanguage({
+          label: res.user[0].language,
+          value: res.user[0].language,
+        });
+        setIsLoading(false);
       })
       .catch((err) => props.auth.errorMessage(err));
   };
@@ -354,7 +325,6 @@ const Profile = (props) => {
     e.preventDefault();
     let formData = new FormData();
     formData.append("file", newFilePhoto);
-    formData.append("oldFile", photo);
     fetch("/api/settings/edit/photo", {
       method: "POST",
       body: formData,
@@ -375,7 +345,7 @@ const Profile = (props) => {
   const handleChangeLanguage = (e) => {
     if (language !== e.label) {
       setSelectedLanguage(e);
-      setLanguage({ label: e.label, value: e.value });
+      setLanguage(e.label);
     }
   };
 
@@ -384,7 +354,7 @@ const Profile = (props) => {
     fetch("/api/settings/edit/language", {
       method: "POST",
       body: JSON.stringify({
-        language: language.value,
+        language: language,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -392,7 +362,6 @@ const Profile = (props) => {
       .then((res) => {
         if (res.edit.edit) {
           props.auth.successMessage("Prefered language updated.");
-          window.location.reload();
         } else {
           props.auth.errorMessage(res.edit.msg);
         }
@@ -459,7 +428,7 @@ const Profile = (props) => {
     fetch("/api/settings/lastname", {
       method: "POST",
       body: JSON.stringify({
-        lastname: newLastname,
+        lastname: lastname,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -496,7 +465,7 @@ const Profile = (props) => {
   };
 
   const handleChangeLastname = (e) => {
-    setNewLastname(e.target.value);
+    setLastname(e.target.value);
     checkLastnameLength(e.target.value);
     checkRegexLastname(e.target.value);
   };
@@ -507,17 +476,13 @@ const Profile = (props) => {
         {lastNameWhiteSpaces === false ? (
           <p className={classes.errorCheck}>
             <ErrorIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Last name must not contain white space."
-              : "Le nom ne doit pas contenir d'espace(s)."}
+            Last name must not contain white space.
           </p>
         ) : undefined}
         {lastNameRegExp === false ? (
           <p className={classes.errorCheck}>
             <ErrorIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Only letters are allowed for last name."
-              : "Seules les lettres sont autorisées."}
+            Only letters are allowed for last name.
           </p>
         ) : undefined}
       </div>
@@ -530,7 +495,7 @@ const Profile = (props) => {
     fetch("/api/settings/firstname", {
       method: "POST",
       body: JSON.stringify({
-        firstname: newFirstname,
+        firstname: firstname,
       }),
       headers: { "Content-Type": "application/json" },
     })
@@ -546,7 +511,7 @@ const Profile = (props) => {
   };
 
   const handleChangeFirstname = (e) => {
-    setNewFirstname(e.target.value);
+    setFirstname(e.target.value);
     checkRegexFirstname(e.target.value);
     checkFirstnameLength(e.target.value);
   };
@@ -578,22 +543,24 @@ const Profile = (props) => {
         {firstNameWhiteSpaces === false ? (
           <p className={classes.errorCheck}>
             <ErrorIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "First name must not contain white space."
-              : "Le prénom ne doit pas contenir d'espace(s)."}
+            First name must not contain white space.
           </p>
         ) : undefined}
         {firstNameRegExp === false ? (
           <p className={classes.errorCheck}>
             <ErrorIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Only letters are allowed for first name."
-              : "Seules les lettres sont autorisées."}
+            Only letters are allowed for first name.
           </p>
         ) : undefined}
       </div>
     );
   };
+
+  // Switch account
+  const handleChangeSwitchAccount = (e) => {
+    setSwitchPosition(e.target.checked);
+  };
+
   // Password edit functions
 
   const editPassword = (e) => {
@@ -666,53 +633,61 @@ const Profile = (props) => {
         {pwdWhiteSpaces === false ? (
           <p className={classes.errorCheck}>
             <ErrorIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Password must not contain white space"
-              : "Le mot de passe ne doit pas contenir d'espace"}
+            Password must not contain white space
           </p>
         ) : undefined}
         {pwdRegLet === false ? (
           <p className={classes.errorCheck}>
             <RadioButtonUncheckedIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Password must contain at least one letter"
-              : "Le mot de passe doit contenir au moins une lettre"}
+            Password must contain at least one letter
           </p>
         ) : undefined}
         {pwdRegCap === false ? (
           <p className={classes.errorCheck}>
             <RadioButtonUncheckedIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Password must contain at least one Capital Letter"
-              : "Le mot de passe doit contenir au moins une majuscule"}
+            Password must contain at least one Capital Letter
           </p>
         ) : undefined}{" "}
         {pwdRegLen === false ? (
           <p className={classes.errorCheck}>
             <RadioButtonUncheckedIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Password must contain at least 8 characters"
-              : "Le mot de passe doit contenir au moins 8 caractères"}
+            Password must contain at least 8 characters
           </p>
         ) : undefined}{" "}
         {pwdRegDig === false ? (
           <p className={classes.errorCheck}>
             <RadioButtonUncheckedIcon className={classes.iconsMessage} />
-            {auth.language === "English"
-              ? "Password must contain at least one digit"
-              : "Le mot de passe doit contenir au moins un chiffre"}
+            Password must contain at least one digit
           </p>
         ) : undefined}
       </div>
     );
   };
 
+  // Render of torrents viewed / liked
+  const getTorrentsUser = () => {
+    fetch("/api/users/get/torrents", {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.torrents) {
+          setTorrents(res.torrents);
+          setIsLoading(false);
+        } else if (res.torrents.msg) {
+          props.auth.errorMessage(res.torrents.msg);
+        } else {
+          props.auth.errorMessage("Error while fetching database.");
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+
   useEffect(() => {
-    ref.current = true;
     document.body.style.overflow = "auto";
     getLoggedUser();
+    getTorrentsUser();
     return () => {
-      ref.current = false;
       setIsLoading(true);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -739,7 +714,6 @@ const Profile = (props) => {
               alt={photo}
               className={classes.userImage}
               src={
-                photo === "./src/assets/img/nophotos.png" ||
                 photo.startsWith("https://")
                   ? photo
                   : "./src/assets/photos/" + photo
@@ -764,23 +738,34 @@ const Profile = (props) => {
                 onChange={handleUploadPic}
               />
             </div>
-            {newFilePhoto ? (
-              <Button
-                className={classes.submitSpecialFormBtn}
-                name="submitBtnPhoto"
-                type="submit"
-              >
-                {auth.language === "English"
-                  ? "Confirm new picture"
-                  : "Modifier la photo"}
-              </Button>
-            ) : undefined}
+            <Button
+              className={classes.submitSpecialFormBtn}
+              name="submitBtnPhoto"
+              type="submit"
+            >
+              Confirm new picture
+            </Button>
           </form>
         </div>
         <div className={classes.userDetails}>
           <div className={classes.userDetailsContainer}>
+            <div className={classes.userDetailsChild}>
+              <FormGroup row className={classes.toggleAccount}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      className={classes.switchAccount}
+                      checked={switchPosition}
+                      onChange={handleChangeSwitchAccount}
+                      id="switchAccount"
+                    />
+                  }
+                  label="Child account"
+                />
+              </FormGroup>
+            </div>
             <div
-              className={classes.userDetailsSelect}
+              className={classes.userDetailsChild}
               style={{ textAlign: "right" }}
             >
               <form encType="multipart/form-data" onSubmit={addNewLanguage}>
@@ -824,16 +809,43 @@ const Profile = (props) => {
                   name="submitBtnLanguage"
                   type="submit"
                 >
-                  {auth.language === "English"
-                    ? "Confirm new language"
-                    : "Modifier la langue préférée"}
+                  Confirm new language
                 </Button>
               </form>
             </div>
           </div>
-          {!auth.isoauth ? (
-            <div className={classes.userDetailsContainer}>
-              <div className={classes.userDetailsChild}>
+          <div className={classes.userDetailsContainer}>
+            <div className={classes.userDetailsChild}>
+              <Input
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
+                inputProps={{
+                  style: inputSelectedStyles,
+                }}
+                id="emailTextfield"
+                type="email"
+                placeholder={"Current: " + email}
+                value={newEmail}
+                required
+                onChange={handleChangeEmail}
+                startAdornment={
+                  <AlternateEmailIcon
+                    className={classes.sendIcon}
+                  ></AlternateEmailIcon>
+                }
+              />
+              {emailWhiteSpaces === false ? (
+                <p className={classes.errorCheck}>
+                  <ErrorIcon className={classes.iconsMessage} />
+                  Email must not contain white space
+                </p>
+              ) : undefined}
+            </div>
+            <div className={classes.userDetailsChild}>
+              <form encType="multipart/form-data" onSubmit={editNewMail}>
                 <Input
                   classes={{
                     root: classes.rootSend,
@@ -843,79 +855,36 @@ const Profile = (props) => {
                   inputProps={{
                     style: inputSelectedStyles,
                   }}
-                  id="emailTextfield"
+                  id="confirmedMail"
                   type="email"
-                  placeholder={
-                    auth.language === "English"
-                      ? "Current mail: " + email
-                      : "Email actuel: " + email
-                  }
-                  value={newEmail}
+                  placeholder="Confirm your new mail"
+                  value={confirmedEmail}
                   required
-                  onChange={handleChangeEmail}
+                  onChange={handleChangeConfirmedEmail}
                   startAdornment={
                     <AlternateEmailIcon
                       className={classes.sendIcon}
                     ></AlternateEmailIcon>
                   }
+                  endAdornment={
+                    <IconButton
+                      type="submit"
+                      aria-label="send"
+                      className={classes.submitBtn}
+                    >
+                      <EditRoundedIcon fontSize="small" />
+                    </IconButton>
+                  }
                 />
-                {emailWhiteSpaces === false ? (
+                {emailMatches === false ? (
                   <p className={classes.errorCheck}>
                     <ErrorIcon className={classes.iconsMessage} />
-                    {auth.language === "English"
-                      ? "Email must not contain white space"
-                      : "L'adresse mail ne doit pas contenir d'espace"}
+                    Emails don't match
                   </p>
                 ) : undefined}
-              </div>
-              <div className={classes.userDetailsChild}>
-                <form encType="multipart/form-data" onSubmit={editNewMail}>
-                  <Input
-                    classes={{
-                      root: classes.rootSend,
-                      input: classes.inputColor,
-                      underline: classes.borderBottom,
-                    }}
-                    inputProps={{
-                      style: inputSelectedStyles,
-                    }}
-                    id="confirmedMail"
-                    type="email"
-                    placeholder={
-                      auth.language === "English"
-                        ? "Confirmed new mail"
-                        : "Confirmation de mail"
-                    }
-                    value={confirmedEmail}
-                    required
-                    onChange={handleChangeConfirmedEmail}
-                    startAdornment={
-                      <AlternateEmailIcon
-                        className={classes.sendIcon}
-                      ></AlternateEmailIcon>
-                    }
-                    endAdornment={
-                      <IconButton
-                        type="submit"
-                        aria-label="send"
-                        className={classes.submitBtn}
-                      >
-                        <EditRoundedIcon fontSize="small" />
-                      </IconButton>
-                    }
-                  />
-                  {emailMatches === false ? (
-                    <p className={classes.errorCheck}>
-                      <ErrorIcon className={classes.iconsMessage} />
-                      {auth.language === "English"
-                        ? "Emails don't match"
-                        : "Les adresses mails ne sont pas identiques"}
-                    </p>
-                  ) : undefined}
-                </form>
-              </div>
+              </form>
             </div>
-          ) : undefined}
+          </div>
           <div className={classes.userDetailsContainer}>
             <div className={classes.userDetailsChild}>
               <form encType="multipart/form-data" onSubmit={editLastname}>
@@ -930,12 +899,8 @@ const Profile = (props) => {
                   }}
                   id="lastnameTextfield"
                   type="text"
-                  placeholder={
-                    auth.language === "English"
-                      ? "Actual Last name: " + lastname
-                      : "Nom actuel: " + lastname
-                  }
-                  value={newLastname}
+                  placeholder="Last Name"
+                  value={lastname}
                   required
                   onChange={handleChangeLastname}
                   startAdornment={
@@ -969,13 +934,9 @@ const Profile = (props) => {
                   }}
                   id="firstnameTextfield"
                   type="text"
-                  value={newFirstname}
+                  placeholder="First Name"
+                  value={firstname}
                   required
-                  placeholder={
-                    auth.language === "English"
-                      ? "Actual First name: " + firstname
-                      : "Prénom actuel: " + firstname
-                  }
                   onChange={handleChangeFirstname}
                   startAdornment={
                     <AccountCircle className={classes.sendIcon}></AccountCircle>
@@ -996,126 +957,96 @@ const Profile = (props) => {
               </form>
             </div>
           </div>
-          {!auth.isoauth ? (
-            <div className={classes.userDetailsContainer}>
-              <div className={classes.userDetailsChild}>
-                <Input
-                  classes={{
-                    root: classes.rootSend,
-                    input: classes.inputColor,
-                    underline: classes.borderBottom,
-                  }}
-                  inputProps={{
-                    style: inputSelectedStyles,
-                  }}
-                  id="currentPasswordTextfield"
-                  type="password"
-                  placeholder={
-                    auth.language === "English"
-                      ? "Current password"
-                      : "Mot de passe actuel"
-                  }
-                  value={currentPassword}
-                  required
-                  onChange={handleCurrentPassword}
-                  startAdornment={
-                    <VpnKey className={classes.sendIcon}></VpnKey>
-                  }
-                />
-              </div>
-              <div className={classes.userDetailsChild}>
-                <Input
-                  classes={{
-                    root: classes.rootSend,
-                    input: classes.inputColor,
-                    underline: classes.borderBottom,
-                  }}
-                  inputProps={{
-                    style: inputSelectedStyles,
-                  }}
-                  id="newPasswordTextfield"
-                  type="password"
-                  placeholder={
-                    auth.language === "English"
-                      ? "New password"
-                      : "Nouveau mot de passe"
-                  }
-                  value={newPassword}
-                  required
-                  onChange={handleChangePassword}
-                  startAdornment={
-                    <VpnKey className={classes.sendIcon}></VpnKey>
-                  }
-                />
-                {newPassword.length ? (
-                  <RenderPasswordRegex></RenderPasswordRegex>
-                ) : undefined}
-              </div>
-              <div className={classes.userDetailsChild}>
-                <form encType="multipart/form-data" onSubmit={editPassword}>
-                  <Input
-                    classes={{
-                      root: classes.rootSend,
-                      input: classes.inputColor,
-                      underline: classes.borderBottom,
-                    }}
-                    inputProps={{
-                      style: inputSelectedStyles,
-                    }}
-                    id="confirmedPasswordTextfield"
-                    type="password"
-                    placeholder={
-                      auth.language === "English"
-                        ? "Confirmed password"
-                        : "Confirmation de mot de passe"
-                    }
-                    value={confirmedPassword}
-                    required
-                    onChange={handleChangeConfirmedPassword}
-                    startAdornment={
-                      <VpnKey className={classes.sendIcon}></VpnKey>
-                    }
-                    endAdornment={
-                      <IconButton
-                        type="submit"
-                        aria-label="send"
-                        className={classes.submitBtn}
-                      >
-                        <EditRoundedIcon fontSize="small" />
-                      </IconButton>
-                    }
-                  />
-                  {pwdMatches === false ? (
-                    <p className={classes.errorCheck}>
-                      <ErrorIcon className={classes.iconsMessage} />
-                      {auth.language === "English"
-                        ? "Passwords don't match"
-                        : "Les mots de passe ne sont pas identiques"}
-                    </p>
-                  ) : undefined}
-                </form>
-              </div>
+          <div className={classes.userDetailsContainer}>
+            <div className={classes.userDetailsChild}>
+              <Input
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
+                inputProps={{
+                  style: inputSelectedStyles,
+                }}
+                id="currentPasswordTextfield"
+                type="password"
+                placeholder="Current password"
+                value={currentPassword}
+                required
+                onChange={handleCurrentPassword}
+                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
+              />
             </div>
-          ) : undefined}
+            <div className={classes.userDetailsChild}>
+              <Input
+                classes={{
+                  root: classes.rootSend,
+                  input: classes.inputColor,
+                  underline: classes.borderBottom,
+                }}
+                inputProps={{
+                  style: inputSelectedStyles,
+                }}
+                id="newPasswordTextfield"
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                required
+                onChange={handleChangePassword}
+                startAdornment={<VpnKey className={classes.sendIcon}></VpnKey>}
+              />
+              {newPassword.length ? (
+                <RenderPasswordRegex></RenderPasswordRegex>
+              ) : undefined}
+            </div>
+            <div className={classes.userDetailsChild}>
+              <form encType="multipart/form-data" onSubmit={editPassword}>
+                <Input
+                  classes={{
+                    root: classes.rootSend,
+                    input: classes.inputColor,
+                    underline: classes.borderBottom,
+                  }}
+                  inputProps={{
+                    style: inputSelectedStyles,
+                  }}
+                  id="confirmedPasswordTextfield"
+                  type="password"
+                  placeholder="Confirmed Password"
+                  value={confirmedPassword}
+                  required
+                  onChange={handleChangeConfirmedPassword}
+                  startAdornment={
+                    <VpnKey className={classes.sendIcon}></VpnKey>
+                  }
+                  endAdornment={
+                    <IconButton
+                      type="submit"
+                      aria-label="send"
+                      className={classes.submitBtn}
+                    >
+                      <EditRoundedIcon fontSize="small" />
+                    </IconButton>
+                  }
+                />
+                {pwdMatches === false ? (
+                  <p className={classes.errorCheck}>
+                    <ErrorIcon className={classes.iconsMessage} />
+                    Passwords don't match
+                  </p>
+                ) : undefined}
+              </form>
+            </div>
+          </div>
         </div>
       </div>
       <div className={classes.torrentsContainerList}>
         <div className={classes.torrentsCategories}>
-          <div className={classes.torrentTitle_cate}>
-            {auth.language === "English" ? "Film title" : "Titre du film"}
-          </div>
+          <div className={classes.torrentTitle_cate}>Film title</div>
           <div className={classes.torrentDetails_cate}>
-            <div className={classes.torrentInfos_cate}>
-              {auth.language === "English" ? "Watched at" : "Visionné le"}
-            </div>
-            <div className={classes.torrentInfos_cate}>
-              {auth.language === "English"
-                ? "Liked or not liked?"
-                : "Apprécié ou non?"}
-            </div>
-            <div className={classes.torrentInfos_cate}>
-              {auth.language === "English" ? "Comment" : "Commentaires"}
-            </div>
+            <div className={classes.torrentInfos_cate}>Watched at</div>
+            <div className={classes.torrentInfos_cate}>Liked or not liked?</div>
+            <div className={classes.torrentInfos_cate}>Comment</div>
           </div>
         </div>
         {torrents && torrents.length ? (
@@ -1139,13 +1070,7 @@ const Profile = (props) => {
                 <div className={classes.torrentDetails}>
                   <div className={classes.torrentInfos}>
                     {el.viewed_at
-                      ? auth.language === "English"
-                        ? moment(el.viewed_at)
-                            .locale("en")
-                            .format("DD MMM, YYYY")
-                        : moment(el.viewed_at)
-                            .locale("fr", localization)
-                            .format("DD MMM, YYYY")
+                      ? moment(el.viewed_at).format("DD MMM, YYYY")
                       : undefined}
                   </div>
                   <div className={classes.torrentInfos}>
@@ -1161,10 +1086,8 @@ const Profile = (props) => {
                   </div>
                   <div className={classes.torrentInfos}>
                     {el.comment
-                      ? el.comment.length < 51
-                        ? el.comment
-                        : el.comment.substring(0, 50) + "..."
-                      : undefined}
+                      ? el.comment.substring(0, 50) + "..."
+                      : undefined}{" "}
                   </div>
                 </div>
               </div>

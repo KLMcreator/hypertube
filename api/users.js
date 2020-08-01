@@ -28,7 +28,7 @@ const getUserInfos = (request, response) => {
   const { req } = request;
   return new Promise((resolve, reject) => {
     pool.pool.query(
-      "SELECT username, firstname, lastname, connected, last_connection, language, photos FROM users WHERE id = $1;",
+      "SELECT id, username, firstname, lastname, connected, last_connection, language, photos FROM users WHERE id = $1;",
       [req.id],
       (error, results) => {
         if (error) {
@@ -70,11 +70,11 @@ const getUserTorrents = (request, response) => {
 };
 
 const getCommentTorrents = (request, response) => {
-  const { token } = request;
+  const token = request.token.id;
   return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
-        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, l.liked, v.viewed_at as viewed_at, c.comment FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN comments c ON c.video_id = t.id WHERE ((l.user_id = (SELECT id FROM users WHERE connected_token = $1)) OR (v.user_id = (SELECT id FROM users WHERE connected_token = $2)) AND (c.user_id = (SELECT id FROM users WHERE connected_token = $3))) ORDER BY v.viewed_at DESC;",
+        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, l.liked, v.viewed_at as viewed_at, c.comment FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN comments c ON c.video_id = t.id WHERE ((l.user_id = (SELECT id FROM users WHERE id = $1)) AND (v.user_id = (SELECT id FROM users WHERE id = $2)) AND (c.user_id = (SELECT id FROM users WHERE id = $3))) ORDER BY v.viewed_at DESC;",
         [token, token, token],
         (error, results) => {
           if (error) {

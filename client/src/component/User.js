@@ -271,8 +271,8 @@ const User = (props) => {
       .then((res) => res.json())
       .then((res) => {
         if (res.users) {
-          console.log(res.users[0].language);
           setUser({
+            id: res.users[0].id,
             firstname: res.users[0].firstname,
             lastname: res.users[0].lastname,
             language: res.users[0].language,
@@ -290,6 +290,10 @@ const User = (props) => {
   const getTorrentsUser = () => {
     fetch("/api/users/get/torrentscom", {
       method: "POST",
+      body: JSON.stringify({
+        id: props.props.location.state.user,
+      }),
+      headers: { "Content-Type": "application/json" },
     })
       .then((res) => res.json())
       .then((res) => {
