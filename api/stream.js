@@ -176,11 +176,23 @@ router.get("/", (req, res) => {
     const stream = currentDownloads[hash].file.createReadStream();
 
     emmitToFront(true, `Download already started, continuing: ${title}`);
-    if (
-      currentDownloads[hash].ext === "mp4" ||
-      currentDownloads[hash].ext === "mkv"
-    ) {
+    if (currentDownloads[hash].ext === "mp4") {
       pump(stream, res);
+    } else if (currentDownloads[hash].ext === "mkv") {
+      emmitToFront(true, `Download already started, continuing: ${title}`);
+      const converter = ffmpeg()
+        .input(stream)
+        .outputOption("-movflags frag_keyframe+empty_moov")
+        .outputFormat("mp4")
+        .audioCodec("aac")
+        .videoCodec("libx264")
+        .output(res)
+        .on("error", (err, stdout, stderr) => {});
+      converter.run();
+      res.on("close", () => {
+        converter.kill();
+        stream.destroy();
+      });
     } else {
       ffmpeg()
         .input(stream)
@@ -239,8 +251,16 @@ router.get("/", (req, res) => {
 
         dlFile.file.select();
         ext = file.name.split(".").pop();
+
         const stream = file.createReadStream();
+
         if (!currentDownloads[hash]) {
+          let finalPath =
+            "/src/assets/torrents/downloads/" +
+            (stream._engine.torrent.name === file.name
+              ? file.name
+              : stream._engine.torrent.name + "/" + file.name);
+          if (ext === "mkv") finalPath = finalPath.replace(".mkv", ".mp4");
           currentDownloads[hash] = {
             movie: movie,
             torrent: torrent,
@@ -254,11 +274,12 @@ router.get("/", (req, res) => {
               (stream._engine.torrent.name === file.name
                 ? "/"
                 : "/" + stream._engine.torrent.name + "/"),
-            path:
+            mkv_path:
               "/src/assets/torrents/downloads/" +
               (stream._engine.torrent.name === file.name
                 ? file.name
                 : stream._engine.torrent.name + "/" + file.name),
+            path: finalPath,
             downloaded_at: moment(),
             lastviewed_at: moment(),
             delete_at: moment(moment()).add(1, "M"),
@@ -266,12 +287,30 @@ router.get("/", (req, res) => {
           };
         }
 
-        if (ext === "mp4" || ext === "mkv") {
+        if (ext === "mp4") {
           emmitToFront(
             true,
             `Download started, your stream will start shortly: ${title}`
           );
           pump(stream, res);
+        } else if (ext === "mkv") {
+          emmitToFront(
+            true,
+            `Downloading and converting the file as you watch it, the stream will start shortly: ${title}`
+          );
+          const converter = ffmpeg()
+            .input(stream)
+            .outputOption("-movflags frag_keyframe+empty_moov")
+            .outputFormat("mp4")
+            .audioCodec("aac")
+            .videoCodec("libx264")
+            .output(res)
+            .on("error", (err, stdout, stderr) => {});
+          converter.run();
+          res.on("close", () => {
+            converter.kill();
+            stream.destroy();
+          });
         } else {
           emmitToFront(
             true,
