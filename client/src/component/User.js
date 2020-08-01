@@ -467,6 +467,11 @@ const User = (props) => {
           ) : undefined}
         </div>
       </div>
+      <div style={{ textAlign: "center", padding: 30 }}>
+        {user.language === "English"
+          ? "Hypertube made by cvannica, eozimek and mmany."
+          : "Hypertube créé par cvannica, eozimek et mmany."}
+      </div>
     </div>
   );
 };
