@@ -188,11 +188,12 @@ router.get("/", (req, res) => {
         .videoCodec("libx264")
         .output(res)
         .on("error", (err, stdout, stderr) => {});
-      converter.run();
-      res.on("close", () => {
-        converter.kill();
-        stream.destroy();
-      });
+      converter
+        .addOption("-vcodec")
+        .addOption("copy")
+        .addOption("-acodec")
+        .addOption("mp3")
+        .run();
     } else {
       ffmpeg()
         .input(stream)
@@ -211,9 +212,6 @@ router.get("/", (req, res) => {
         .audioCodec("aac")
         .videoCodec("libx264")
         .pipe(res);
-      res.on("close", () => {
-        stream.destroy();
-      });
     }
   } else {
     try {
@@ -306,11 +304,12 @@ router.get("/", (req, res) => {
             .videoCodec("libx264")
             .output(res)
             .on("error", (err, stdout, stderr) => {});
-          converter.run();
-          res.on("close", () => {
-            converter.kill();
-            stream.destroy();
-          });
+          converter
+            .addOption("-vcodec")
+            .addOption("copy")
+            .addOption("-acodec")
+            .addOption("mp3")
+            .run();
         } else {
           emmitToFront(
             true,
@@ -333,9 +332,6 @@ router.get("/", (req, res) => {
             .audioCodec("aac")
             .videoCodec("libx264")
             .pipe(res);
-          res.on("close", () => {
-            stream.destroy();
-          });
         }
       });
 
@@ -394,8 +390,27 @@ router.get("/pump", (req, res) => {
 
     emmitToFront(true, `Convert needed for this movie: ${title}`);
 
-    if (ext === "mp4" || ext === "mkv") {
+    if (ext === "mp4") {
       pump(stream, res);
+    } else if (ext === "mkv") {
+      emmitToFront(
+        true,
+        `Downloading and converting the file as you watch it, the stream will start shortly: ${title}`
+      );
+      const converter = ffmpeg()
+        .input(stream)
+        .outputOption("-movflags frag_keyframe+empty_moov")
+        .outputFormat("mp4")
+        .audioCodec("aac")
+        .videoCodec("libx264")
+        .output(res)
+        .on("error", (err, stdout, stderr) => {});
+      converter
+        .addOption("-vcodec")
+        .addOption("copy")
+        .addOption("-acodec")
+        .addOption("mp3")
+        .run();
     } else {
       ffmpeg()
         .input(stream)
