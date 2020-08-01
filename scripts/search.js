@@ -1,5 +1,4 @@
 const fs = require("fs");
-const got = require("got");
 const chalk = require("chalk");
 const crypto = require("crypto");
 const moment = require("moment");

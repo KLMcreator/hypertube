@@ -1,11 +1,6 @@
-const pool = require("./../pool.js");
-const fs = require("fs");
 const bcrypt = require("bcrypt");
-const Moment = require("moment");
-const MomentRange = require("moment-range");
-const moment = MomentRange.extendMoment(Moment);
+const pool = require("./../pool.js");
 
-//Edit user photo function
 const editUserPhoto = (request, response) => {
   const { photo, token } = request;
   return new Promise(function (resolve, reject) {
@@ -32,7 +27,6 @@ const editUserPhoto = (request, response) => {
   });
 };
 
-// Edit user prefered language
 const editUserLanguage = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {
@@ -59,7 +53,6 @@ const editUserLanguage = (request, response) => {
   });
 };
 
-// Check in db if current mail exists and if new mail is already assigned to someone else
 const checkEmail = (req, token) => {
   return new Promise(function (resolve, reject) {
     if (
@@ -89,7 +82,6 @@ const checkEmail = (req, token) => {
   });
 };
 
-// Edit mail function
 const editUserEmail = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {
@@ -185,7 +177,6 @@ const editUserLastname = (request, response) => {
   });
 };
 
-// Edit first name function
 const editUserFirstname = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {
@@ -229,7 +220,6 @@ const editUserFirstname = (request, response) => {
   });
 };
 
-// Check passwords validity
 const checkPassword = (req, token) => {
   return new Promise(function (resolve, reject) {
     let checkNewPwd = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,})");
@@ -262,7 +252,6 @@ const checkPassword = (req, token) => {
   });
 };
 
-// Edit password function
 const editUserPassword = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {

@@ -755,6 +755,18 @@ app.post("/api/users/get/torrents", (req, res) => {
     });
 });
 
+// Get torrents infos for user page
+app.post("/api/users/get/torrentscom", (req, res) => {
+  users
+    .getCommentTorrents({ token: req.body })
+    .then((response) => {
+      res.status(200).send({ torrents: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Recover user password
 app.post("/api/recover", (req, res) => {
   recover

@@ -1,6 +1,6 @@
-const pool = require("./../pool.js");
 const bcrypt = require("bcrypt");
 const moment = require("moment");
+const pool = require("./../pool.js");
 
 const setLoggedUser = (request, response) => {
   const { login, token, isLogged } = request;
