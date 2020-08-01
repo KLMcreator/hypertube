@@ -291,6 +291,7 @@ const doCleanUpMaintenance = (request, response) => {
               torrents[j].downloaded &&
               torrents[j].path &&
               fs.existsSync(torrents[j].path) &&
+              torrents[j].delete_at &&
               torrents[j].delete_at.isSame(moment(), "day")
             ) {
               updated++;
@@ -301,7 +302,10 @@ const doCleanUpMaintenance = (request, response) => {
               torrents[j].delete_at = null;
               if (
                 !fs.unlinkSync(torrents[j].path) ||
-                !doCleanUpUpdate({ torrents: torrents, id: results.rows[i].id })
+                !doCleanUpUpdate({
+                  torrents: torrents,
+                  id: results.rows[i].id,
+                })
               ) {
                 resolve({
                   state: true,

@@ -7,7 +7,7 @@ export const initiateSocket = () => {
 };
 
 export const disconnectSocket = () => {
-  if (socket) socket.disconnect();
+  if (socket && socket.connected) socket.disconnect();
 };
 
 export const getDownloads = (cb) => {

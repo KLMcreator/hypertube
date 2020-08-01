@@ -589,11 +589,14 @@ const RenderShowMore = (props) => {
                 <div>
                   <span className={classes.boldInfo}>
                     <a
+                      style={{
+                        color: "#9A1300",
+                      }}
                       target="_blank"
                       rel="noopener noreferrer"
                       href={`https://www.youtube.com/watch?v=${torrent.yt_trailer}`}
                     >
-                      Youtube
+                      Youtube trailer
                     </a>
                   </span>
                 </div>
@@ -1156,11 +1159,14 @@ const RenderTorrent = (props) => {
                     <div>
                       <span className={classes.boldInfo}>
                         <a
+                          style={{
+                            color: "#9A1300",
+                          }}
                           target="_blank"
                           rel="noopener noreferrer"
                           href={`https://www.youtube.com/watch?v=${torrent.yt_trailer}`}
                         >
-                          Youtube
+                          Youtube trailer
                         </a>
                       </span>
                     </div>

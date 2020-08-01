@@ -335,7 +335,12 @@ const User = (props) => {
           <img
             alt={user.photo}
             className={classes.userImage}
-            src={user.photo}
+            src={
+              user.photo === "./src/assets/img/nophotos.png" ||
+              user.photo.startsWith("https://")
+                ? user.photo
+                : "./src/assets/photos/" + user.photo
+            }
           ></img>
         </div>
 
