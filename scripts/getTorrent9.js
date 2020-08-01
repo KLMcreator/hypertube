@@ -167,14 +167,6 @@ const getCategoriesTranslated = (categories) => {
   return categories;
 };
 
-const getSubtitles = (title) => {
-  let type = "";
-
-  if (title.toLowerCase().indexOf("vostfr") > -1)
-    type = { language: "French", url: false };
-  return type;
-};
-
 const getMoreInfos = async (url, i, j) => {
   return got(url, {
     retry: {
@@ -245,9 +237,6 @@ const getMovieList = async (url) => {
         let year = getProductionYear(
           movies[el].children[0].next.children[1].next.children[0].data
         );
-        let subtitles = getSubtitles(
-          movies[el].children[0].next.children[1].next.children[0].data
-        );
         let quality = getQuality(
           movies[el].children[0].next.children[1].next.children[0].data
         );
@@ -281,7 +270,7 @@ const getMovieList = async (url) => {
               hash: null,
               duration: null,
               language: language,
-              subtitles: subtitles ? [subtitles] : [],
+              subtitles: [],
               quality: quality,
               seeds: parseInt(
                 movies[el].children[5].children[0].children[0].data.trim(),
@@ -332,7 +321,7 @@ const getMovieList = async (url) => {
               yt_trailer: null,
               categories: [],
               languages: [language],
-              subtitles: subtitles ? [subtitles] : [],
+              subtitles: [],
               torrents: [
                 {
                   id: "t9_0",
@@ -345,7 +334,7 @@ const getMovieList = async (url) => {
                   hash: null,
                   duration: null,
                   language: language,
-                  subtitles: subtitles ? [subtitles] : [],
+                  subtitles: [],
                   quality: quality,
                   seeds: parseInt(
                     movies[el].children[5].children[0].children[0].data.trim(),

@@ -312,19 +312,35 @@ const Watch = (props) => {
             const crew = cast.filter(
               (el) => el.job.findIndex((e) => e !== "actor") > -1
             );
+            let languages = [];
+            let categories = [];
+            if (res.torrents.torrents[0].languages) {
+              JSON.parse(res.torrents.torrents[0].languages).map((lang) => {
+                let pos = languages.map((e) => e).indexOf(lang);
+                if (pos === -1) {
+                  languages.push(lang);
+                }
+                return lang;
+              });
+            }
+            if (res.torrents.torrents[0].categories) {
+              JSON.parse(res.torrents.torrents[0].categories).map((cate) => {
+                let pos = categories.map((e) => e).indexOf(cate);
+                if (pos === -1) {
+                  categories.push(cate);
+                }
+                return cate;
+              });
+            }
             setMovie({
               actors: actors,
               crew: crew,
-              categories: res.torrents.torrents[0].categories
-                ? JSON.parse(res.torrents.torrents[0].categories)
-                : [],
+              categories: categories,
               cover_url: res.torrents.torrents[0].cover_url,
               duration: res.torrents.torrents[0].duration,
               id: res.torrents.torrents[0].id,
               imdb_code: res.torrents.torrents[0].imdb_code,
-              languages: res.torrents.torrents[0].languages
-                ? JSON.parse(res.torrents.torrents[0].languages)
-                : [],
+              languages: languages,
               production_year: res.torrents.torrents[0].production_year,
               rating: res.torrents.torrents[0].rating,
               subtitles: res.torrents.torrents[0].subtitles
@@ -569,7 +585,7 @@ const Watch = (props) => {
                         : "Dernier visionnage:"}
                     </span>{" "}
                     <span className={classes.contentInfo}>
-                      {torrent.lastviewed_at}
+                      {moment(torrent.lastviewed_at).format("DD/MM/YYYY")}
                     </span>
                   </div>
                 ) : undefined}
@@ -582,7 +598,7 @@ const Watch = (props) => {
                         : "Dernier téléchargement:"}
                     </span>{" "}
                     <span className={classes.contentInfo}>
-                      {torrent.downloaded_at}
+                      {moment(torrent.lastviewed_at).format("DD/MM/YYYY")}
                     </span>
                   </div>
                 ) : undefined}

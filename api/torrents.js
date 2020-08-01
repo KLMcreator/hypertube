@@ -256,7 +256,7 @@ const getTorrentInfos = (request, response) => {
 
 const doCleanUpUpdate = (torrent) => {
   return new Promise((resolve, reject) => {
-    pool.query(
+    pool.pool.query(
       "UPDATE torrents SET torrents = $1 WHERE id = $2",
       [JSON.stringify(torrent.torrents), torrent.id],
       (error, results) => {
@@ -272,65 +272,78 @@ const doCleanUpUpdate = (torrent) => {
 
 const doCleanUpMaintenance = (request, response) => {
   return new Promise((resolve, reject) => {
-    pool.pool.query("SELECT id, torrents FROM torrents;", (error, results) => {
-      if (error) {
-        resolve({
-          state: true,
-          updated: 0,
-          msg: "Error while getting torrents",
-        });
-      }
-      if (results.rowCount) {
-        let i = 0;
-        let updated = 0;
-        // while (i < results.rows.length) {
-        while (i < 5) {
-          let torrents = JSON.parse(results.rows[i].torrents);
-          let j = 0;
-          while (j < torrents.length) {
-            console.log(torrents[j].downloaded, torrents[j].path);
-            if (
-              torrents[j].downloaded &&
-              torrents[j].path &&
-              fs.existsSync(torrents[j].path) &&
-              torrents[j].delete_at &&
-              torrents[j].delete_at.isSame(moment(), "day")
-            ) {
-              updated++;
-              torrents[j].downloaded = false;
-              torrents[j].path = null;
-              torrents[j].downloaded_at = null;
-              torrents[j].lastviewed_at = null;
-              torrents[j].delete_at = null;
+    pool.pool.query(
+      "SELECT id, torrents FROM torrents ORDER BY id;",
+      (error, results) => {
+        if (error) {
+          resolve({
+            state: true,
+            updated: 0,
+            msg: "Error while getting torrents",
+          });
+        }
+        if (results.rowCount) {
+          let i = 0;
+          let updated = 0;
+          while (i < results.rows.length) {
+            let torrents = JSON.parse(results.rows[i].torrents);
+            let j = 0;
+            while (j < torrents.length) {
+              let path = "./client" + torrents[j].path;
               if (
-                !fs.unlinkSync(torrents[j].path) ||
-                !doCleanUpUpdate({
+                torrents[j].downloaded &&
+                path &&
+                fs.existsSync(path) &&
+                moment(torrents[j].delete_at).isSame(moment(), "day")
+              ) {
+                updated++;
+                torrents[j].downloaded = false;
+                torrents[j].path = null;
+                torrents[j].downloaded_at = null;
+                torrents[j].lastviewed_at = null;
+                torrents[j].delete_at = null;
+                doCleanUpUpdate({
                   torrents: torrents,
                   id: results.rows[i].id,
                 })
-              ) {
-                resolve({
-                  state: true,
-                  updated: updated,
-                  msg:
-                    "Error while doing maintenance on torrent:" +
-                    results.rows[i].id,
-                });
+                  .then((resUpdate) => {
+                    if (resUpdate) {
+                      fs.unlinkSync(path);
+                    } else {
+                      resolve({
+                        state: true,
+                        updated: updated,
+                        msg:
+                          "Error while doing maintenance on torrent:" +
+                          results.rows[i].id,
+                      });
+                    }
+                  })
+                  .catch((err) => {
+                    resolve({
+                      state: true,
+                      updated: updated,
+                      msg:
+                        "Error while doing maintenance on torrent:" +
+                        results.rows[i].id +
+                        err,
+                    });
+                  });
               }
+              j++;
             }
-            j++;
+            i++;
           }
-          i++;
+          resolve({
+            state: true,
+            updated: updated,
+            msg: "Maintenance finished, see you in 12 hours.",
+          });
+        } else {
+          resolve({ msg: "Unable to get torrent infos" });
         }
-        resolve({
-          state: true,
-          updated: updated,
-          msg: "Maintenance finished, see you in 12 hours.",
-        });
-      } else {
-        resolve({ msg: "Unable to get torrent infos" });
       }
-    });
+    );
   });
 };
 

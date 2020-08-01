@@ -846,10 +846,7 @@ const RenderTorrent = (props) => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [liked, setLiked] = useState(props.torrent.isliked);
   const [rating, setRating] = useState(props.torrent.rating);
-
   const { torrent, classes, isRandom, history, auth } = props;
-  const languages = JSON.parse(torrent.languages);
-  const categories = JSON.parse(torrent.categories);
   const subtitles = JSON.parse(torrent.subtitles);
   const cast = torrent.casts ? JSON.parse(torrent.casts) : [];
 
@@ -866,8 +863,41 @@ const RenderTorrent = (props) => {
     .filter((el) => el.job.findIndex((e) => e !== "actor") > -1)
     .slice(0, 5);
 
-  const qualities = JSON.parse(torrent.torrents).map((el) => el.quality);
   const summaries = torrent.summary ? torrent.summary : [];
+
+  let languages = [];
+  let qualities = [];
+  let categories = [];
+
+  if (torrent.languages) {
+    JSON.parse(torrent.languages).map((lang) => {
+      let pos = languages.map((e) => e).indexOf(lang);
+      if (pos === -1) {
+        languages.push(lang);
+      }
+      return lang;
+    });
+  }
+
+  JSON.parse(torrent.torrents)
+    .map((el) => el.quality)
+    .map((qual) => {
+      let pos = qualities.map((e) => e).indexOf(qual);
+      if (pos === -1) {
+        qualities.push(qual);
+      }
+      return qual;
+    });
+
+  if (torrent.categories) {
+    JSON.parse(torrent.categories).map((cate) => {
+      let pos = categories.map((e) => e).indexOf(cate);
+      if (pos === -1) {
+        categories.push(cate);
+      }
+      return cate;
+    });
+  }
 
   const handleSetLiked = (isLiked) => {
     fetch("/api/torrents/like", {

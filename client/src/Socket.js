@@ -11,8 +11,7 @@ export const disconnectSocket = () => {
   if (
     socket &&
     socket.io.readyState &&
-    socket.io.readyState.toLowerCase() !== "closing" &&
-    socket.io.readyState.toLowerCase() !== "closed"
+    socket.io.readyState.toLowerCase() === "open"
   )
     socket.disconnect();
 };
