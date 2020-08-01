@@ -1293,6 +1293,11 @@ const Profile = (props) => {
           </div>
         ) : undefined}
       </div>
+      <div style={{ textAlign: "center", padding: 30 }}>
+        {auth.language === "English"
+          ? "Hypertube made by cvannica, eozimek and mmany."
+          : "Hypertube créé par cvannica, eozimek et mmany."}
+      </div>
     </div>
   );
 };

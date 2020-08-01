@@ -246,6 +246,9 @@ const SignIn = (props) => {
           </Grid>
         </form>
       </Paper>
+      <div style={{ textAlign: "center", padding: 30 }}>
+        Hypertube made by cvannica, eozimek and mmany.
+      </div>
     </div>
   );
 };
