@@ -27,6 +27,49 @@ const editUserPhoto = (request, response) => {
   });
 };
 
+const editUsername = (request, response) => {
+  const { req, token } = request;
+  return new Promise(function (resolve, reject) {
+    if (req.username && token) {
+      let accentedCharacters =
+        "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ";
+      let checkSpecChar = new RegExp(
+        "^[-'A-Z" + accentedCharacters + "a-z ]+$"
+      );
+      if (
+        req.username &&
+        req.username.length === req.username.replace(/\s/g, "").length &&
+        checkSpecChar.test(req.username) &&
+        req.username.length < 256
+      ) {
+        pool.pool.query(
+          "UPDATE users SET username = $1 WHERE connected_token = $2",
+          [req.username, token],
+          (error, results) => {
+            if (error) {
+              reject(error);
+            }
+            if (!results.rowCount) {
+              resolve({
+                msg: "Unable to update your username.",
+              });
+            } else {
+              resolve({ edit: true });
+            }
+          }
+        );
+      } else {
+        resolve({
+          msg:
+            "Username can't be null or too long and must only contain letters.",
+        });
+      }
+    } else {
+      resolve({ msg: "Unable to edit your username." });
+    }
+  });
+};
+
 const editUserLanguage = (request, response) => {
   const { req, token } = request;
   return new Promise(function (resolve, reject) {
@@ -300,6 +343,7 @@ const editUserPassword = (request, response) => {
 
 module.exports = {
   editUserPhoto,
+  editUsername,
   editUserLanguage,
   editUserEmail,
   editUserLastname,
