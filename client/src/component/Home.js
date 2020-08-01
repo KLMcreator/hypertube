@@ -1,6 +1,7 @@
 // files
 import "rc-slider/assets/index.css";
 // react
+import moment from "moment";
 import Range from "rc-slider/lib/Range";
 import { FixedSizeList } from "react-window";
 import { useHistory } from "react-router-dom";
@@ -584,6 +585,19 @@ const RenderShowMore = (props) => {
                   </span>
                 </div>
               ) : undefined}
+              {torrent.yt_trailer ? (
+                <div>
+                  <span className={classes.boldInfo}>
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      href={`https://www.youtube.com/watch?v=${torrent.yt_trailer}`}
+                    >
+                      Youtube
+                    </a>
+                  </span>
+                </div>
+              ) : undefined}
               {actors && actors.length ? (
                 <div>
                   <span className={classes.boldInfo}>
@@ -616,7 +630,7 @@ const RenderShowMore = (props) => {
                   </span>
                 </div>
               ) : undefined}
-              {torrent.lastviewed_at ? (
+              {torrent.viewed_at ? (
                 <div>
                   <span className={classes.boldInfo}>
                     {auth.language === "English"
@@ -624,19 +638,7 @@ const RenderShowMore = (props) => {
                       : "Dernier visionnage:"}
                   </span>{" "}
                   <span className={classes.contentInfo}>
-                    {torrent.lastviewed_at}
-                  </span>
-                </div>
-              ) : undefined}
-              {torrent.downloaded_at ? (
-                <div>
-                  <span className={classes.boldInfo}>
-                    {auth.language === "English"
-                      ? "Last download:"
-                      : "Dernier téléchargement:"}
-                  </span>{" "}
-                  <span className={classes.contentInfo}>
-                    {torrent.downloaded_at}
+                    {moment(torrent.viewed_at).format("DD/MM/YYYY")}
                   </span>
                 </div>
               ) : undefined}
@@ -1150,6 +1152,19 @@ const RenderTorrent = (props) => {
                       </span>
                     </div>
                   ) : undefined}
+                  {torrent.yt_trailer ? (
+                    <div>
+                      <span className={classes.boldInfo}>
+                        <a
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          href={`https://www.youtube.com/watch?v=${torrent.yt_trailer}`}
+                        >
+                          Youtube
+                        </a>
+                      </span>
+                    </div>
+                  ) : undefined}
                   {actors && actors.length ? (
                     <div>
                       <span className={classes.boldInfo}>
@@ -1184,7 +1199,7 @@ const RenderTorrent = (props) => {
                       </span>
                     </div>
                   ) : undefined}
-                  {torrent.lastviewed_at ? (
+                  {torrent.viewed_at ? (
                     <div>
                       <span className={classes.boldInfo}>
                         {" "}
@@ -1193,20 +1208,7 @@ const RenderTorrent = (props) => {
                           : "Dernier visionnage:"}
                       </span>{" "}
                       <span className={classes.contentInfo}>
-                        {torrent.lastviewed_at}
-                      </span>
-                    </div>
-                  ) : undefined}
-                  {torrent.downloaded_at ? (
-                    <div>
-                      <span className={classes.boldInfo}>
-                        {" "}
-                        {auth.language === "English"
-                          ? "Last download:"
-                          : "Dernier téléchargement:"}
-                      </span>{" "}
-                      <span className={classes.contentInfo}>
-                        {torrent.downloaded_at}
+                        {moment(torrent.viewed_at).format("DD/MM/YYYY")}
                       </span>
                     </div>
                   ) : undefined}

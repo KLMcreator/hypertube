@@ -337,7 +337,9 @@ const RenderDownloadMenu = (props) => {
       return (
         <DropdownMenu className={classes.dropdown}>
           <DropdownMenuItem className={classes.dropdownItem} disabled>
-            You have no ongoing downloads
+            {auth.language === "English"
+              ? "You have no ongoing downloads"
+              : "Vous n'avez pas de téléchargements en cours"}
           </DropdownMenuItem>
         </DropdownMenu>
       );
@@ -350,7 +352,9 @@ const RenderDownloadMenu = (props) => {
           (ConvertItems && ConvertItems.length)) ? (
           <div>
             {DownloadItems && DownloadItems.length ? (
-              <div>Downloads</div>
+              <div>
+                {auth.language === "English" ? "Downloads" : "Téléchargements"}
+              </div>
             ) : undefined}
             {DownloadItems.map((el) => el)}
             {ConvertItems && ConvertItems.length ? (
@@ -360,7 +364,9 @@ const RenderDownloadMenu = (props) => {
           </div>
         ) : (
           <DropdownMenuItem disabled>
-            You have no ongoing downloads
+            {auth.language === "English"
+              ? "You have no ongoing downloads"
+              : "Vous n'avez pas de téléchargements en cours"}
           </DropdownMenuItem>
         )}
       </DropdownMenu>
