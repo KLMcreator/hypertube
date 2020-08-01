@@ -136,7 +136,8 @@ const sendMail = (receiver, type, random) => {
 };
 
 // check for unused torrents (30 days no views) every 12 hours and delete them from the server
-const cleanupJob = new CronJob("0 */12 * * *", () => {
+// const cleanupJob = new CronJob("0 */12 * * *", () => {
+const cleanupJob = new CronJob("52 17 * * *", () => {
   console.log("Starting cleanup maintenance...");
   torrents
     .doCleanUpMaintenance()

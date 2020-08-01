@@ -95,6 +95,7 @@ const WatchStyles = (theme) => ({
     color: "#D0D0D0",
   },
   rightInfo: {
+    flex: 1,
     textAlign: "left",
   },
   boldInfo: {
