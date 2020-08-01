@@ -49,8 +49,8 @@ const getUserTorrents = (request, response) => {
   return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
-        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, l.liked, v.viewed_at as viewed_at, c.comment FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN comments c ON c.video_id = t.id WHERE ((l.user_id = (SELECT id FROM users WHERE connected_token = $1)) OR (v.user_id = (SELECT id FROM users WHERE connected_token = $2)) OR (c.user_id = (SELECT id FROM users WHERE connected_token = $3))) ORDER BY v.viewed_at DESC;",
-        [token, token, token],
+        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, v.viewed_at as viewed_at, l.liked, c.comment FROM torrents t LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN likes l ON l.movie_id = v.movie_id AND l.user_id = v.user_id LEFT JOIN comments c ON c.video_id = v.movie_id AND c.user_id = v.user_id WHERE v.user_id = (SELECT id FROM users WHERE connected_token = $1) ORDER BY v.viewed_at DESC;",
+        [token],
         (error, results) => {
           if (error) {
             resolve({ msg: error });
@@ -73,8 +73,8 @@ const getCommentTorrents = (request, response) => {
   return new Promise((resolve, reject) => {
     if (token) {
       pool.pool.query(
-        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, l.liked, v.viewed_at as viewed_at, c.comment FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN comments c ON c.video_id = t.id WHERE ((l.user_id = (SELECT id FROM users WHERE id = $1)) AND (v.user_id = (SELECT id FROM users WHERE id = $2)) AND (c.user_id = (SELECT id FROM users WHERE id = $3))) ORDER BY v.viewed_at DESC;",
-        [token, token, token],
+        "SELECT t.id, t.title, t.cover_url, t.rating, t.production_year, v.viewed_at as viewed_at, l.liked, c.comment FROM torrents t LEFT JOIN views v ON v.movie_id = t.id LEFT JOIN likes l ON l.movie_id = v.movie_id AND l.user_id = v.user_id LEFT JOIN comments c ON c.video_id = v.movie_id AND c.user_id = v.user_id WHERE v.user_id = $1 ORDER BY v.viewed_at DESC;",
+        [token],
         (error, results) => {
           if (error) {
             resolve({ msg: error });

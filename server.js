@@ -135,7 +135,7 @@ const sendMail = (receiver, type, random) => {
   });
 };
 
-// check for unused torrents (30 days no views) and delete them from the server
+// check for unused torrents (30 days no views) every 12 hours and delete them from the server
 const cleanupJob = new CronJob("0 */12 * * *", () => {
   console.log("Starting cleanup maintenance...");
   torrents
@@ -147,7 +147,7 @@ const cleanupJob = new CronJob("0 */12 * * *", () => {
 });
 
 // check every day at 4am if there's new movies and scrape them
-const maintenanceJob = new CronJob("0 1 * * *", async () => {
+const maintenanceJob = new CronJob("0 4 * * *", async () => {
   console.log("Starting update maintenance...");
   torrents
     .getMaintenanceTorrents()
@@ -432,6 +432,11 @@ app.post("/api/signUp", (req, res) => {
                   .send({ signup: { msg: "Unable to send email." } });
               });
           } else {
+            if (
+              fs.existsSync(`./client/src/assets/photos/${req.file.filename}`)
+            ) {
+              fs.unlinkSync(`./client/src/assets/photos/${req.file.filename}`);
+            }
             res.status(200).send({ signup: { msg: response.msg } });
           }
         })

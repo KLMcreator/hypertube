@@ -251,8 +251,8 @@ const getMovieList = async (page, url) => {
             ) {
               res.data.movies[i].torrents.map((ele) => {
                 if (
-                  ele.seeds > 3 &&
-                  ele.size_bytes < 10000000000 &&
+                  ele.seeds > 29 &&
+                  ele.size_bytes < 8000000000 &&
                   (ele.quality === "720p" ||
                     ele.quality === "1080p" ||
                     ele.quality === "360p")
@@ -325,8 +325,8 @@ const getMovieList = async (page, url) => {
             };
             res.data.movies[i].torrents.map((ele, i) => {
               if (
-                ele.seeds > 3 &&
-                ele.size_bytes < 10000000000 &&
+                ele.seeds > 29 &&
+                ele.size_bytes < 8000000000 &&
                 (ele.quality === "720p" ||
                   ele.quality === "1080p" ||
                   ele.quality === "360p")
