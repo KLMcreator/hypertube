@@ -261,12 +261,14 @@ const Profile = (props) => {
   const [pwdRegDig, setPwdRegDig] = useState(false);
   const [pwdRegLen, setPwdRegLen] = useState(false);
   const [pwdMatches, setPwdMatches] = useState(true);
+  const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newLastname, setNewLastname] = useState("");
   const [newFirstname, setNewFirstname] = useState("");
   const [emailMatches, setEmailMatches] = useState(true);
   const [newFilePhoto, setNewFilePhoto] = useState(null);
   const [confirmedEmail, setConfirmedEmail] = useState("");
+  const [usernameRegExp, setUsernameRegExp] = useState(true);
   const [pwdWhiteSpaces, setPwdWhiteSpaces] = useState(true);
   const [currentPassword, setCurrentPassword] = useState("");
   const [lastNameRegExp, setLastnameRegExp] = useState(true);
@@ -274,6 +276,7 @@ const Profile = (props) => {
   const [selectedLanguage, setSelectedLanguage] = useState({});
   const [emailWhiteSpaces, setEmailWhiteSpaces] = useState(true);
   const [confirmedPassword, setConfirmedPassword] = useState("");
+  const [usernameWhiteSpaces, setUsernameWhiteSpaces] = useState(true);
   const [lastNameWhiteSpaces, setLastNameWhiteSpaces] = useState(true);
   const [firstNameWhiteSpaces, setFirstNameWhiteSpaces] = useState(true);
 
@@ -341,6 +344,77 @@ const Profile = (props) => {
         }
       })
       .catch((err) => props.auth.errorMessage(err));
+  };
+
+  // Username edit functions
+
+  const handleChangeUsername = (e) => {
+    setNewUsername(e.target.value);
+    checkUsernameLength(e.target.value);
+    checkRegexUsername(e.target.value);
+  };
+
+  const checkUsernameLength = (str) => {
+    if (str.length === str.replace(/\s/g, "").length && str.length > 2) {
+      setUsernameWhiteSpaces(true);
+    } else {
+      setUsernameWhiteSpaces(false);
+    }
+  };
+
+  const checkRegexUsername = (str) => {
+    var accentedCharacters =
+      "àèìòùÀÈÌÒÙáéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸçÇßØøÅåÆæœ";
+    const checkSpecChar = new RegExp(
+      "^[-'A-Z" + accentedCharacters + "a-z0-9 ]+$"
+    );
+    if (checkSpecChar.test(str) === true) {
+      setUsernameRegExp(true);
+    } else {
+      setUsernameRegExp(false);
+    }
+  };
+
+  const editUsername = (e) => {
+    e.preventDefault();
+    fetch("/api/settings/username", {
+      method: "POST",
+      body: JSON.stringify({
+        firstname: newUsername,
+      }),
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.edit.edit === true) {
+          props.auth.successMessage("Username updated.");
+        } else {
+          props.auth.errorMessage(res.edit.msg);
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
+  const RenderUsernameRegex = () => {
+    return (
+      <div>
+        {usernameWhiteSpaces === false ? (
+          <p className={classes.errorCheck}>
+            <ErrorIcon className={classes.iconsMessage} />
+            {auth.language === "English"
+              ? "Username must not contain white space."
+              : "Le nom d'utilisateur ne doit pas contenir d'espace(s)."}
+          </p>
+        ) : undefined}
+        {usernameRegExp === false ? (
+          <p className={classes.errorCheck}>
+            <ErrorIcon className={classes.iconsMessage} />
+            {auth.language === "English"
+              ? "Only letters are allowed for username."
+              : "Seules les lettres sont autorisées."}
+          </p>
+        ) : undefined}
+      </div>
+    );
   };
 
   // Photo edit function
@@ -830,6 +904,49 @@ const Profile = (props) => {
                 </Button>
               </form>
             </div>
+            {!auth.isoauth ? (
+              <div className={classes.userDetailsChild}>
+                <form encType="multipart/form-data" onSubmit={editUsername}>
+                  <Input
+                    classes={{
+                      root: classes.rootSend,
+                      input: classes.inputColor,
+                      underline: classes.borderBottom,
+                    }}
+                    inputProps={{
+                      style: inputSelectedStyles,
+                    }}
+                    id="newUsername"
+                    type="text"
+                    placeholder={
+                      auth.language === "English"
+                        ? "Actual username: " + username
+                        : "Nom d'utilisateur actuel: " + username
+                    }
+                    value={newUsername}
+                    required
+                    onChange={handleChangeUsername}
+                    startAdornment={
+                      <AlternateEmailIcon
+                        className={classes.sendIcon}
+                      ></AlternateEmailIcon>
+                    }
+                    endAdornment={
+                      <IconButton
+                        type="submit"
+                        aria-label="send"
+                        className={classes.submitBtn}
+                      >
+                        <EditRoundedIcon fontSize="small" />
+                      </IconButton>
+                    }
+                  />
+                  {newUsername.length ? (
+                    <RenderUsernameRegex></RenderUsernameRegex>
+                  ) : undefined}
+                </form>
+              </div>
+            ) : undefined}
           </div>
           {!auth.isoauth ? (
             <div className={classes.userDetailsContainer}>
