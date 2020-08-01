@@ -1,7 +1,8 @@
 // react
+import moment from "moment";
+import localization from "moment/locale/fr";
 import { useHistory } from "react-router-dom";
 import React, { useState, useEffect, useRef } from "react";
-import moment from "moment";
 // framework
 import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -243,7 +244,7 @@ const UserStyles = (theme) => ({
 const User = (props) => {
   const ref = useRef(false);
   const history = useHistory();
-  const { classes } = props;
+  const { classes, auth } = props;
   const [user, setUser] = useState([]);
   const [torrents, setTorrents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -348,31 +349,31 @@ const User = (props) => {
           <div className={classes.userDetailsContainer}>
             <div>
               <span className={classes.userInfo}>
-                {user.language === "English" ? "Username:" : "Utilisateur :"}
+                {auth.language === "English" ? "Username:" : "Utilisateur:"}
               </span>{" "}
               {user.username} <br /> <br />
               <span className={classes.userInfo}>
                 {" "}
-                {user.language === "English" ? "First Name:" : "Prénom :"}
+                {auth.language === "English" ? "First Name:" : "Prénom:"}
               </span>{" "}
               {user.firstname} <br /> <br />
               <span className={classes.userInfo}>
-                {user.language === "English" ? "Last Name:" : "Nom :"}
+                {auth.language === "English" ? "Last Name:" : "Nom:"}
               </span>{" "}
               {user.lastname} <br /> <br />
               <span className={classes.userInfo}>
-                {user.language === "English" ? "Language:" : "Langue :"}
+                {auth.language === "English" ? "Language:" : "Langue:"}
               </span>{" "}
               <span>
                 {" "}
-                {user.language === "English" ? " English" : "Français"}
+                {auth.language === "English" ? " English" : "Français"}
               </span>{" "}
               <br /> <br />
               <span className={classes.userInfo}>
-                {user.language === "English" ? "Last Connected:" : "Connecté :"}
+                {auth.language === "English" ? "Last Connected:" : "Connecté:"}
               </span>{" "}
               {user.connected
-                ? user.language === "English"
+                ? auth.language === "English"
                   ? "Online"
                   : "En Ligne"
                 : user.last_connection}
@@ -385,7 +386,7 @@ const User = (props) => {
           <br />
           <span className={classes.headerView}>
             {" "}
-            {user.language === "English" ? "Viewed Movies" : "Films vus"}
+            {auth.language === "English" ? "Viewed Movies" : "Films vus"}
           </span>{" "}
         </div>
 
@@ -394,20 +395,20 @@ const User = (props) => {
             <div className={classes.torrentTitle_cate}>
               <span>
                 {" "}
-                {user.language === "English" ? "Title" : "Titre du Film"}
+                {auth.language === "English" ? "Title" : "Titre du Film"}
               </span>{" "}
             </div>
             <div className={classes.torrentDetails_cate}>
               <div className={classes.torrentInfos_cate}>
                 <span>
                   {" "}
-                  {user.language === "English" ? " Watched at" : "Visionné le"}
+                  {auth.language === "English" ? " Watched at" : "Visionné le"}
                 </span>{" "}
               </div>
               <div className={classes.torrentInfos_cate}>
                 <span>
                   {" "}
-                  {user.language === "English"
+                  {auth.language === "English"
                     ? " Liked or not liked?"
                     : "Apprécié ou non ? "}
                 </span>{" "}
@@ -415,7 +416,7 @@ const User = (props) => {
               <div className={classes.torrentInfos_cate}>
                 <span>
                   {" "}
-                  {user.language === "English" ? " Comments" : "Commentaires"}
+                  {auth.language === "English" ? " Comments" : "Commentaires"}
                 </span>{" "}
               </div>
             </div>
@@ -441,7 +442,13 @@ const User = (props) => {
                   <div className={classes.torrentDetails}>
                     <div className={classes.torrentInfos}>
                       {el.viewed_at
-                        ? moment(el.viewed_at).format("DD MMM, YYYY")
+                        ? auth.language === "English"
+                          ? moment(el.viewed_at)
+                              .locale("en")
+                              .format("DD MMM, YYYY")
+                          : moment(el.viewed_at)
+                              .locale("fr", localization)
+                              .format("DD MMM, YYYY")
                         : undefined}
                     </div>
                     <div className={classes.torrentInfos}>
@@ -457,8 +464,10 @@ const User = (props) => {
                     </div>
                     <div className={classes.torrentInfos}>
                       {el.comment
-                        ? el.comment.substring(0, 50) + "..."
-                        : undefined}{" "}
+                        ? el.comment.length < 51
+                          ? el.comment
+                          : el.comment.substring(0, 50) + "..."
+                        : undefined}
                     </div>
                   </div>
                 </div>
@@ -468,7 +477,7 @@ const User = (props) => {
         </div>
       </div>
       <div style={{ textAlign: "center", padding: 30 }}>
-        {user.language === "English"
+        {auth.language === "English"
           ? "Hypertube made by cvannica, eozimek and mmany."
           : "Hypertube créé par cvannica, eozimek et mmany."}
       </div>

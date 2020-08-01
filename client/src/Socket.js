@@ -7,13 +7,7 @@ export const initiateSocket = () => {
 };
 
 export const disconnectSocket = () => {
-  console.log(`closing socket ${socket.io.readyState}`);
-  if (
-    socket &&
-    socket.io.readyState &&
-    socket.io.readyState.toLowerCase() === "open"
-  )
-    socket.disconnect();
+  socket.disconnect();
 };
 
 export const getDownloads = (cb) => {
