@@ -189,10 +189,6 @@ router.get("/", (req, res) => {
         .output(res)
         .on("error", (err, stdout, stderr) => {});
       converter.run();
-      res.on("close", () => {
-        converter.kill();
-        stream.destroy();
-      });
     } else {
       ffmpeg()
         .input(stream)
@@ -211,9 +207,6 @@ router.get("/", (req, res) => {
         .audioCodec("aac")
         .videoCodec("libx264")
         .pipe(res);
-      res.on("close", () => {
-        stream.destroy();
-      });
     }
   } else {
     try {
@@ -307,10 +300,6 @@ router.get("/", (req, res) => {
             .output(res)
             .on("error", (err, stdout, stderr) => {});
           converter.run();
-          res.on("close", () => {
-            converter.kill();
-            stream.destroy();
-          });
         } else {
           emmitToFront(
             true,
@@ -333,9 +322,6 @@ router.get("/", (req, res) => {
             .audioCodec("aac")
             .videoCodec("libx264")
             .pipe(res);
-          res.on("close", () => {
-            stream.destroy();
-          });
         }
       });
 
