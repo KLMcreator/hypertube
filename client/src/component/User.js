@@ -21,7 +21,6 @@ const UserStyles = (theme) => ({
     justifyContent: "center",
     alignItems: "center",
   },
-  //display flex items
   userInfos: {
     display: "flex",
     [theme.breakpoints.down("xs")]: {
@@ -52,7 +51,6 @@ const UserStyles = (theme) => ({
     flex: 1,
     padding: 10,
   },
-  // Profile picture and uploading button
   containerImg: {
     display: "inline-block",
     position: "absolute",
@@ -83,8 +81,6 @@ const UserStyles = (theme) => ({
     borderRadius: "50%",
     backgroundColor: "#1a1a1a",
   },
-
-  // Error popup message
   errorCheck: {
     color: "#E63946",
     fontSize: 12,
@@ -97,13 +93,9 @@ const UserStyles = (theme) => ({
   iconsMessage: {
     marginRight: 4,
   },
-
-  // Loading logo
   loadingLogo: {
     color: "#E63946",
   },
-
-  // Inputs classes
   rootSend: {
     width: "100%",
     marginBottom: 5,
@@ -154,8 +146,6 @@ const UserStyles = (theme) => ({
   formControl: {
     width: "100%",
   },
-
-  // Render torrent
   torrentsContainerList: {
     paddingTop: 15,
   },

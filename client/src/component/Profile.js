@@ -2,27 +2,23 @@
 import moment from "moment";
 import React, { useState, useEffect } from "react";
 import Select, { createFilter } from "react-select";
-
 // Framework
 import Input from "@material-ui/core/Input";
 import Switch from "@material-ui/core/Switch";
 import FormGroup from "@material-ui/core/FormGroup";
-import { withStyles } from "@material-ui/core/styles";
+import withStyles from "@material-ui/core/styles/withStyles";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-
 // Icons
 import Button from "@material-ui/core/Button";
 import VpnKey from "@material-ui/icons/VpnKey";
 import StarIcon from "@material-ui/icons/Star";
 import ErrorIcon from "@material-ui/icons/Error";
-
 import IconButton from "@material-ui/core/IconButton";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
-
+import EditRoundedIcon from "@material-ui/icons/EditRounded";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import ThumbDownAltIcon from "@material-ui/icons/ThumbDownAlt";
-import EditRoundedIcon from "@material-ui/icons/EditRounded";
 import AlternateEmailIcon from "@material-ui/icons/AlternateEmail";
 import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 
@@ -37,7 +33,6 @@ const profileStyles = (theme) => ({
     justifyContent: "center",
     alignItems: "center",
   },
-  //display flex items
   userInfos: {
     display: "flex",
     [theme.breakpoints.down("xs")]: {
@@ -68,7 +63,6 @@ const profileStyles = (theme) => ({
     flex: 1,
     padding: 10,
   },
-  // Profile picture and uploading button
   containerImg: {
     display: "inline-block",
     position: "absolute",
@@ -99,8 +93,6 @@ const profileStyles = (theme) => ({
     borderRadius: "50%",
     backgroundColor: "#1a1a1a",
   },
-
-  // Error popup message
   errorCheck: {
     color: "#E63946",
     fontSize: 12,
@@ -113,13 +105,9 @@ const profileStyles = (theme) => ({
   iconsMessage: {
     marginRight: 4,
   },
-
-  // Loading logo
   loadingLogo: {
     color: "#E63946",
   },
-
-  // Inputs classes
   rootSend: {
     width: "100%",
     marginBottom: 5,
@@ -170,8 +158,6 @@ const profileStyles = (theme) => ({
   formControl: {
     width: "100%",
   },
-
-  // Render torrent
   torrentsContainerList: {
     paddingTop: 15,
   },
@@ -289,7 +275,6 @@ const Profile = (props) => {
     padding: 10,
   };
 
-  // Select languages options
   const languagesOption = [
     { label: "English", value: "English" },
     { label: "French", value: "French" },
@@ -314,7 +299,6 @@ const Profile = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  // Photo edit function
   const handleUploadPic = (e) => {
     if (e.target.files) {
       setNewFilePhoto(e.target.files[0]);
@@ -341,7 +325,6 @@ const Profile = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  // Language edit function
   const handleChangeLanguage = (e) => {
     if (language !== e.label) {
       setSelectedLanguage(e);
@@ -369,7 +352,6 @@ const Profile = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  // Email edit functions
   const handleChangeEmail = (e) => {
     setNewEmail(e.target.value);
     checkEmailLength(e.target.value);
@@ -422,7 +404,6 @@ const Profile = (props) => {
       .catch((err) => props.auth.errorMessage(err));
   };
 
-  // Lastname edit functions
   const editLastname = (e) => {
     e.preventDefault();
     fetch("/api/settings/lastname", {
@@ -489,7 +470,6 @@ const Profile = (props) => {
     );
   };
 
-  // Firstname edit functions
   const editFirstname = (e) => {
     e.preventDefault();
     fetch("/api/settings/firstname", {
@@ -556,12 +536,9 @@ const Profile = (props) => {
     );
   };
 
-  // Switch account
   const handleChangeSwitchAccount = (e) => {
     setSwitchPosition(e.target.checked);
   };
-
-  // Password edit functions
 
   const editPassword = (e) => {
     e.preventDefault();

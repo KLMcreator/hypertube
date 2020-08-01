@@ -1,6 +1,5 @@
-const pool = require("./../pool.js");
 const bcrypt = require("bcrypt");
-const e = require("express");
+const pool = require("./../pool.js");
 
 function random_password() {
   var text = "";

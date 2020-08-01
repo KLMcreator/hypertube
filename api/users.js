@@ -44,7 +44,6 @@ const getUserInfos = (request, response) => {
   });
 };
 
-// Get torrents for profile page
 const getUserTorrents = (request, response) => {
   const { token } = request;
   return new Promise((resolve, reject) => {
