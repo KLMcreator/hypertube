@@ -65,7 +65,6 @@ const profileStyles = (theme) => ({
   userDetailsSelect: {
     flex: 1,
     padding: 10,
-    maxWidth: "max-content",
   },
   // Profile picture and uploading button
   containerImg: {
@@ -347,6 +346,25 @@ const Profile = (props) => {
   };
 
   // Username edit functions
+  const editUsername = (e) => {
+    e.preventDefault();
+    fetch("/api/settings/username", {
+      method: "POST",
+      body: JSON.stringify({
+        username: newUsername,
+      }),
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.edit.edit === true) {
+          props.auth.successMessage("Username updated.");
+        } else {
+          props.auth.errorMessage(res.edit.msg);
+        }
+      })
+      .catch((err) => props.auth.errorMessage(err));
+  };
 
   const handleChangeUsername = (e) => {
     setNewUsername(e.target.value);
@@ -355,7 +373,7 @@ const Profile = (props) => {
   };
 
   const checkUsernameLength = (str) => {
-    if (str.length === str.replace(/\s/g, "").length && str.length > 2) {
+    if (str.length === str.replace(/\s/g, "").length) {
       setUsernameWhiteSpaces(true);
     } else {
       setUsernameWhiteSpaces(false);
@@ -375,25 +393,6 @@ const Profile = (props) => {
     }
   };
 
-  const editUsername = (e) => {
-    e.preventDefault();
-    fetch("/api/settings/username", {
-      method: "POST",
-      body: JSON.stringify({
-        firstname: newUsername,
-      }),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.edit.edit === true) {
-          props.auth.successMessage("Username updated.");
-        } else {
-          props.auth.errorMessage(res.edit.msg);
-        }
-      })
-      .catch((err) => props.auth.errorMessage(err));
-  };
   const RenderUsernameRegex = () => {
     return (
       <div>
@@ -853,59 +852,11 @@ const Profile = (props) => {
         </div>
         <div className={classes.userDetails}>
           <div className={classes.userDetailsContainer}>
-            <div
-              className={classes.userDetailsSelect}
-              style={{ textAlign: "right" }}
-            >
-              <form encType="multipart/form-data" onSubmit={addNewLanguage}>
-                <Select
-                  value={selectedLanguage}
-                  className="react-select-container"
-                  classNamePrefix="react-select"
-                  theme={(theme) => ({
-                    ...theme,
-                    colors: {
-                      ...theme.colors,
-                      primary: "#373737",
-                      primary75: "red",
-                      primary50: "#FBBA72",
-                      primary25: "#9A1300",
-                      danger: "yellow",
-                      dangerLight: "#FBBA72",
-                      neutral0: "#1A1A1A",
-                      neutral5: "pink",
-                      neutral10: "#9A1300",
-                      neutral20: "#373737",
-                      neutral30: "#9A1300",
-                      neutral40: "#FBBA72",
-                      neutral50: "#EFF1F3",
-                      neutral60: "#FBBA72",
-                      neutral70: "yellow",
-                      neutral80: "#EFF1F3",
-                      neutral90: "#EFF1F3",
-                    },
-                  })}
-                  filterOption={createFilter({
-                    ignoreAccents: false,
-                  })}
-                  options={languagesOption}
-                  key={"changeLanguage"}
-                  onChange={handleChangeLanguage}
-                  placeholder={`LANGUAGE: ${language}`}
-                />
-                <Button
-                  className={classes.submitSpecialFormBtn}
-                  name="submitBtnLanguage"
-                  type="submit"
-                >
-                  {auth.language === "English"
-                    ? "Confirm new language"
-                    : "Modifier la langue préférée"}
-                </Button>
-              </form>
-            </div>
             {!auth.isoauth ? (
-              <div className={classes.userDetailsChild}>
+              <div
+                style={{ alignSelf: "center" }}
+                className={classes.userDetailsChild}
+              >
                 <form encType="multipart/form-data" onSubmit={editUsername}>
                   <Input
                     classes={{
@@ -947,6 +898,59 @@ const Profile = (props) => {
                 </form>
               </div>
             ) : undefined}
+            <div className={classes.userDetailsChild}>
+              <div
+                className={classes.userDetailsSelect}
+                style={{ textAlign: "right" }}
+              >
+                <form encType="multipart/form-data" onSubmit={addNewLanguage}>
+                  <Select
+                    value={selectedLanguage}
+                    className="react-select-container"
+                    classNamePrefix="react-select"
+                    theme={(theme) => ({
+                      ...theme,
+                      colors: {
+                        ...theme.colors,
+                        primary: "#373737",
+                        primary75: "red",
+                        primary50: "#FBBA72",
+                        primary25: "#9A1300",
+                        danger: "yellow",
+                        dangerLight: "#FBBA72",
+                        neutral0: "#1A1A1A",
+                        neutral5: "pink",
+                        neutral10: "#9A1300",
+                        neutral20: "#373737",
+                        neutral30: "#9A1300",
+                        neutral40: "#FBBA72",
+                        neutral50: "#EFF1F3",
+                        neutral60: "#FBBA72",
+                        neutral70: "yellow",
+                        neutral80: "#EFF1F3",
+                        neutral90: "#EFF1F3",
+                      },
+                    })}
+                    filterOption={createFilter({
+                      ignoreAccents: false,
+                    })}
+                    options={languagesOption}
+                    key={"changeLanguage"}
+                    onChange={handleChangeLanguage}
+                    placeholder={`LANGUAGE: ${language}`}
+                  />
+                  <Button
+                    className={classes.submitSpecialFormBtn}
+                    name="submitBtnLanguage"
+                    type="submit"
+                  >
+                    {auth.language === "English"
+                      ? "Confirm new language"
+                      : "Modifier la langue préférée"}
+                  </Button>
+                </form>
+              </div>
+            </div>
           </div>
           {!auth.isoauth ? (
             <div className={classes.userDetailsContainer}>
