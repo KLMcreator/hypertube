@@ -658,6 +658,18 @@ app.post("/api/settings/edit/photo", (req, res) => {
   });
 });
 
+// Edit username
+app.post("/api/settings/username", (req, res) => {
+  settings
+    .editUsername({ req: req.body, token: req.cookies._hypertubeAuth })
+    .then((response) => {
+      res.status(200).send({ edit: response });
+    })
+    .catch((error) => {
+      res.status(500).send(error);
+    });
+});
+
 // Edit language settings page
 app.post("/api/settings/edit/language", (req, res) => {
   settings
