@@ -283,10 +283,12 @@ const doCleanUpMaintenance = (request, response) => {
       if (results.rowCount) {
         let i = 0;
         let updated = 0;
-        while (i < results.rows.length) {
+        // while (i < results.rows.length) {
+        while (i < 5) {
           let torrents = JSON.parse(results.rows[i].torrents);
           let j = 0;
           while (j < torrents.length) {
+            console.log(torrents[j].downloaded, torrents[j].path);
             if (
               torrents[j].downloaded &&
               torrents[j].path &&

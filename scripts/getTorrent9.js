@@ -262,7 +262,7 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 20 &&
+            ) > 10 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
             ) &&
@@ -305,7 +305,7 @@ const getMovieList = async (url) => {
             parseInt(
               movies[el].children[5].children[0].children[0].data.trim(),
               10
-            ) > 20 &&
+            ) > 10 &&
             isMultiple(
               movies[el].children[0].next.children[1].next.children[0].data
             ) &&
@@ -419,7 +419,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4650"
+    "https://www.torrent9.ac/torrents/films/4700"
   );
   console.log(
     torrent9Infos.number_of_pages,
