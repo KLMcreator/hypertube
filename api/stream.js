@@ -188,7 +188,7 @@ router.get("/", (req, res) => {
         .videoCodec("libx264")
         .output(res)
         .on("error", (err, stdout, stderr) => {});
-      converter
+converter
         .addOption("-vcodec")
         .addOption("copy")
         .addOption("-acodec")
