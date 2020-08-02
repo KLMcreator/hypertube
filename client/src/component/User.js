@@ -48,14 +48,8 @@ const UserStyles = (theme) => ({
     },
     marginRight: 120,
   },
-  userDetailsChild: {
-    flex: 1,
+  userInformations: {
     padding: 10,
-  },
-  containerImg: {
-    display: "inline-block",
-    position: "absolute",
-    height: "100%",
   },
   userImage: {
     border: "1px solid #D0D0D0",
@@ -64,23 +58,6 @@ const UserStyles = (theme) => ({
     height: "auto",
     width: "150px",
     display: "block",
-  },
-  positioner: {
-    width: "15%",
-    height: "15%",
-    top: 7,
-    left: 7,
-    position: "absolute",
-  },
-  changeImgIcon: {
-    width: 20,
-    padding: "2%",
-    height: 20,
-    color: "#D0D0D0",
-    border: "1px solid #D0D0D0",
-    position: "absolute",
-    borderRadius: "50%",
-    backgroundColor: "#1a1a1a",
   },
   errorCheck: {
     color: "#E63946",
@@ -91,62 +68,10 @@ const UserStyles = (theme) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  iconsMessage: {
-    marginRight: 4,
-  },
   loadingLogo: {
     color: "#E63946",
   },
-  rootSend: {
-    width: "100%",
-    marginBottom: 5,
-  },
-  borderBottom: {
-    "&.MuiInput-underline:before": {
-      borderBottom: "1px solid #373737",
-    },
-    "&.MuiInput-underline:after": {
-      borderBottom: "1px solid #9A1300",
-    },
-    "&.MuiInput-underline:hover::before": {
-      borderBottom: "2px solid #9A1300",
-    },
-    "&.MuiInput-underline:hover::after": {
-      borderBottom: "1px solid #9A1300",
-    },
-  },
-  sendIcon: {
-    color: "rgba(90, 90, 91)",
-  },
-  inputColor: {
-    backgroundColor: "#373737",
-    color: "#fff",
-  },
-  switchAccount: {
-    color: "#D0D0D0",
-  },
-  toggleAccount: {
-    justifyContent: "center",
-  },
-  submitBtn: {
-    color: "#D0D0D0",
-  },
-  submitSpecialFormBtn: {
-    margin: 0,
-    padding: 0,
-    textAlign: "center",
-    color: "#D0D0D0",
-  },
-  select: {
-    width: "100%",
-    fontSize: 13,
-    "&:after": {
-      borderBottomColor: "#e63946",
-    },
-  },
-  formControl: {
-    width: "100%",
-  },
+
   torrentsContainerList: {
     paddingTop: 15,
   },
@@ -272,8 +197,8 @@ const User = (props) => {
             last_connection: res.users[0].last_connection,
             connected: res.users[0].connected,
           });
+          getTorrentsUser();
         }
-        setIsLoading(false);
       })
       .catch((err) => props.auth.errorMessage(err));
   };
@@ -309,7 +234,6 @@ const User = (props) => {
       });
     } else {
       getUserInfos();
-      getTorrentsUser();
     }
     return () => {
       ref.current = false;
@@ -347,7 +271,7 @@ const User = (props) => {
 
         <div className={classes.userDetails} style={{ marginTop: "2%" }}>
           <div className={classes.userDetailsContainer}>
-            <div>
+            <div className={classes.userInformations}>
               <span className={classes.userInfo}>
                 {auth.language === "English" ? "Username:" : "Utilisateur:"}
               </span>{" "}
