@@ -2288,6 +2288,12 @@ const Home = (props) => {
       .then((res) => {
         if (ref.current) {
           if (res.torrents.torrents && res.torrents.randomTorrents) {
+            res.torrents.torrents = res.torrents.torrents.sort(
+              (a, b) => parseFloat(b.rating) - parseFloat(a.rating)
+            );
+            res.torrents.randomTorrents = res.torrents.randomTorrents.sort(
+              (a, b) => parseFloat(b.rating) - parseFloat(a.rating)
+            );
             setTorrents(res.torrents);
             setRandomTorrents(res.torrents.randomTorrents);
             setRandomCategories(res.torrents.categories);

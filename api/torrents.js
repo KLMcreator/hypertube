@@ -138,7 +138,7 @@ const getRandomTorrents = (request, response) => {
         if (resRandomCategories.rowCount === 2) {
           let query = `%${resRandomCategories.rows[0].category}%`;
           pool.pool.query(
-            "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, t.casts, l.liked as isLiked, v.viewed_at as viewed_at FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 LEFT JOIN views v ON v.movie_id = t.id AND v.user_id = $2 WHERE categories::text ILIKE $3 AND t.languages LIKE '%' || (SELECT language FROM users WHERE id = $4) || '%' ORDER BY l.id LIMIT 15;",
+            "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating::float, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, t.casts, l.liked as isLiked, v.viewed_at as viewed_at FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 LEFT JOIN views v ON v.movie_id = t.id AND v.user_id = $2 WHERE categories::text ILIKE $3 AND t.languages LIKE '%' || (SELECT language FROM users WHERE id = $4) || '%' ORDER BY t.rating DESC LIMIT 15;",
             [req.loggedId, req.loggedId, query, req.loggedId],
             (error, resultsFirstList) => {
               if (error) {
@@ -149,7 +149,7 @@ const getRandomTorrents = (request, response) => {
               if (resultsFirstList.rowCount) {
                 query = `%${resRandomCategories.rows[1].category}%`;
                 pool.pool.query(
-                  "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, t.casts, l.liked as isLiked, v.viewed_at as viewed_at FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 LEFT JOIN views v ON v.movie_id = t.id AND v.user_id = $2 WHERE categories::text ILIKE $3 AND t.languages LIKE '%' || (SELECT language FROM users WHERE id = $4) || '%' ORDER BY l.id LIMIT 15;",
+                  "SELECT t.id, t.yts_id, t.torrent9_id, t.title, t.production_year, t.rating::float, t.yts_url, t.torrent9_url, t.cover_url, t.categories, t.languages, t.torrents, t.production_year, t.summary, t.imdb_code, t.yt_trailer, t.subtitles, t.duration, t.casts, l.liked as isLiked, v.viewed_at as viewed_at FROM torrents t LEFT JOIN likes l ON l.movie_id = t.id AND l.user_id = $1 LEFT JOIN views v ON v.movie_id = t.id AND v.user_id = $2 WHERE categories::text ILIKE $3 AND t.languages LIKE '%' || (SELECT language FROM users WHERE id = $4) || '%' ORDER BY t.rating DESC LIMIT 15;",
                   [req.loggedId, req.loggedId, query, req.loggedId],
                   (error, resultsSecondList) => {
                     if (error) {

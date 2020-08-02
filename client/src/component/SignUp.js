@@ -343,6 +343,7 @@ const SignUp = (props) => {
                 }}
                 inputProps={{
                   style: inputPropsFileStyles,
+                  accept: "image/png, image/jpeg",
                 }}
                 style={{
                   width: "100%",
@@ -350,7 +351,6 @@ const SignUp = (props) => {
                 id="file"
                 type="file"
                 placeholder="Username"
-                accept="image/png, image/jpeg"
                 required
                 onChange={handleUploadPic}
                 startAdornment={

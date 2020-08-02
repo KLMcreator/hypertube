@@ -832,7 +832,7 @@ const Profile = (props) => {
                 id="file"
                 type="file"
                 placeholder="Username"
-                accept="image/png, image/jpeg"
+                inputProps={{ accept: "image/png, image/jpeg" }}
                 required
                 onChange={handleUploadPic}
               />
