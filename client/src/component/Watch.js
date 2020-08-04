@@ -146,6 +146,7 @@ const RenderComment = (props) => {
         <Avatar
           alt={comment.username}
           src={
+            comment.photos === "./src/assets/img/nophotos.png" ||
             comment.photos.startsWith("https://")
               ? comment.photos
               : "./src/assets/photos/" + comment.photos

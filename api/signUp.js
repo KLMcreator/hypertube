@@ -191,7 +191,7 @@ const oauthSignUp = async (user) => {
   return new Promise((resolve, reject) => {
     pool.pool.query(
       "SELECT id, isoauth, username, email FROM users WHERE username ILIKE $1 OR email ILIKE $2",
-      [`%${user.username}%`, `%${user.username}%`],
+      [`%${user.username}%`, `%${user.email}%`],
       (error, results) => {
         if (error) {
           resolve({ status: false, msg: error });

@@ -188,7 +188,7 @@ router.get("/", (req, res) => {
         .videoCodec("libx264")
         .output(res)
         .on("error", (err, stdout, stderr) => {});
-converter
+      converter
         .addOption("-vcodec")
         .addOption("copy")
         .addOption("-acodec")
@@ -253,12 +253,6 @@ converter
         const stream = file.createReadStream();
 
         if (!currentDownloads[hash]) {
-          let finalPath =
-            "/src/assets/torrents/downloads/" +
-            (stream._engine.torrent.name === file.name
-              ? file.name
-              : stream._engine.torrent.name + "/" + file.name);
-          if (ext === "mkv") finalPath = finalPath.replace(".mkv", ".mp4");
           currentDownloads[hash] = {
             movie: movie,
             torrent: torrent,
@@ -272,12 +266,11 @@ converter
               (stream._engine.torrent.name === file.name
                 ? "/"
                 : "/" + stream._engine.torrent.name + "/"),
-            mkv_path:
+            path:
               "/src/assets/torrents/downloads/" +
               (stream._engine.torrent.name === file.name
                 ? file.name
                 : stream._engine.torrent.name + "/" + file.name),
-            path: finalPath,
             downloaded_at: moment(),
             lastviewed_at: moment(),
             delete_at: moment(moment()).add(1, "M"),
