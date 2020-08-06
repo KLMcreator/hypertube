@@ -2,15 +2,12 @@ const got = require("got");
 const signUp = require("./signUp");
 const { OAuth2Client } = require("google-auth-library");
 
-const GOOGLE_CLIENT_ID =
-  "1088737867239-ktmhvi9m7p8a54srikk2hl0n0qcn9cdn.apps.googleusercontent.com";
-const GOOGLE_SECRET_ID = "FtaPjYhMPDkWxsfCmDbU_CvB";
-const FT_CLIENT_ID =
-  "d62e491a861a0750d008775f37e08a1ed797d2158f32198039914f0dbddb9590";
-const FT_SECRET_ID =
-  "6139c30558a59688cdd9c816721841625bf3298377dad7383ae5654921fb7874";
-const GITHUB_CLIENT_ID = "f8244955678d6fde727c";
-const GITHUB_SECRET_ID = "105ebe5ff14303a3a20cca4bdc35215d6efdc463";
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_AUTH_KEY_CLIENT;
+const GOOGLE_SECRET_ID = process.env.GOOGLE_AUTH_KEY_SECRET;
+const FT_CLIENT_ID = process.env.INTRAFT_AUTH_KEY_CLIENT;
+const FT_SECRET_ID = process.env.INTRAFT_AUTH_KEY_SECRET;
+const GITHUB_CLIENT_ID = process.env.GITHUB_AUTH_KEY_CLIENT;
+const GITHUB_SECRET_ID = process.env.GITHUB_AUTH_KEY_SECRET;
 
 const get42User = async (token) => {
   try {

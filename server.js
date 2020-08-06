@@ -48,7 +48,7 @@ const storage = multer.diskStorage({
   },
 });
 const sessionConfig = {
-  secret: "mysecretsshhh",
+  secret: process.env.SECRET_TOKEN,
   name: "hypertube",
   resave: false,
   saveUninitialized: false,

@@ -2,7 +2,7 @@ const got = require("got");
 const chalk = require("chalk");
 const moment = require("moment");
 const cheerio = require("cheerio");
-const TMDB_KEY = "609316880b9db19a22c16eddc70c6e60";
+const TMDB_KEY = process.env.TMDB_API_KEY;
 
 let ytsInfos = {
   fetched_at: 0,
