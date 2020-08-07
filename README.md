@@ -54,7 +54,7 @@ Start both servers (Node.js and React) and you are good to go. (In case you didn
 - View history
 - Comment while watching the movie
 - Multiple resolutions from different sources
-- French and English language
+- French and English languages
 - 35+ subtitle languages
 - See other users history, likes and comments on their profile
 - Download manager to keep track of the downloading movies
