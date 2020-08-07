@@ -2,6 +2,25 @@
 
 A torrent search engine and streaming website that also stores movies on the server to avoid useless re-downloads.
 
+# Developed with
+
+- [React](https://reactjs.org/)
+- [Node](https://nodejs.org/)
+- [Express](http://expressjs.com/)
+- [PostgreSQL](https://www.postgresql.org/)
+- And more... (check [package.json](https://raw.githubusercontent.com/KLMcreator/hypertube/master/package.json))
+
+# Informations
+
+Keep in mind this project was made in a "rush" so the code might not be as clean as possible, comments were also removed to avoid "cheating/stealing"
+Also, if any source doesn't work anymore, make sure to change the domain name. (Usually torrents websites get down quite often)
+
+# Constraint imposed by 42
+
+- Crypted passwords, no XSS or major security issues
+- Works on Firefox >= 41 and Chrome >= 46
+- No warnings or console logs except HTTPS related
+
 # Dependencies
 
 You need to have [PostgreSQL](https://wiki.postgresql.org/wiki/Homebrew) and [NodeJS](https://nodejs.org/en/) installed, everything else is included in the modules.
@@ -38,9 +57,8 @@ Start both servers (Node.js and React) and you are good to go. (In case you didn
 
 # Sources
 
-- Torrent9
-- YTS
-- 1337x
+- [Torrent9](https://www.torrent9.is/)
+- [YTS](https://yts.mx/)
 
 # Features
 
