@@ -201,7 +201,7 @@ const getMoreInfos = async (url, i, j) => {
         ? (torrent9Infos.movies[i].summary = summ[0].children[0].data)
         : undefined;
       torrent9Infos.movies[i].cover_url =
-        "https://www.torrent9.ac" + cover[0].attribs.src;
+        "https://www.torrent9.so" + cover[0].attribs.src;
       torrent9Infos.movies[i].torrents[j].magnet =
         buttons[1].children[0].attribs.href;
       torrent9Infos.movies[i].torrents[
@@ -211,7 +211,7 @@ const getMoreInfos = async (url, i, j) => {
         .pop()
         .split(";tr=")[0];
       torrent9Infos.movies[i].torrents[j].torrent =
-        "https://www.torrent9.ac" + buttons[0].children[0].attribs.href;
+        "https://www.torrent9.so" + buttons[0].children[0].attribs.href;
     })
     .catch((err) =>
       console.log(chalk.red("Torrent9: Error while getting pages:", err))
@@ -281,7 +281,7 @@ const getMovieList = async (url) => {
                 10
               ),
               url:
-                "https://www.torrent9.ac" +
+                "https://www.torrent9.so" +
                 movies[el].children[0].next.children[1].next.attribs.href,
               magnet: null,
               torrent: null,
@@ -310,7 +310,7 @@ const getMovieList = async (url) => {
               rating: null,
               yts_url: null,
               torrent9_url:
-                "https://www.torrent9.ac" +
+                "https://www.torrent9.so" +
                 movies[el].children[0].next.children[1].next.attribs.href,
               cover_url: null,
               large_image: null,
@@ -345,7 +345,7 @@ const getMovieList = async (url) => {
                     10
                   ),
                   url:
-                    "https://www.torrent9.ac" +
+                    "https://www.torrent9.so" +
                     movies[el].children[0].next.children[1].next.attribs.href,
                   magnet: null,
                   torrent: null,
@@ -408,7 +408,7 @@ const fetchAllTorrents = async () => {
   );
   torrent9Infos.fetched_at = fetchedAt;
   torrent9Infos.number_of_pages = await getTotalPages(
-    "https://www.torrent9.ac/torrents/films/4700"
+    "https://www.torrent9.so/torrents/films/4800"
   );
   console.log(
     torrent9Infos.number_of_pages,
@@ -418,7 +418,7 @@ const fetchAllTorrents = async () => {
   );
   for (let i = 0; i < torrent9Infos.number_of_pages; i++) {
     await getMovieList(
-      "https://www.torrent9.ac/torrents/films/" + (50 * i + 1).toString()
+      "https://www.torrent9.so/torrents/films/" + (50 * i + 1).toString()
     );
     if (i && i % 50 === 0) {
       console.log(

@@ -114,7 +114,7 @@ const sendMail = (receiver, type, random) => {
         service: "Gmail",
         auth: {
           user: "hypertube.no.reply42@gmail.com",
-          pass: "Hypertube_42",
+          pass: process.env.MAIL_PWD,
         },
       });
       var message = {
