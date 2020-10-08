@@ -99,6 +99,6 @@ I will update this project with some new features if I can, pull requests are we
 
 # Authors
 
-- Clement [KLMcreator](https://github.com/KLMcreator) VANNICATTE<br />
-- Elise [Eozimek](https://github.com/Eozimek) OZIMEK<br />
-- Marie [MarieNawaki](https://github.com/MarieNawaki) Many
+- [shortcuts](https://github.com/shortcuts)<br />
+- [Eozimek](https://github.com/Eozimek)<br />
+- [MarieNawaki](https://github.com/MarieNawaki)
